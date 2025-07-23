@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         splitCard.setOnClickListener(v -> startActivity(new Intent(this, SplitPdfActivity.class)));
         compressCard.setOnClickListener(v -> startActivity(new Intent(this, CompressPdfActivity.class)));
         pdfToImageCard.setOnClickListener(v -> startActivity(new Intent(this, PdfToImageActivity.class)));
-        imageToPdfCard.setOnClickListener(v -> startActivity(new Intent(this, ImageToPdfActivity.class)));
+        ImageToPdfCard.setOnClickListener(v -> startActivity(new Intent(this, ImageToPdfActivity.class)));
         lockCard.setOnClickListener(v -> startActivity(new Intent(this, LockPdfActivity.class)));
         unlockCard.setOnClickListener(v -> startActivity(new Intent(this, UnlockPdfActivity.class)));
         watermarkCard.setOnClickListener(v -> startActivity(new Intent(this, WatermarkPdfActivity.class)));
