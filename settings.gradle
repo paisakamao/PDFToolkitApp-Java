@@ -1,9 +1,2 @@
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
 rootProject.name = "PDFToolkitApp-Java"
 include ':app'
