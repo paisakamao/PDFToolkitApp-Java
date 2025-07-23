@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.pdf.toolkit">
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -13,19 +14,27 @@
         <!-- AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/> <!-- Replace with your real App ID -->
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
-        <!-- Launcher activity -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-
+        <!-- Main Activity -->
+        <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
         </activity>
+
+        <!-- Tool Activities -->
+        <activity android:name=".MergePdfActivity" />
+        <activity android:name=".SplitPdfActivity" />
+        <activity android:name=".CompressPdfActivity" />
+        <activity android:name=".PdfToImagesActivity" />
+        <activity android:name=".ImagesToPdfActivity" />
+        <activity android:name=".LockPdfActivity" />
+        <activity android:name=".UnlockPdfActivity" />
+        <activity android:name=".AddWatermarkActivity" />
+        <activity android:name=".RotatePdfActivity" />
+        <activity android:name=".ExtractTextActivity" />
 
     </application>
 </manifest>
