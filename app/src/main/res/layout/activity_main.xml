@@ -1,15 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" 
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#0d0f14"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:background="#121212">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:text="PDF Toolkit"
-        android:textSize="24sp"
-        android:textColor="#FFFFFF"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+    <GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:padding="16dp"
+        android:rowCount="5">
+
+        <!-- Merge PDFs -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_merge_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Merge PDFs"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Split PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_split_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Split PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Compress PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_compress_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Compress PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- PDF to Images -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_pdf_to_image"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="PDF to Images"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Images to PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_image_to_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Images to PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Lock PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_lock_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Lock PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Unlock PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_unlock_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Unlock PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Add Watermark -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_watermark_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Add Watermark"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Rotate PDF -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_rotate_pdf"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Rotate PDF"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Extract Text -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_extract_text"
+            style="@style/PdfToolCard">
+            <TextView style="@style/PdfToolCardText" android:text="Extract Text"/>
+        </androidx.cardview.widget.CardView>
+
+    </GridLayout>
+</ScrollView>
