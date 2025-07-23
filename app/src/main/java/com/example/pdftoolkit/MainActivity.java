@@ -1,0 +1,1 @@
+// Java code for main activity with AdMob test ads
