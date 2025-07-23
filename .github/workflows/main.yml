@@ -1,4 +1,4 @@
-name: Android Build
+name: Build PDF Toolkit APK
 
 on:
   push:
@@ -8,11 +8,10 @@ on:
 
 jobs:
   build:
-    name: Build Debug APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -21,14 +20,16 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Grant execute permission for gradlew
+      - name: Grant permission to gradlew
         run: chmod +x ./gradlew
+        working-directory: pdf-toolkit
 
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug
+        working-directory: pdf-toolkit
 
-      - name: Upload Debug APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: PDFToolkit-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: pdf-toolkit/app/build/outputs/apk/debug/app-debug.apk
