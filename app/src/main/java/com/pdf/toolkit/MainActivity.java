@@ -16,6 +16,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+MobileAds.initialize(this, initializationStatus -> {});
+AdView adView = findViewById(R.id.adView);
+AdRequest adRequest = new AdRequest.Builder().build();
+adView.loadAd(adRequest);
         mergeCard = findViewById(R.id.card_merge_pdf);
         splitCard = findViewById(R.id.card_split_pdf);
         compressCard = findViewById(R.id.card_compress_pdf);
