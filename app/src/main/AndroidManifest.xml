@@ -28,11 +28,11 @@
         <activity android:name=".MergePdfActivity" />
         <activity android:name=".SplitPdfActivity" />
         <activity android:name=".CompressPdfActivity" />
-        <activity android:name=".PdfToImagesActivity" />
-        <activity android:name=".ImagesToPdfActivity" />
+        <activity android:name=".PdfToImageActivity" />
+        <activity android:name=".ImageToPdfActivity" />
         <activity android:name=".LockPdfActivity" />
         <activity android:name=".UnlockPdfActivity" />
-        <activity android:name=".AddWatermarkActivity" />
+        <activity android:name=".WatermarpdfkActivity" />
         <activity android:name=".RotatePdfActivity" />
         <activity android:name=".ExtractTextActivity" />
 
