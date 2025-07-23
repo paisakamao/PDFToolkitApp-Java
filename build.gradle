@@ -1,4 +1,4 @@
-// NO NEED for buildscript block
+// Root project build.gradle (no buildscript block needed)
 allprojects {
     repositories {
         google()
