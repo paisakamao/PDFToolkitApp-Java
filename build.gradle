@@ -1,7 +1,11 @@
-// Root project build.gradle (no buildscript block needed)
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
+// Top-level build file
+
+buildscript {
+    dependencies {
+        // Add classpath dependencies here if needed
     }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
