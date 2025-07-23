@@ -1,1 +1,4 @@
 // build.gradle content for app module
+plugins {
+    id 'com.android.application'
+}
