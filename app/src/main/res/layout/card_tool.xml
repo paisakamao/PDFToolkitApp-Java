@@ -15,12 +15,13 @@
         android:background="#1C222D"
         android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/toolIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_pdf"  <!-- Use your tool icon here -->
-            android:tint="#00FFFF" />
+ <!-- Use your tool icon here -->
+<ImageView
+    android:id="@+id/toolIcon"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:src="@drawable/ic_pdf"
+    android:tint="#00FFFF" />
 
         <TextView
             android:id="@+id/toolName"
