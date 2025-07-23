@@ -32,7 +32,7 @@
         <activity android:name=".ImageToPdfActivity" />
         <activity android:name=".LockPdfActivity" />
         <activity android:name=".UnlockPdfActivity" />
-        <activity android:name=".WatermarpdfActivity" />
+        <activity android:name=".WatermarkpdfActivity" />
         <activity android:name=".RotatePdfActivity" />
         <activity android:name=".ExtractTextActivity" />
 
