@@ -6,6 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import android.view.View;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 public class MainActivity extends AppCompatActivity {
 
     CardView mergeCard, splitCard, compressCard, pdfToImageCard, imageToPdfCard,
@@ -16,10 +20,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-MobileAds.initialize(this, initializationStatus -> {});
-AdView adView = findViewById(R.id.adView);
-AdRequest adRequest = new AdRequest.Builder().build();
-adView.loadAd(adRequest);
+        // ✅ Initialize Mobile Ads
+        MobileAds.initialize(this, initializationStatus -> {});
+
+        // ✅ Load Banner Ad
+        AdView adView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        // Cards
         mergeCard = findViewById(R.id.card_merge_pdf);
         splitCard = findViewById(R.id.card_split_pdf);
         compressCard = findViewById(R.id.card_compress_pdf);
@@ -31,6 +40,7 @@ adView.loadAd(adRequest);
         rotateCard = findViewById(R.id.card_rotate_pdf);
         extractTextCard = findViewById(R.id.card_extract_text);
 
+        // Click Listeners
         mergeCard.setOnClickListener(v -> startActivity(new Intent(this, MergePdfActivity.class)));
         splitCard.setOnClickListener(v -> startActivity(new Intent(this, SplitPdfActivity.class)));
         compressCard.setOnClickListener(v -> startActivity(new Intent(this, CompressPdfActivity.class)));
