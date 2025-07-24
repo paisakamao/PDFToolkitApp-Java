@@ -7,6 +7,7 @@
 
     <application
         android:theme="@style/Theme.PDFToolkit"
+        android:icon="@mipmap/ic_launcher"
         android:label="PDF ToolKit">
 
         <activity android:name=".MainActivity"
