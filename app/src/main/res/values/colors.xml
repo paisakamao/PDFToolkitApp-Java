@@ -1,9 +1,9 @@
 <resources>
-    <color name="background_dark">#0d0f14</color>
-    <color name="sidebar_dark">#12151a</color>
-    <color name="navbar_dark">#1c222d</color>
-    <color name="text_light">#ffffff</color>
-    <color name="text_dim">#e0e0e0</color>
-    <color name="glow_cyan">#00ffff</color>
-    <color name="card_background">#1c1f26</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryVariant">#1976D2</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="colorBackground">#121212</color>
+    <color name="colorSurface">#1E1E1E</color>
+    <color name="colorOnSurface">#FFFFFF</color>
 </resources>
