@@ -13,6 +13,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -29,19 +30,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ✅ Ask permission at runtime
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, STORAGE_PERMISSION_CODE);
+        // Ask for permission on launch
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) { // Android 12L and below
+            if (!hasStoragePermission()) {
+                requestStoragePermission();
             }
         }
 
-        // ✅ Setup WebView
         webView = new WebView(this);
         setContentView(webView);
 
@@ -68,8 +63,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // ✅ Load correct HTML
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private boolean hasStoragePermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                STORAGE_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+            } else {
+                // Permission denied
+            }
+        }
     }
 
     @Override
