@@ -25,12 +25,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Request permissions
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        }, 1);
+        // ✅ Request storage permissions for Android <= 12 (API 33)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, 1);
+        }
 
+        // ✅ Set up WebView
         webView = new WebView(this);
         setContentView(webView);
 
@@ -57,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl("file:///android_asset/index.html");
+        // ✅ Load your local HTML file from assets folder
+        webView.loadUrl("file:///android_asset/index.html"); // change to 2.html if needed
     }
 
     @Override
