@@ -23,8 +23,11 @@ import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MergePdfActivity extends AppCompatActivity {
 
@@ -36,7 +39,7 @@ public class MergePdfActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    selectedPdfUris.clear(); // Reset previous selection
+                    selectedPdfUris.clear();
                     if (result.getData().getClipData() != null) {
                         int count = result.getData().getClipData().getItemCount();
                         for (int i = 0; i < count; i++) {
@@ -55,13 +58,10 @@ public class MergePdfActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_merge_pdf);
 
-        // Initialize AdMob
         MobileAds.initialize(this, initializationStatus -> {});
         adView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
+        adView.loadAd(new AdRequest.Builder().build());
 
-        // Buttons
         selectBtn = findViewById(R.id.btn_select_pdfs);
         mergeBtn = findViewById(R.id.btn_merge_pdfs);
 
@@ -85,42 +85,49 @@ public class MergePdfActivity extends AppCompatActivity {
     }
 
     private void mergeSelectedPdfs() {
+        Document document = null;
+        PdfCopy copy = null;
+        FileOutputStream fos = null;
+
         try {
-            File outputFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "merged_output.pdf");
-            FileOutputStream fos = new FileOutputStream(outputFile);
-            Document document = new Document();
-            PdfCopy copy = new PdfCopy(document, fos);
+            // Output file with timestamp
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            File outputFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "merged_" + timeStamp + ".pdf");
+            fos = new FileOutputStream(outputFile);
+
+            document = new Document();
+            copy = new PdfCopy(document, fos);
             document.open();
 
             for (Uri uri : selectedPdfUris) {
                 InputStream inputStream = getContentResolver().openInputStream(uri);
                 if (inputStream != null) {
                     PdfReader reader = new PdfReader(inputStream);
-                    int numPages = reader.getNumberOfPages();
-                    for (int page = 1; page <= numPages; page++) {
-                        copy.addPage(copy.getImportedPage(reader, page));
+                    int pages = reader.getNumberOfPages();
+                    for (int i = 1; i <= pages; i++) {
+                        copy.addPage(copy.getImportedPage(reader, i));
                     }
                     reader.close();
                     inputStream.close();
                 }
             }
 
-            document.close();
-            fos.close();
+            Toast.makeText(this, "PDFs merged successfully!", Toast.LENGTH_LONG).show();
 
-            Toast.makeText(this, "PDF merged successfully!", Toast.LENGTH_LONG).show();
-
-            // Open merged PDF
-            Uri mergedPdfUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", outputFile);
+            Uri mergedUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", outputFile);
             Intent viewIntent = new Intent(Intent.ACTION_VIEW);
-            viewIntent.setDataAndType(mergedPdfUri, "application/pdf");
-            viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NO_HISTORY);
-
+            viewIntent.setDataAndType(mergedUri, "application/pdf");
+            viewIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(Intent.createChooser(viewIntent, "Open merged PDF"));
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this, "Failed to merge PDFs: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Merge failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            try {
+                if (document != null) document.close();
+                if (fos != null) fos.close();
+            } catch (Exception ignored) {}
         }
     }
 }
