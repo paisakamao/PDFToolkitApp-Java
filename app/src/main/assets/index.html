@@ -50,12 +50,17 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid rgba(66, 248, 245, 0.2);
+            /* --- MODIFIED: Added padding-left to make space for the hamburger menu --- */
+            padding-left: 5rem; /* Increased padding to make space for the button */
+            position: relative; /* Ensure relative positioning for absolute child */
         }
         .header h1 {
             font-size: 2rem;
             background: linear-gradient(45deg, var(--color-primary-accent), var(--color-secondary-accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            /* Optional: Add a margin to ensure it doesn't get too close to the button */
+            margin-left: 1rem; 
         }
         .hamburger-menu { 
             display: block; 
@@ -64,12 +69,14 @@
             border: none;
             color: var(--color-text-primary);
             cursor: pointer; 
-            z-index: 1;
-            position: absolute;
-            left: 1rem;
+            /* --- MODIFIED: Adjusted z-index and position --- */
+            z-index: 1002; /* Ensure it's above the header content */
+            position: absolute; /* Position relative to the header */
+            left: 1rem; /* Adjust as needed */
             top: 50%;
             transform: translateY(-50%);
-            padding: 10px;
+            padding: 10px; /* Add padding to make the clickable area larger */
+            box-sizing: content-box; /* Ensure padding doesn't affect `left` positioning */
         }
 
         /* --- 3. SIDEBAR --- */
@@ -196,7 +203,18 @@
         /* --- 6. RESPONSIVENESS --- */
         @media (max-width: 1200px) { .tools-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { 
-            .header h1 { font-size: 1.8rem; }
+            .header {
+                /* --- MODIFIED: Adjusted padding-left for smaller screens --- */
+                padding-left: 4rem; /* Slightly less padding on smaller screens if space is tight */
+            }
+            .header h1 { 
+                font-size: 1.5rem; /* Smaller font size on mobile */
+                margin-left: 0.5rem;
+            }
+            .hamburger-menu {
+                font-size: 1.6rem; /* Slightly smaller icon if desired */
+                left: 0.5rem; /* Adjust as needed */
+            }
             .tools-grid { grid-template-columns: 1fr; } 
             .content-area { padding: 1.5rem; } 
             .modal-container { width: 95%; max-height: 85vh; }
