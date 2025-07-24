@@ -7,8 +7,8 @@
 
     <application
         android:theme="@style/Theme.PDFToolkit"
-        android:label="PDF ToolKit"
-        
+        android:label="PDF ToolKit">
+
         <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
