@@ -70,6 +70,20 @@ public class MergePdfActivity extends AppCompatActivity {
                 mergePdfs();
             }
         });
+mergePdfButton.setOnClickListener(v -> {
+    if (selectedPdfUris.size() < 2) {
+        Toast.makeText(this, "Select at least 2 PDFs to merge", Toast.LENGTH_SHORT).show();
+        return;
+    }
+
+    try {
+        mergePdfs(selectedPdfUris);
+    } catch (IOException e) {
+        Toast.makeText(this, "Error merging PDFs: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        e.printStackTrace();
+    }
+});
+
     }
 
     private void selectPdfFiles() {
@@ -79,6 +93,33 @@ public class MergePdfActivity extends AppCompatActivity {
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         pdfPickerLauncher.launch(Intent.createChooser(intent, "Select PDFs"));
     }
+    private void mergePdfs(List<Uri> pdfUris) throws IOException {
+    PDFMergerUtility merger = new PDFMergerUtility();
+
+    for (Uri uri : pdfUris) {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        if (inputStream != null) {
+            merger.addSource(inputStream);
+        }
+    }
+
+    File mergedFile = new File(getExternalFilesDir(null), "merged_output.pdf");
+    merger.setDestinationFileName(mergedFile.getAbsolutePath());
+    merger.mergeDocuments(null);
+
+    Toast.makeText(this, "Merged PDF saved: " + mergedFile.getName(), Toast.LENGTH_LONG).show();
+
+    // Optional: Open or share the merged PDF
+    Uri pdfUri = FileProvider.getUriForFile(this, getPackageName() + ".provider", mergedFile);
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setDataAndType(pdfUri, "application/pdf");
+    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    startActivity(intent);
+
+    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+    startActivity(intent);
+}
 
     private void mergePdfs() {
         try {
