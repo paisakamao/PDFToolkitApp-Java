@@ -32,12 +32,10 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
 
-    // ✅ AdMob SDK
+    // ✅ AdMob
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
 
-    // ✅ iText for basic PDF operations
+    // ✅ PDF Libraries
     implementation 'com.itextpdf:itextg:5.5.10'
-
-    // ✅ Correct PDFBox Android library via JitPack
-    implementation 'com.github.TomRoush:PdfBox-Android:2.0.27.0'
+    implementation 'com.github.TomRoush:PdfBox-Android:2.0.27.0' // ✅ Correct line
 }
