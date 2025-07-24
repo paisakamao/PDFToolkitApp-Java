@@ -3,6 +3,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url = uri("https://jitpack.io") } // ✅ Added JitPack here
     }
     plugins {
         id("com.android.application") version "8.2.1"
@@ -14,6 +15,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") } // ✅ Added JitPack here too
     }
 }
 
