@@ -31,7 +31,11 @@
             --border-radius: 8px;
             --transition-speed: 0.3s;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+        }
         html, body { height: 100%; }
         body { font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif; background-color: var(--color-bg-main); color: var(--color-text-secondary); display: flex; flex-direction: column; overflow-x: hidden; }
         h1, h2, h3, h4 { font-family: var(--font-family-main); color: var(--color-text-primary); font-weight: 700; }
@@ -171,7 +175,7 @@
             border-radius: var(--border-radius); 
             box-shadow: var(--glow-shadow-hover); 
             z-index: 1050; 
-            width: 90%; /* Responsive width for all screen sizes */
+            width: 90%; 
             max-width: 600px; 
             max-height: 90vh; 
             display: flex; 
@@ -179,7 +183,7 @@
             opacity: 0; 
             visibility: hidden; 
             transition: all var(--transition-speed) ease; 
-            overflow: hidden; /* Hide overflow content from modal borders */
+            overflow: hidden; 
         }
         .modal-overlay.active, .modal-container.active { 
             opacity: 1; 
@@ -214,25 +218,33 @@
             flex-grow: 1; 
             display: flex;
             flex-direction: column;
-            gap: 1.5rem; /* Consistent spacing between major sections (options, file drop, previews) */
+            gap: 1.5rem; 
         }
 
         .modal-options { 
-            margin-bottom: 0; /* Handled by gap in modal-body */
+            margin-bottom: 0; 
             padding: 1rem; 
             background-color: var(--color-card-bg); 
             border-radius: var(--border-radius); 
             display: flex; 
-            flex-direction: column; 
-            gap: 0.8rem; /* Space between label and input/select */
+            flex-direction: column; /* Stack label and input vertically */
+            gap: 0.5rem; /* Reduced gap between label and input */
+            width: 100%; 
         }
         .modal-options label { 
             font-weight: bold; 
             color: var(--color-text-primary); 
             word-break: break-word; 
-            line-height: 1.3; /* Ensure multi-line labels look good */
+            line-height: 1.3; 
+            display: block; /* Ensures label takes its own line */
+            width: 100%; /* Ensures label takes full width available */
+            text-align: left; 
+            padding-right: 0.5rem; 
+            /* Added for better mobile text clarity */
+            font-size: 1rem; 
         }
-        .modal-options input, .modal-options select { 
+        .modal-options input, 
+        .modal-options select { 
             width: 100%; 
             padding: 0.5rem; 
             background-color: var(--color-bg-main); 
@@ -240,6 +252,8 @@
             color: var(--color-text-primary); 
             border-radius: 4px; 
             font-size: 1rem;
+            flex-shrink: 0; 
+            box-sizing: border-box; /* Crucial: Ensures padding and border are inside the 100% width */
         }
         .modal-options input:focus, .modal-options select:focus {
             outline: none;
@@ -258,7 +272,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center; 
-            min-height: 150px; /* Ensure a minimum height for the drop area */
+            min-height: 150px; 
+            width: 100%; 
         }
         .file-drop-area.dragover { 
             border-style: solid; 
@@ -279,16 +294,16 @@
         .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
         #file-input-label { cursor: pointer; }
         #file-previews { 
-            margin-top: 0; /* Handled by modal-body gap */
+            margin-top: 0; 
             max-height: 150px; 
             overflow-y: auto; 
             padding-right: 5px; 
-            /* Added for scrollbar styling if needed */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: var(--color-primary-accent) var(--color-bg-main); /* Firefox */
+            scrollbar-width: thin; 
+            scrollbar-color: var(--color-primary-accent) var(--color-bg-main); 
+            width: 100%;
         }
         #file-previews::-webkit-scrollbar {
-            width: 8px; /* Chrome, Safari, Edge */
+            width: 8px; 
         }
         #file-previews::-webkit-scrollbar-track {
             background: var(--color-bg-main);
@@ -320,6 +335,9 @@
             border-top: 1px solid rgba(66, 248, 245, 0.2); 
             text-align: right; 
             flex-shrink: 0; 
+            width: 100%; 
+            display: flex;
+            justify-content: flex-end; 
         }
         #process-btn { display: none; }
         .cta-button { 
@@ -368,34 +386,38 @@
             .modal-container { 
                 width: 95%; 
                 max-width: 95%; 
-                max-height: 95vh; /* Allow more vertical space to prevent content crunch */
+                max-height: 95vh; 
             }
             .modal-header h2 { 
                 font-size: 1.2rem; 
             }
             .modal-body { 
                 padding: 1rem; 
-                gap: 1rem; /* Slightly less gap for compact layout */
+                gap: 1rem; 
             }
 
             /* Modal Options (e.g., Split PDF, Watermark, Protect PDF) */
             .modal-options {
                 padding: 0.75rem; 
-                gap: 0.5rem; /* Slightly more space for better readability */
+                gap: 0.4rem; 
+                width: 100%; 
             }
             .modal-options label {
-                font-size: 0.9rem; 
-                line-height: 1.2; /* Tighter line height for labels */
+                font-size: 0.95rem; /* Slightly adjusted font size for better readability on small screens */
+                line-height: 1.2; 
+                padding-right: 0.3rem; 
             }
             .modal-options input, .modal-options select {
-                font-size: 0.9rem; 
+                font-size: 0.95rem; /* Match label font size for consistency */
                 padding: 0.4rem;
+                width: 100%; 
             }
 
             /* File Drop Area */
             .file-drop-area {
                 padding: 1.5rem; 
-                min-height: 120px; /* Adjusted minimum height */
+                min-height: 120px; 
+                width: 100%; 
             }
             .file-drop-area .fas {
                 font-size: 2.5rem; 
@@ -408,7 +430,7 @@
             .cta-button {
                 padding: 0.6rem 1.2rem; 
                 font-size: 0.9rem; 
-                min-width: unset; /* Remove min-width to allow more flexibility */
+                min-width: unset; 
             }
             .file-preview-item {
                 padding: 0.6rem;
@@ -422,23 +444,27 @@
                 font-size: 1rem; 
             }
             .modal-body {
-                padding: 0.8rem; /* Even smaller padding */
+                padding: 0.8rem; 
                 gap: 0.8rem;
             }
             .modal-options {
                 padding: 0.6rem;
-                gap: 0.3rem;
+                gap: 0.3rem; 
+                width: 100%; 
             }
             .modal-options label {
-                font-size: 0.85rem;
+                font-size: 0.9rem; /* Further adjustment for very small screens */
+                padding-right: 0.2rem; 
             }
             .modal-options input, .modal-options select {
-                font-size: 0.85rem;
+                font-size: 0.9rem; /* Further adjustment for very small screens */
                 padding: 0.35rem;
+                width: 100%; 
             }
             .file-drop-area {
                 padding: 1rem;
-                min-height: 100px; /* Smaller min height for very small screens */
+                min-height: 100px; 
+                width: 100%; 
             }
             .file-drop-area .fas {
                 font-size: 2rem;
@@ -456,7 +482,6 @@
                 padding: 0.5rem;
                 font-size: 0.75rem;
             }
-            /* Adjustments for the close button if it looks too big */
             .modal-close-btn {
                 font-size: 1.3rem;
             }
@@ -810,6 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        alert("File saved to Downloads folder.");
     }
 });
 </script>
