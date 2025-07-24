@@ -35,6 +35,32 @@
         <activity android:name=".WatermarkPdfActivity" />
         <activity android:name=".RotatePdfActivity" />
         <activity android:name=".ExtractTextActivity" />
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.your.package.name">
+
+    <application
+        android:allowBackup="true"
+        android:label="PDF ToolKit"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PDFToolKit">
+
+        <!-- Your existing activities -->
+        <activity android:name=".MainActivity" />
+        <activity android:name=".MergePdfActivity" />
+        <!-- etc... -->
+
+        <!-- Add this inside <application> -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 </manifest>
