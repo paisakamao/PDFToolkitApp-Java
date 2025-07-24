@@ -28,3 +28,9 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew assembleDebug
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: PDF-ToolKit
+        path: app/build/outputs/apk/debug/app-debug.apk
