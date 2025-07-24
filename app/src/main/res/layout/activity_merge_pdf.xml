@@ -13,28 +13,36 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Merge PDF Files"
+        android:textColor="@color/colorOnSurface"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_gravity="center"
-        android:padding="16dp"/>
+        android:padding="16dp" />
 
-    <!-- Placeholder for merge PDF UI -->
-    <TextView
+    <Button
+        android:id="@+id/btn_select_pdfs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload and merge multiple PDF files here."
-        android:textColor="@android:color/darker_gray"
-        android:gravity="center"
-        android:padding="20dp" />
+        android:text="Select PDF Files"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/colorOnPrimary" />
+
+    <Button
+        android:id="@+id/btn_merge_pdfs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Merge PDFs"
+        android:backgroundTint="@color/colorAccent"
+        android:textColor="@color/colorOnPrimary" />
 
     <!-- Banner Ad -->
     <com.google.android.gms.ads.AdView
-    android:id="@+id/adView"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:layout_marginTop="16dp"
-    android:layout_marginBottom="0dp"
-    ads:adSize="BANNER"
-    ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />  <!-- This is a test AdMob banner ID -->
+        android:id="@+id/adView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
 </LinearLayout>
