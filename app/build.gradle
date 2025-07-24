@@ -34,4 +34,6 @@ dependencies {
 
     // ✅ Add this line for AdMob
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
+    implementation 'com.itextpdf:itextg:5.5.10'
+
 }
