@@ -37,5 +37,5 @@ dependencies {
 
     // ✅ PDF Libraries
     implementation 'com.itextpdf:itextg:5.5.10'
-    implementation 'com.github.TomRoush:PdfBox-Android:2.0.27.1' // ✅ Correct line
+    implementation 'com.github.TomRoush:PdfBox-Android:master-SNAPSHOT' // ✅ Correct line
 }
