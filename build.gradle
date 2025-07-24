@@ -1,11 +1,16 @@
-// Top-level build file
-
 buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
     dependencies {
-        // Add classpath dependencies here if needed
+        classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
