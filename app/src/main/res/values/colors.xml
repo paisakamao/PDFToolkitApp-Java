@@ -6,4 +6,10 @@
     <color name="colorBackground">#121212</color>
     <color name="colorSurface">#1E1E1E</color>
     <color name="colorOnSurface">#FFFFFF</color>
+
+    <!-- 🔧 Additional Colors Required by Theme -->
+    <color name="glow_cyan">#00FFFF</color>
+    <color name="navbar_dark">#1c222d</color>
+    <color name="text_light">#e0e0e0</color>
+    <color name="background_dark">#0d0f14</color>
 </resources>
