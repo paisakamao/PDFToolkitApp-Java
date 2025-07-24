@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
 
-        // Cards
+        // ✅ Initialize Cards
         mergeCard = findViewById(R.id.card_merge_pdf);
         splitCard = findViewById(R.id.card_split_pdf);
         compressCard = findViewById(R.id.card_compress_pdf);
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         rotateCard = findViewById(R.id.card_rotate_pdf);
         extractTextCard = findViewById(R.id.card_extract_text);
 
-        // Click Listeners
+        // ✅ Set OnClickListeners
         mergeCard.setOnClickListener(v -> startActivity(new Intent(this, MergePdfActivity.class)));
         splitCard.setOnClickListener(v -> startActivity(new Intent(this, SplitPdfActivity.class)));
         compressCard.setOnClickListener(v -> startActivity(new Intent(this, CompressPdfActivity.class)));
