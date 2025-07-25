@@ -1,8 +1,10 @@
 package com.pdf.toolkit;
 
+// --- START OF CORRECTIONS: ADDED MISSING IMPORTS ---
 import android.Manifest;
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent; // This was the missing line that caused the build to fail
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+// --- END OF CORRECTIONS ---
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    // --- NEW: Launcher for the Permission Request ---
+    // Launcher for the Permission Request
     private String urlToDownload;
     private String userAgentToDownload;
     private String contentDispositionToDownload;
@@ -48,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
                     // Permission is granted. Continue the download.
                     downloadFile(urlToDownload, userAgentToDownload, contentDispositionToDownload, mimetypeToDownload);
                 } else {
-                    // Explain to the user that the feature is unavailable because the
-                    // features requires a permission that the user has denied.
                     Toast.makeText(this, "Permission denied. Download cannot continue.", Toast.LENGTH_LONG).show();
                 }
             });
@@ -88,23 +89,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // --- UPDATED: Download Listener now checks for permission ---
+        // This Download Listener now checks for permission
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            // Save the download details
             urlToDownload = url;
             userAgentToDownload = userAgent;
             contentDispositionToDownload = contentDisposition;
             mimetypeToDownload = mimetype;
 
-            // Check if we have permission. If not, request it.
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { // Permission needed for Android 9 and below
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { 
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     downloadFile(url, userAgent, contentDisposition, mimetype);
                 } else {
-                    // Directly ask for the permission.
                     requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
-            } else { // For Android 10 and above, no permission is needed for public directories
+            } else { 
                 downloadFile(url, userAgent, contentDisposition, mimetype);
             }
         });
@@ -112,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/index.html"); 
     }
 
-    // --- NEW: Centralized download function ---
+    // Centralized download function
     private void downloadFile(String url, String userAgent, String contentDisposition, String mimetype) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setMimeType(mimetype);
