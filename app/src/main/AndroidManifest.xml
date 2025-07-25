@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pdf.toolkit">
+<!-- The 'package' attribute has been removed from this tag to comply with modern Android standards. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Each permission is a single, complete tag with its own 'name' attribute. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    
-    <!-- This permission is ONLY for old devices (Android 9 and below).
-         The MediaStore API we are now using does not require it on modern devices.
-         This is the correct, Google Play-compliant way to declare it. -->
-    <uses-permission android.name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
     <application
@@ -15,8 +12,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="PDF Toolkit"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PDFToolkit">
-        <!-- The requestLegacyExternalStorage flag has been REMOVED. -->
+        android:theme="@style/Theme.PDFToolkit"
+        android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".MainActivity"
@@ -27,4 +24,5 @@
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
