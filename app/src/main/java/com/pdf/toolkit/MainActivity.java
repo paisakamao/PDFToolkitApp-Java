@@ -7,12 +7,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.webkit.JavascriptInterface;
-import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceRequest;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -31,23 +31,34 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main); // ✅ Load XML layout
 
-        webView = new WebView(this);
-        setContentView(webView);
+        webView = findViewById(R.id.webView); // ✅ Reference WebView from layout
 
-        // ✅ WebView settings
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowUniversalAccessFromFileURLs(true);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            // Open external URLs in browser
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                if (uri.toString().startsWith("http")) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(browserIntent);
+                    return true;
+                }
+                return false;
+            }
+        });
 
-        // ✅ Enable JS-to-Java file saving
+        // JS interface to save base64 files
         webView.addJavascriptInterface(new FileSaverInterface(this), "Android");
 
-        // ✅ File picker support
+        // File picker support
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView webView,
@@ -72,17 +83,15 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == FILE_CHOOSER_REQUEST_CODE && filePathCallback != null) {
             Uri[] results = null;
 
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    if (data.getClipData() != null) {
-                        int count = data.getClipData().getItemCount();
-                        results = new Uri[count];
-                        for (int i = 0; i < count; i++) {
-                            results[i] = data.getClipData().getItemAt(i).getUri();
-                        }
-                    } else if (data.getData() != null) {
-                        results = new Uri[]{data.getData()};
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                if (data.getClipData() != null) {
+                    int count = data.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) {
+                        results[i] = data.getClipData().getItemAt(i).getUri();
                     }
+                } else if (data.getData() != null) {
+                    results = new Uri[]{data.getData()};
                 }
             }
 
@@ -93,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    // ✅ Back navigation support
+    // Back button logic
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) {
@@ -103,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // ✅ JavaScript Interface for saving files
+    // JS interface to save base64 file
     public static class FileSaverInterface {
         private final Activity activity;
 
@@ -127,10 +136,12 @@ public class MainActivity extends AppCompatActivity {
                 fos.write(fileBytes);
                 fos.close();
 
-                activity.runOnUiThread(() -> Toast.makeText(activity, "✅ File saved to Downloads", Toast.LENGTH_SHORT).show());
+                activity.runOnUiThread(() ->
+                        Toast.makeText(activity, "✅ File saved to Downloads", Toast.LENGTH_SHORT).show());
             } catch (Exception e) {
                 e.printStackTrace();
-                activity.runOnUiThread(() -> Toast.makeText(activity, "❌ Failed to save file", Toast.LENGTH_SHORT).show());
+                activity.runOnUiThread(() ->
+                        Toast.makeText(activity, "❌ Failed to save file", Toast.LENGTH_SHORT).show());
             }
         }
     }
