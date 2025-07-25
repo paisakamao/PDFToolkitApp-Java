@@ -1,16 +1,19 @@
-pluginManagement {
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
     repositories {
         google()
         mavenCentral()
     }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-    repositories {
-        google()
-        mavenCentral()
+    dependencies {
+        // This explicitly defines the version of the Android build tools for the entire project.
+        classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
 
-rootProject.name = "PDFToolkitApp-Java"
-include(":app")
+// Defines the repositories for the app's own libraries (like appcompat)
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
