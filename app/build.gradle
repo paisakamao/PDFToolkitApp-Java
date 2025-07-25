@@ -28,7 +28,10 @@ android {
 }
 
 dependencies {
-    // The essential libraries for a Java AppCompat app.
+    // These are the essentials
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
+    
+    // THIS IS THE MISSING LIBRARY that provides the color attributes like colorPrimaryVariant.
+    implementation 'com.google.android.material:material:1.11.0'
 }
