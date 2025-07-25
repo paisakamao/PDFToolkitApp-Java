@@ -1,148 +1,141 @@
 package com.pdf.toolkit;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.Manifest;
+import android.app.DownloadManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.webkit.JavascriptInterface;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebResourceRequest;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Base64;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
-    private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+
+    // Launcher for the file chooser intent
+    private final ActivityResultLauncher<Intent> fileChooserLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (filePathCallback != null) {
+                    Uri[] uris = WebChromeClient.FileChooserParams.parseResult(result.getResultCode(), result.getData());
+                    filePathCallback.onReceiveValue(uris);
+                    filePathCallback = null;
+                }
+            });
+
+    // --- NEW: Launcher for the Permission Request ---
+    private String urlToDownload;
+    private String userAgentToDownload;
+    private String contentDispositionToDownload;
+    private String mimetypeToDownload;
+    
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission is granted. Continue the download.
+                    downloadFile(urlToDownload, userAgentToDownload, contentDispositionToDownload, mimetypeToDownload);
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied.
+                    Toast.makeText(this, "Permission denied. Download cannot continue.", Toast.LENGTH_LONG).show();
+                }
+            });
+
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // ✅ Load XML layout
+        setContentView(R.layout.activity_main); 
 
-        webView = findViewById(R.id.webView); // ✅ Reference WebView from layout
+        webView = findViewById(R.id.webView);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
 
-        webView.setWebViewClient(new WebViewClient() {
-            // Open external URLs in browser
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                if (uri.toString().startsWith("http")) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-                    startActivity(browserIntent);
-                    return true;
-                }
-                return false;
-            }
-        });
+        webView.setWebViewClient(new WebViewClient());
 
-        // JS interface to save base64 files
-        webView.addJavascriptInterface(new FileSaverInterface(this), "Android");
-
-        // File picker support
+        // This handles the "Choose File" button
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
-            public boolean onShowFileChooser(WebView webView,
-                                             ValueCallback<Uri[]> filePathCallback,
-                                             FileChooserParams fileChooserParams) {
-                MainActivity.this.filePathCallback = filePathCallback;
-
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("application/pdf");
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(Intent.createChooser(intent, "Select PDF Files"), FILE_CHOOSER_REQUEST_CODE);
+            public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
+                if (filePathCallback != null) {
+                    filePathCallback.onReceiveValue(null);
+                }
+                filePathCallback = fp;
+                try {
+                    fileChooserLauncher.launch(fcp.createIntent());
+                } catch (Exception e) {
+                    filePathCallback = null;
+                    return false;
+                }
                 return true;
             }
         });
 
-        webView.loadUrl("file:///android_asset/index.html");
-    }
+        // --- UPDATED: Download Listener now checks for permission ---
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            // Save the download details
+            urlToDownload = url;
+            userAgentToDownload = userAgent;
+            contentDispositionToDownload = contentDisposition;
+            mimetypeToDownload = mimetype;
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == FILE_CHOOSER_REQUEST_CODE && filePathCallback != null) {
-            Uri[] results = null;
-
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.getClipData() != null) {
-                    int count = data.getClipData().getItemCount();
-                    results = new Uri[count];
-                    for (int i = 0; i < count; i++) {
-                        results[i] = data.getClipData().getItemAt(i).getUri();
-                    }
-                } else if (data.getData() != null) {
-                    results = new Uri[]{data.getData()};
+            // Check if we have permission. If not, request it.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { // Permission needed for Android 9 and below
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    downloadFile(url, userAgent, contentDisposition, mimetype);
+                } else {
+                    // Directly ask for the permission.
+                    requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
+            } else { // For Android 10 and above, no permission is needed for public directories
+                downloadFile(url, userAgent, contentDisposition, mimetype);
             }
+        });
 
-            filePathCallback.onReceiveValue(results);
-            filePathCallback = null;
-        }
-
-        super.onActivityResult(requestCode, resultCode, data);
+        webView.loadUrl("file:///android_asset/index.html"); 
     }
 
-    // Back button logic
+    // --- NEW: Centralized download function ---
+    private void downloadFile(String url, String userAgent, String contentDisposition, String mimetype) {
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setMimeType(mimetype);
+        String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
+        request.addRequestHeader("cookie", cookies);
+        request.addRequestHeader("User-Agent", userAgent);
+        request.setDescription("Downloading file...");
+        String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
+        request.setTitle(fileName);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+        DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        dm.enqueue(request);
+        Toast.makeText(getApplicationContext(), "Download Started...", Toast.LENGTH_LONG).show();
+    }
+
+
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) {
             webView.goBack();
         } else {
             super.onBackPressed();
-        }
-    }
-
-    // JS interface to save base64 file
-    public static class FileSaverInterface {
-        private final Activity activity;
-
-        public FileSaverInterface(Activity activity) {
-            this.activity = activity;
-        }
-
-        @JavascriptInterface
-        public void saveBase64File(String base64, String filename) {
-            try {
-                byte[] fileBytes;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    fileBytes = Base64.getDecoder().decode(base64);
-                } else {
-                    fileBytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
-                }
-
-                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File file = new File(downloadsDir, filename);
-                FileOutputStream fos = new FileOutputStream(file);
-                fos.write(fileBytes);
-                fos.close();
-
-                activity.runOnUiThread(() ->
-                        Toast.makeText(activity, "✅ File saved to Downloads", Toast.LENGTH_SHORT).show());
-            } catch (Exception e) {
-                e.printStackTrace();
-                activity.runOnUiThread(() ->
-                        Toast.makeText(activity, "❌ Failed to save file", Toast.LENGTH_SHORT).show());
-            }
         }
     }
 }
