@@ -2,7 +2,7 @@ package com.pdf.toolkit;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.MimeTypeMap;
@@ -24,10 +25,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider; // IMPORTANT: Import FileProvider
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String pendingBase64Data;
     private String pendingFileName;
-    
+
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (filePathCallback != null) {
@@ -46,11 +44,12 @@ public class MainActivity extends AppCompatActivity {
                     filePathCallback = null;
                 }
             });
-    
+
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    saveFile(pendingBase64Data, pendingFileName);
+                    Toast.makeText(this, "Permission granted. Saving file...", Toast.LENGTH_SHORT).show();
+                    performSave(pendingBase64Data, pendingFileName);
                 } else {
                     Toast.makeText(this, "Permission denied. File cannot be saved.", Toast.LENGTH_LONG).show();
                 }
@@ -73,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
+                if (filePathCallback != null) {
+                    filePathCallback.onReceiveValue(null);
+                }
                 filePathCallback = fp;
                 Intent intent = fcp.createIntent();
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -92,60 +94,84 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName) {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { 
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    saveFile(base64Data, fileName);
+                    performSave(base64Data, fileName);
                 } else {
                     pendingBase64Data = base64Data;
                     pendingFileName = fileName;
                     requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
-            } else {
-                saveFile(base64Data, fileName);
+            } else { 
+                performSave(base64Data, fileName);
             }
         }
+    }
 
-        // --- START: THIS IS THE NEW PREVIEW FUNCTION ---
-        @JavascriptInterface
-        public void previewFile(String fileName) {
-            runOnUiThread(() -> {
-                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File file = new File(downloadsDir, fileName);
-
-                if (!file.exists()) {
-                    Toast.makeText(context, "Error: File not found.", Toast.LENGTH_SHORT).show();
-                    return;
+    private void performSave(String base64Data, String fileName) {
+        runOnUiThread(() -> {
+            try {
+                Uri downloadsCollection;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    downloadsCollection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                } else {
+                    downloadsCollection = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
                 }
-
-                // Use the FileProvider to get a secure content URI
-                Uri uri = FileProvider.getUriForFile(context, "com.pdf.toolkit.fileprovider", file);
                 
-                // Create an Intent to view the file
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                String mimeType = getMimeType(fileName);
-                intent.setDataAndType(uri, mimeType);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // Grant permission to the receiving app
-
-                try {
-                    context.startActivity(intent);
-                } catch (ActivityNotFoundException e) {
-                    Toast.makeText(context, "No app found to open this file type.", Toast.LENGTH_LONG).show();
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                contentValues.put(MediaStore.Downloads.MIME_TYPE, getMimeType(fileName));
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 1);
                 }
-            });
-        }
-        // --- END: THIS IS THE NEW PREVIEW FUNCTION ---
+
+                Uri fileUri = getContentResolver().insert(downloadsCollection, contentValues);
+                
+                if (fileUri == null) throw new Exception("Failed to create MediaStore record.");
+
+                try (OutputStream os = getContentResolver().openOutputStream(fileUri)) {
+                    if (os == null) throw new Exception("Failed to get output stream.");
+                    byte[] fileAsBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    os.write(fileAsBytes);
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear();
+                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0);
+                    getContentResolver().update(fileUri, contentValues, null, null);
+                }
+
+                Toast.makeText(this, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
-    private void saveFile(String base64Data, String fileName) {
-        // ... (This function remains unchanged)
-    }
-
+    // --- START: THIS IS THE CORRECTED FUNCTION ---
     private String getMimeType(String fileName) {
-        // ... (This function remains unchanged)
+        String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
+        if (extension != null) {
+            String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+            if (mime != null) {
+                return mime;
+            }
+        }
+        // This is the fallback return statement that was missing.
+        // It handles files with no extension or unknown extensions.
+        return "application/octet-stream";
     }
+    // --- END: THIS IS THE CORRECTED FUNCTION ---
 
     @Override
     public void onBackPressed() {
-        // ... (This function remains unchanged)
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
