@@ -1,10 +1,10 @@
 package com.pdf.toolkit;
 
-// --- START OF CORRECTIONS: ADDED MISSING IMPORTS ---
 import android.Manifest;
+import android.app.Activity; // Required for Activity.RESULT_OK
 import android.app.DownloadManager;
 import android.content.Context;
-import android.content.Intent; // This was the missing line that caused the build to fail
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -22,22 +22,40 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-// --- END OF CORRECTIONS ---
 
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
 
-    // Launcher for the file chooser intent
+    // --- START: CORRECTED FILE CHOOSER LOGIC ---
+    // This launcher now correctly handles BOTH single and multiple file selections.
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (filePathCallback != null) {
-                    Uri[] uris = WebChromeClient.FileChooserParams.parseResult(result.getResultCode(), result.getData());
-                    filePathCallback.onReceiveValue(uris);
-                    filePathCallback = null;
+                if (filePathCallback == null) {
+                    return;
                 }
+
+                Uri[] results = null;
+                // Check if the result is valid and there's data
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    // Check if multiple files were returned
+                    if (result.getData().getClipData() != null) {
+                        int count = result.getData().getClipData().getItemCount();
+                        results = new Uri[count];
+                        for (int i = 0; i < count; i++) {
+                            results[i] = result.getData().getClipData().getItemAt(i).getUri();
+                        }
+                    } else if (result.getData().getData() != null) {
+                        // A single file was returned
+                        results = new Uri[]{ result.getData().getData() };
+                    }
+                }
+
+                filePathCallback.onReceiveValue(results);
+                filePathCallback = null;
             });
+    // --- END: CORRECTED FILE CHOOSER LOGIC ---
 
     // Launcher for the Permission Request
     private String urlToDownload;
@@ -48,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    // Permission is granted. Continue the download.
                     downloadFile(urlToDownload, userAgentToDownload, contentDispositionToDownload, mimetypeToDownload);
                 } else {
                     Toast.makeText(this, "Permission denied. Download cannot continue.", Toast.LENGTH_LONG).show();
@@ -71,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
         webView.setWebViewClient(new WebViewClient());
 
-        // This handles the "Choose File" button
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
@@ -80,7 +96,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 filePathCallback = fp;
                 try {
-                    fileChooserLauncher.launch(fcp.createIntent());
+                    // --- START: MODIFICATION TO ALLOW MULTIPLE FILES ---
+                    Intent intent = fcp.createIntent();
+                    // This tells the file picker that it's okay to select more than one file
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    fileChooserLauncher.launch(intent);
+                    // --- END: MODIFICATION TO ALLOW MULTIPLE FILES ---
                 } catch (Exception e) {
                     filePathCallback = null;
                     return false;
@@ -89,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // This Download Listener now checks for permission
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
             urlToDownload = url;
             userAgentToDownload = userAgent;
@@ -110,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/index.html"); 
     }
 
-    // Centralized download function
     private void downloadFile(String url, String userAgent, String contentDisposition, String mimetype) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setMimeType(mimetype);
