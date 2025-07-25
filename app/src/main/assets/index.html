@@ -181,31 +181,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- END OF CORRECTED JAVASCRIPT CODE ---
 
-    processBtn.addEventListener('click', async () => {
-        const toolName = modalTitle.textContent;
-        const statusBadges = filePreviews.querySelectorAll('.status-badge');
-        statusBadges.forEach(badge => { badge.textContent = 'Processing...'; badge.className = 'status-badge status-processing'; });
-        try {
-            switch (toolName) {
-                case 'Merge PDF': await handleMergePdf(); break;
-                case 'Split PDF': await handleSplitPdf(); break;
-                case 'Rotate PDF': await handleRotatePdf(); break;
-                case 'Add Page Numbers': await handleAddPageNumbers(); break;
-                case 'Add Watermark': await handleAddWatermark(); break;
-                case 'Protect PDF': await handleProtectPdf(); break;
-                case 'Unlock PDF': await handleUnlockPdf(); break;
-                case 'PDF to JPG': await handlePdfToJpg(); break;
-                case 'JPG to PDF': await handleJpgToPdf(); break;
-                case 'Delete Pages': await handleDeletePages(); break;
-                default: throw new Error('Selected tool is not implemented.');
-            }
-            updateStatusToSuccess();
-        } catch (error) {
-            console.error('Processing Error:', error);
-            alert(`An error occurred: ${error.message}`);
-            updateStatusToError();
-        }
+processBtn.addEventListener('click', async () => {
+    const toolName = modalTitle.textContent;
+    const statusBadges = filePreviews.querySelectorAll('.status-badge');
+    statusBadges.forEach(badge => { 
+        badge.textContent = 'Processing...'; 
+        badge.className = 'status-badge status-processing'; 
     });
+
+    try {
+        // This is the filename of the FIRST uploaded file, used for single-file tools.
+        const originalFileName = uploadedFiles.length > 0 ? uploadedFiles[0].name : null;
+
+        switch (toolName) {
+            case 'Merge PDF':
+                await handleMergePdf();
+                // For multi-file tools, we mark all sources as successful.
+                // We don't show a preview button for the individual source files.
+                // A new preview item for "merged.pdf" could be added here as a future feature.
+                updateStatusToSuccess(); 
+                break;
+
+            case 'Split PDF':
+                await handleSplitPdf();
+                updateStatusToSuccess(originalFileName, 'split.pdf');
+                break;
+
+            case 'Rotate PDF':
+                await handleRotatePdf();
+                updateStatusToSuccess(originalFileName, 'rotated.pdf');
+                break;
+
+            case 'Add Page Numbers':
+                await handleAddPageNumbers();
+                updateStatusToSuccess(originalFileName, 'paginated.pdf');
+                break;
+
+            case 'Add Watermark':
+                await handleAddWatermark();
+                updateStatusToSuccess(originalFileName, 'watermarked.pdf');
+                break;
+
+            case 'Protect PDF':
+                await handleProtectPdf();
+                updateStatusToSuccess(originalFileName, 'protected.pdf');
+                break;
+
+            case 'Unlock PDF':
+                await handleUnlockPdf();
+                updateStatusToSuccess(originalFileName, 'unlocked.pdf');
+                break;
+
+            case 'PDF to JPG':
+                await handlePdfToJpg();
+                // This tool creates multiple files, so we just mark the source as successful.
+                updateStatusToSuccess(originalFileName); 
+                break;
+
+            case 'JPG to PDF':
+                await handleJpgToPdf();
+                // This is a multi-file tool, so we mark all sources as successful.
+                updateStatusToSuccess(); 
+                break;
+
+            case 'Delete Pages':
+                await handleDeletePages();
+                updateStatusToSuccess(originalFileName, 'edited.pdf');
+                break;
+
+            default:
+                throw new Error('Selected tool is not implemented.');
+        }
+
+    } catch (error) {
+        console.error('Processing Error:', error);
+        alert(`An error occurred: ${error.message}`);
+        updateStatusToError();
+    }
+});
 
     const getFileBytes = async (file) => file.arrayBuffer();
 
