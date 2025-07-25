@@ -19,7 +19,8 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCH" />
+                <!-- THIS IS THE FIX. THE CATEGORY IS NOW CORRECTLY SPELLED 'LAUNCHER'. -->
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
