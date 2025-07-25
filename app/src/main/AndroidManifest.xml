@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.PDFToolkit">
-        <!-- THEME IS NOW POINTING TO THE CORRECT, CUSTOM APP THEME -->
+        <!-- This now correctly and unambiguously points to your single, safe theme -->
 
         <activity
             android:name=".MainActivity"
