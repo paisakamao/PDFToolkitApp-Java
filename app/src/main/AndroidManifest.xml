@@ -2,18 +2,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdf.toolkit">
 
-    <!-- Required to load web content -->
+    <!-- Always required for loading web content and downloads -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Required by the DownloadManager to save files to the public Downloads folder -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <!-- This permission is only requested on Android 9 (API 28) and below.
+         For newer versions, the system handles it automatically when saving
+         to the public Downloads directory. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="PDF Toolkit"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+        android:requestLegacyExternalStorage="true"> <!-- Important for compatibility -->
 
         <activity
             android:name=".MainActivity"
@@ -23,6 +27,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 </manifest>
