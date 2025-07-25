@@ -1,6 +1,5 @@
-plugins {
-    id 'com.android.application'
-}
+// This uses the classic 'apply plugin' method which is required by the root build.gradle setup.
+apply plugin: 'com.android.application'
 
 android {
     namespace 'com.pdf.toolkit'
@@ -8,13 +7,10 @@ android {
 
     defaultConfig {
         applicationId "com.pdf.toolkit"
-        minSdk 21
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
-
-        // Required for file:// access
-        vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
@@ -23,16 +19,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-}
 
+    // THIS IS THE CORRECT, SYNTACTICALLY-VALID LOCATION FOR THIS BLOCK.
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
+}
 
 dependencies {
+    // The essential libraries for a Java AppCompat app.
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.activity:activity:1.8.2'
 }
