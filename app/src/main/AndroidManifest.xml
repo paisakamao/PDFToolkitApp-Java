@@ -1,23 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pdf.toolkit">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    android:maxSdkVersion="28"/>
+    <!-- Required to load web content -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Required by the DownloadManager to save files to the public Downloads folder -->
+    <!-- The maxSdkVersion="28" is a modern requirement for this permission -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <application
-       android:allowBackup="true" android:theme="@style/Theme.PDFToolkit"
-        android:icon="@mipmap/ic_launcher"
-        android:label="PDF ToolKit">
+        android:allowBackup="true"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:label="PDF Toolkit"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
-       <activity android:name=".MainActivity"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-    </activity>
-</application>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>
