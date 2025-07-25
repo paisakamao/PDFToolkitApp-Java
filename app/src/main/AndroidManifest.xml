@@ -3,15 +3,20 @@
     package="com.pdf.toolkit">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    
+    <!-- This permission is ONLY for old devices (Android 9 and below).
+         The MediaStore API we are now using does not require it on modern devices.
+         This is the correct, Google Play-compliant way to declare it. -->
+    <uses-permission android.name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="PDF Toolkit"
         android:supportsRtl="true"
-        android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.PDFToolkit">
+        <!-- The requestLegacyExternalStorage flag has been REMOVED. -->
 
         <activity
             android:name=".MainActivity"
