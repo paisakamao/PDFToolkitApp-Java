@@ -446,22 +446,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatusToSuccess() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Success!'; badge.className = 'status-badge status-success'; }); }
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
-    function downloadFile(data, fileName, fileType) {
-        // This is the correct, modern way to do this.
-        if (typeof Android !== 'undefined' && Android.saveBase64File) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const base64 = reader.result.split(',')[1]; // remove `data:*/*;base64,`
-                Android.saveBase64File(base64, fileName);
-            };
-            reader.onerror = function() {
-                alert('Error: Could not read the processed file.');
-            };
-            reader.readAsDataURL(new Blob([data], { type: fileType }));
-        } else {
-            alert("Error: Download feature only available in the Android app.");
-        }
+    function handleFiles(files) {
+    filePreviews.innerHTML = '';
+    uploadedFiles = Array.from(files);
+    if (uploadedFiles.length > 0) {
+        processBtn.style.display = 'inline-block';
+        uploadedFiles.forEach(file => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'file-preview-item';
+            previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
+            filePreviews.appendChild(previewItem);
+        });
     }
+}
 });
 </script>
 </body>
