@@ -446,17 +446,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatusToSuccess() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Success!'; badge.className = 'status-badge status-success'; }); }
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
-    function handleFiles(files) {
-    filePreviews.innerHTML = '';
-    uploadedFiles = Array.from(files);
+function handleFiles(newFiles) {
+    // This new version ADDS files instead of replacing them.
+    // This correctly handles both single and multiple file selections.
+    const filesToAdd = Array.from(newFiles);
+    
+    filesToAdd.forEach(file => {
+        // Add the file to our master list
+        uploadedFiles.push(file);
+
+        // Create and add the visual preview for this new file
+        const previewItem = document.createElement('div');
+        previewItem.className = 'file-preview-item';
+        previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
+        filePreviews.appendChild(previewItem);
+    });
+
+    // If there is at least one file in our master list, show the button.
     if (uploadedFiles.length > 0) {
         processBtn.style.display = 'inline-block';
-        uploadedFiles.forEach(file => {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'file-preview-item';
-            previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
-            filePreviews.appendChild(previewItem);
-        });
     }
 }
 });
