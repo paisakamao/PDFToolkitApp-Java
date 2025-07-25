@@ -508,8 +508,7 @@
             </aside>
 
         <main class="content-area">
-                <p>One hub for all your file conversion, editing, and optimization needs.</p>
-                     <p>Fast, secure, and built to run directly in your browser.</p>
+                <p>One hub for all your file conversion, editing, and optimization needs. Fast, secure, and built to run directly in your browser.</p>
 
             <section id="tools-grid" class="tools-grid">
                 </section>
@@ -838,18 +837,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
     function downloadFile(data, fileName, fileType) {
-    // This is the standard web method that the corrected MainActivity is listening for.
-    const blob = new Blob([data], { type: fileType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName; // The 'download' attribute is key
-    document.body.appendChild(a);
-    a.click(); // This click is what the Android DownloadListener will catch
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
+        const blob = new Blob([data], { type: fileType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("File saved to Downloads folder.");
     }
 });
 </script>
