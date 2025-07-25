@@ -30,12 +30,12 @@
 
     <div class="main-wrapper">
         <aside class="sidebar" id="sidebar">
-            </aside>
+        </aside>
 
         <main class="content-area">
-                <p>One hub for all your file conversion, editing, and optimization needs. Fast, secure, and built to run directly in your browser.</p>
+            <p>One hub for all your file conversion, editing, and optimization needs. Fast, secure, and built to run directly in your browser.</p>
             <section id="tools-grid" class="tools-grid">
-                </section>
+            </section>
         </main>
     </div>
 
@@ -161,14 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
         toolModal.classList.remove('active');
     }
 
-    // THIS IS THE ONLY 'handleFiles' FUNCTION. IT IS CORRECT.
     function handleFiles(newFiles) {
         const filesToAdd = Array.from(newFiles);
         filesToAdd.forEach(file => {
             uploadedFiles.push(file);
             const previewItem = document.createElement('div');
             previewItem.className = 'file-preview-item';
-            previewItem.setAttribute('data-filename', file.name); // Important for the preview button
+            previewItem.setAttribute('data-filename', file.name);
             previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
             filePreviews.appendChild(previewItem);
         });
@@ -179,8 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     processBtn.addEventListener('click', async () => {
         const toolName = modalTitle.textContent;
-        const statusBadges = filePreviews.querySelectorAll('.status-badge');
-        statusBadges.forEach(badge => { 
+        filePreviews.querySelectorAll('.status-badge').forEach(badge => { 
             badge.textContent = 'Processing...'; 
             badge.className = 'status-badge status-processing'; 
         });
@@ -219,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 case 'PDF to JPG':
                     await handlePdfToJpg();
-                    updateStatusToSuccess(originalFileName, null); // No single preview for multiple JPGs
+                    updateStatusToSuccess(originalFileName, null);
                     break;
                 case 'JPG to PDF':
                     await handleJpgToPdf();
@@ -380,15 +378,15 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadFile(await pdf.save(), 'edited.pdf', 'application/pdf');
     }
     
-    // THIS IS THE CORRECT 'updateStatusToSuccess' FUNCTION
     function updateStatusToSuccess(originalFileName, newFileName, isMultiFile = false) {
         if (isMultiFile) {
-            // For multi-file tools, just mark all as successful.
-            filePreviews.querySelectorAll('.status-badge').forEach(badge => {
-                badge.textContent = 'Success!';
-                badge.className = 'status-badge status-success';
+            filePreviews.querySelectorAll('.file-preview-item').forEach(item => {
+                const statusBadge = item.querySelector('.status-badge');
+                if(statusBadge) {
+                    statusBadge.textContent = 'Success!';
+                    statusBadge.className = 'status-badge status-success';
+                }
             });
-            // Optionally, create a new preview item for the final merged/converted file
             if (newFileName) {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'file-preview-item';
@@ -415,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Helper to create a preview button to avoid code duplication
     function createPreviewButton(fileName) {
         const previewBtn = document.createElement('button');
         previewBtn.textContent = 'Preview';
@@ -434,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
-    // THIS IS THE CORRECT 'downloadFile' FUNCTION
     function downloadFile(data, fileName, fileType) {
         if (typeof Android !== 'undefined' && Android.saveBase64File) {
             const reader = new FileReader();
