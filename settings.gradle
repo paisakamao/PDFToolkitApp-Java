@@ -16,6 +16,8 @@ dependencyResolutionManagement {
     }
 }
 
-// Defines the project name and includes the 'app' module in the build.
+// This file's only job is to define the project name and include the app module.
+// All repository configuration has been removed to resolve the build conflict.
+
 rootProject.name = "PDF Toolkit"
 include ':app'
