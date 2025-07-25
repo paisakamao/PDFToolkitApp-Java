@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- This is the one and only base application theme. -->
-    <!-- It uses NoActionBar to prevent crashes with AppCompatActivity. -->
-    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Your custom colors -->
+    <!-- This now uses the correct parent theme that understands all your color attributes. -->
+    <style name="Theme.PDFToolkit" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Your custom colors can now be correctly processed -->
         <item name="colorPrimary">#1c222d</item>
         <item name="colorPrimaryVariant">#12151a</item>
         <item name="colorOnPrimary">#ffffff</item>
         <item name="colorSecondary">#00ffff</item>
         
-        <!-- Setting the status bar and background -->
         <item name="android:statusBarColor" tools:targetApi="l">#0d0f14</item>
         <item name="android:windowBackground">#0d0f14</item>
         <item name="android:navigationBarColor">#0d0f14</item>
