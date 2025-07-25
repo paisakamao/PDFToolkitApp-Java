@@ -353,25 +353,52 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadFile(await pdf.save(), 'edited.pdf', 'application/pdf');
     }
 
-    function updateStatusToSuccess() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Success!'; badge.className = 'status-badge status-success'; }); }
+    function updateStatusToSuccess(originalFileName, newFileName) {
+    // Find the specific preview item using the data attribute we added.
+    const previewItem = filePreviews.querySelector(`[data-filename="${originalFileName}"]`);
+    if (previewItem) {
+        const statusBadge = previewItem.querySelector('.status-badge');
+        if (statusBadge) {
+            // Create a preview button
+            const previewBtn = document.createElement('button');
+            previewBtn.textContent = 'Preview';
+            previewBtn.className = 'cta-button'; // Style it like our other buttons
+            previewBtn.style.padding = '0.2rem 0.6rem'; // Make it smaller
+            previewBtn.style.fontSize = '0.8rem';
+            
+            // Add the click event to call our new Android bridge function
+            previewBtn.onclick = () => {
+                if (typeof Android !== 'undefined' && Android.previewFile) {
+                    Android.previewFile(newFileName);
+                } else {
+                    alert("Preview is only available in the Android app.");
+                }
+            };
+            
+            // Replace the status badge with the new button
+            statusBadge.innerHTML = '';
+            statusBadge.appendChild(previewBtn);
+        }
+    }
+}
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
     // --- THIS IS THE CORRECTED JAVASCRIPT CODE ---
-    function downloadFile(data, fileName, fileType) {
-        if (typeof Android !== 'undefined' && Android.saveBase64File) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const base64 = reader.result.split(',')[1];
-                Android.saveBase64File(base64, fileName);
-            };
-            reader.onerror = function() {
-                alert('Error: Could not read the processed file.');
-            };
-            reader.readAsDataURL(new Blob([data], { type: fileType }));
-        } else {
-            alert("Error: Download feature only available in the Android app.");
-        }
+    function handleFiles(newFiles) {
+    const filesToAdd = Array.from(newFiles);
+    filesToAdd.forEach(file => {
+        uploadedFiles.push(file);
+        const previewItem = document.createElement('div');
+        previewItem.className = 'file-preview-item';
+        // THIS IS THE NEW PART: We add a data attribute to easily find this element later.
+        previewItem.setAttribute('data-filename', file.name);
+        previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
+        filePreviews.appendChild(previewItem);
+    });
+    if (uploadedFiles.length > 0) {
+        processBtn.style.display = 'inline-block';
     }
+}
 });
 </script>
 </body>
