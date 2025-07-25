@@ -1,16 +1,21 @@
+// This is the modern way to configure repositories for plugins.
 pluginManagement {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
+
+// This configures repositories for the project's dependencies.
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
     }
 }
 
-rootProject.name = "PDFToolkitApp-Java"
-include(":app")
+// Defines the project name and includes the 'app' module in the build.
+rootProject.name = "PDF Toolkit"
+include ':app'
