@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-files-path name="pdfs" path="." />
+<paths>
+    <!-- This tells the FileProvider that it's allowed to share files from the public "Downloads" directory. -->
+    <external-path
+        name="downloads"
+        path="Download/" />
 </paths>
