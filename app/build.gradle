@@ -1,6 +1,6 @@
+// This is now a pure Java-only configuration
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android' // This plugin is correct
 }
 
 android {
@@ -25,16 +25,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    // This block is standard when the Kotlin plugin is included.
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
 }
 
 dependencies {
+    // Only the absolute essentials for a Java AppCompat app
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.activity:activity:1.8.2'
-    // YOU WERE RIGHT. THIS WAS MISSING. This is the standard Kotlin library for Android.
-    implementation 'androidx.core:core-ktx:1.12.0'
 }
