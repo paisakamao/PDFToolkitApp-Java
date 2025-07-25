@@ -1,3 +1,35 @@
+function handleFiles(newFiles) {
+    // This new version ADDS files instead of replacing them.
+    // This correctly handles both single and multiple file selections.
+    const filesToAdd = Array.from(newFiles);
+    
+    filesToAdd.forEach(file => {
+        // Add the file to our master list
+        uploadedFiles.push(file);
+
+        // Create and add the visual preview for this new file
+        const previewItem = document.createElement('div');
+        previewItem.className = 'file-preview-item';
+        previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
+        filePreviews.appendChild(previewItem);
+    });
+
+    // If there is at least one file in our master list, show the button.
+    if (uploadedFiles.length > 0) {
+        processBtn.style.display = 'inline-block';
+    }
+}```
+
+---
+
+#### **Step 2: The Final `MainActivity.java`**
+
+This version has cleaner permission logic. It will only ask for permission on old devices when the user actually tries to save a file, which is a better user experience. On modern phones, it will continue to work correctly without asking.
+
+*   **File to Update:** `app/src/main/java/com/pdf/toolkit/MainActivity.java`
+*   **Action:** Replace the entire content of this file with the code below.
+
+```java
 package com.pdf.toolkit;
 
 import android.Manifest;
@@ -9,7 +41,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
@@ -37,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private String pendingBase64Data;
     private String pendingFileName;
 
-    // Launcher for the file chooser (this part works correctly)
+    // Launcher for the file chooser (handles multi-select correctly)
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (filePathCallback != null) {
@@ -47,20 +78,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-    // --- START: CORRECTED PERMISSION LAUNCHER ---
-    // This launcher will be called when we need to ask for storage permission.
+    // Launcher for the Permission Request
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    // If the user grants permission, we can now proceed with the saved file data.
                     Toast.makeText(this, "Permission granted. Saving file...", Toast.LENGTH_SHORT).show();
-                    performSaveWithMediaStore(pendingBase64Data, pendingFileName);
+                    performSave(pendingBase64Data, pendingFileName);
                 } else {
-                    // If the user denies permission, we show a message and do nothing.
                     Toast.makeText(this, "Permission denied. File cannot be saved.", Toast.LENGTH_LONG).show();
                 }
             });
-    // --- END: CORRECTED PERMISSION LAUNCHER ---
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
@@ -80,7 +107,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
                 filePathCallback = fp;
-                fileChooserLauncher.launch(fcp.createIntent());
+                // This correctly tells the file picker to allow multiple selections
+                Intent intent = fcp.createIntent();
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                fileChooserLauncher.launch(intent);
                 return true;
             }
         });
@@ -97,28 +127,26 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName) {
-            // --- START: CORRECTED PERMISSION CHECK ---
-            // This is the gatekeeper. It checks for permission BEFORE trying to save.
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { // For old Android versions (9 and below)
+            // On modern Android (10+), we don't need permission to save to Downloads.
+            // On old Android (9 and below), we must check for permission first.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { 
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    // We have permission, so save the file.
-                    performSaveWithMediaStore(base64Data, fileName);
+                    performSave(base64Data, fileName);
                 } else {
-                    // We don't have permission, so store the data and ask for it.
+                    // We don't have permission. Store the data and ask for it.
                     pendingBase64Data = base64Data;
                     pendingFileName = fileName;
                     requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
-            } else { // For modern Android versions (10 and above)
-                // We don't need special permission, so just save the file.
-                performSaveWithMediaStore(base64Data, fileName);
+            } else { 
+                // We are on a modern phone, no permission check is needed.
+                performSave(base64Data, fileName);
             }
-            // --- END: CORRECTED PERMISSION CHECK ---
         }
     }
 
-    // This is the actual file-saving logic, now in its own function.
-    private void performSaveWithMediaStore(String base64Data, String fileName) {
+    // This is the actual file-saving logic, using the modern MediaStore API.
+    private void performSave(String base64Data, String fileName) {
         runOnUiThread(() -> {
             try {
                 Uri downloadsCollection;
@@ -138,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Uri fileUri = getContentResolver().insert(downloadsCollection, contentValues);
                 
-                if (fileUri == null) throw new Exception("Failed to create new MediaStore record.");
+                if (fileUri == null) throw new Exception("Failed to create MediaStore record.");
 
                 try (OutputStream os = getContentResolver().openOutputStream(fileUri)) {
                     if (os == null) throw new Exception("Failed to get output stream.");
@@ -165,7 +193,8 @@ public class MainActivity extends AppCompatActivity {
     private String getMimeType(String fileName) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
         if (extension != null) {
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+            String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+            return mime != null ? mime : "application/octet-stream";
         }
         return "application/octet-stream";
     }
