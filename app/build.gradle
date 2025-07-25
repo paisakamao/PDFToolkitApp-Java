@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application'
-    
+    id 'org.jetbrains.kotlin.android' // This plugin is correct
 }
 
 android {
@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.pdf.toolkit"
-        minSdk 24 // Updated to 24 for better API compatibility
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -25,11 +25,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    // This block is standard when the Kotlin plugin is included.
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
-    // This is the CRITICAL library needed for the modern file chooser to work
     implementation 'androidx.activity:activity:1.8.2'
+    // YOU WERE RIGHT. THIS WAS MISSING. This is the standard Kotlin library for Android.
+    implementation 'androidx.core:core-ktx:1.12.0'
 }
