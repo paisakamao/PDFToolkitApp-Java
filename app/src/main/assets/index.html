@@ -129,11 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tool = tools.find(t => t.name === toolName);
         if (!tool) return;
         modalTitle.textContent = tool.name;
-        filePreviews.innerHTML = ''; // Clear previews when opening a new modal
+        filePreviews.innerHTML = '';
         modalOptionsContainer.innerHTML = '';
-        uploadedFiles = []; // Clear the file list when opening a new modal
+        uploadedFiles = [];
         processBtn.style.display = 'none';
-        fileInput.value = ''; // Reset the file input
+        fileInput.value = '';
         if (tool.options) {
             let optionsHtml = '';
             if (tool.options.type === 'select') {
@@ -161,104 +161,83 @@ document.addEventListener('DOMContentLoaded', () => {
         toolModal.classList.remove('active');
     }
 
-    // --- THIS IS THE CORRECTED JAVASCRIPT CODE ---
+    // THIS IS THE ONLY 'handleFiles' FUNCTION. IT IS CORRECT.
     function handleFiles(newFiles) {
-        // This new version ADDS files instead of replacing them.
         const filesToAdd = Array.from(newFiles);
-        
         filesToAdd.forEach(file => {
-            uploadedFiles.push(file); // Add to our master list
+            uploadedFiles.push(file);
             const previewItem = document.createElement('div');
             previewItem.className = 'file-preview-item';
+            previewItem.setAttribute('data-filename', file.name); // Important for the preview button
             previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
-            filePreviews.appendChild(previewItem); // Add the visual preview
+            filePreviews.appendChild(previewItem);
         });
-
-        // If there's at least one file, show the button.
         if (uploadedFiles.length > 0) {
             processBtn.style.display = 'inline-block';
         }
     }
-    // --- END OF CORRECTED JAVASCRIPT CODE ---
 
-processBtn.addEventListener('click', async () => {
-    const toolName = modalTitle.textContent;
-    const statusBadges = filePreviews.querySelectorAll('.status-badge');
-    statusBadges.forEach(badge => { 
-        badge.textContent = 'Processing...'; 
-        badge.className = 'status-badge status-processing'; 
-    });
+    processBtn.addEventListener('click', async () => {
+        const toolName = modalTitle.textContent;
+        const statusBadges = filePreviews.querySelectorAll('.status-badge');
+        statusBadges.forEach(badge => { 
+            badge.textContent = 'Processing...'; 
+            badge.className = 'status-badge status-processing'; 
+        });
 
-    try {
-        // This is the filename of the FIRST uploaded file, used for single-file tools.
-        const originalFileName = uploadedFiles.length > 0 ? uploadedFiles[0].name : null;
+        try {
+            const originalFileName = uploadedFiles.length > 0 ? uploadedFiles[0].name : null;
 
-        switch (toolName) {
-            case 'Merge PDF':
-                await handleMergePdf();
-                // For multi-file tools, we mark all sources as successful.
-                // We don't show a preview button for the individual source files.
-                // A new preview item for "merged.pdf" could be added here as a future feature.
-                updateStatusToSuccess(); 
-                break;
-
-            case 'Split PDF':
-                await handleSplitPdf();
-                updateStatusToSuccess(originalFileName, 'split.pdf');
-                break;
-
-            case 'Rotate PDF':
-                await handleRotatePdf();
-                updateStatusToSuccess(originalFileName, 'rotated.pdf');
-                break;
-
-            case 'Add Page Numbers':
-                await handleAddPageNumbers();
-                updateStatusToSuccess(originalFileName, 'paginated.pdf');
-                break;
-
-            case 'Add Watermark':
-                await handleAddWatermark();
-                updateStatusToSuccess(originalFileName, 'watermarked.pdf');
-                break;
-
-            case 'Protect PDF':
-                await handleProtectPdf();
-                updateStatusToSuccess(originalFileName, 'protected.pdf');
-                break;
-
-            case 'Unlock PDF':
-                await handleUnlockPdf();
-                updateStatusToSuccess(originalFileName, 'unlocked.pdf');
-                break;
-
-            case 'PDF to JPG':
-                await handlePdfToJpg();
-                // This tool creates multiple files, so we just mark the source as successful.
-                updateStatusToSuccess(originalFileName); 
-                break;
-
-            case 'JPG to PDF':
-                await handleJpgToPdf();
-                // This is a multi-file tool, so we mark all sources as successful.
-                updateStatusToSuccess(); 
-                break;
-
-            case 'Delete Pages':
-                await handleDeletePages();
-                updateStatusToSuccess(originalFileName, 'edited.pdf');
-                break;
-
-            default:
-                throw new Error('Selected tool is not implemented.');
+            switch (toolName) {
+                case 'Merge PDF':
+                    await handleMergePdf();
+                    updateStatusToSuccess(null, 'merged.pdf', true);
+                    break;
+                case 'Split PDF':
+                    await handleSplitPdf();
+                    updateStatusToSuccess(originalFileName, 'split.pdf');
+                    break;
+                case 'Rotate PDF':
+                    await handleRotatePdf();
+                    updateStatusToSuccess(originalFileName, 'rotated.pdf');
+                    break;
+                case 'Add Page Numbers':
+                    await handleAddPageNumbers();
+                    updateStatusToSuccess(originalFileName, 'paginated.pdf');
+                    break;
+                case 'Add Watermark':
+                    await handleAddWatermark();
+                    updateStatusToSuccess(originalFileName, 'watermarked.pdf');
+                    break;
+                case 'Protect PDF':
+                    await handleProtectPdf();
+                    updateStatusToSuccess(originalFileName, 'protected.pdf');
+                    break;
+                case 'Unlock PDF':
+                    await handleUnlockPdf();
+                    updateStatusToSuccess(originalFileName, 'unlocked.pdf');
+                    break;
+                case 'PDF to JPG':
+                    await handlePdfToJpg();
+                    updateStatusToSuccess(originalFileName, null); // No single preview for multiple JPGs
+                    break;
+                case 'JPG to PDF':
+                    await handleJpgToPdf();
+                    updateStatusToSuccess(null, 'converted.pdf', true);
+                    break;
+                case 'Delete Pages':
+                    await handleDeletePages();
+                    updateStatusToSuccess(originalFileName, 'edited.pdf');
+                    break;
+                default:
+                    throw new Error('Selected tool is not implemented.');
+            }
+        } catch (error) {
+            console.error('Processing Error:', error);
+            alert(`An error occurred: ${error.message}`);
+            updateStatusToError();
         }
-
-    } catch (error) {
-        console.error('Processing Error:', error);
-        alert(`An error occurred: ${error.message}`);
-        updateStatusToError();
-    }
-});
+    });
 
     const getFileBytes = async (file) => file.arrayBuffer();
 
@@ -344,17 +323,14 @@ processBtn.addEventListener('click', async () => {
         if (uploadedFiles.length !== 1) throw new Error('Please select one PDF file.');
         const password = document.getElementById('unlock-password').value;
         if (!password) throw new Error('Password cannot be empty.');
-
         let pdf;
         try {
             pdf = await PDFDocument.load(await getFileBytes(uploadedFiles[0]), { password: password });
         } catch (e) {
             if (e.name === 'EncryptedPDFError' || e.message.includes('password')) {
                  throw new Error('Incorrect password. Please try again.');
-            }
-            throw e;
+            } throw e;
         }
-
         const pdfBytes = await pdf.save();
         downloadFile(pdfBytes, 'unlocked.pdf', 'application/pdf');
     }
@@ -393,65 +369,87 @@ processBtn.addEventListener('click', async () => {
         if (indicesToDelete.size === 0) throw new Error('Please enter valid page numbers to delete.');
         const pdf = await PDFDocument.load(await getFileBytes(uploadedFiles[0]));
         const initialPageCount = pdf.getPageCount();
-
         for (let i = initialPageCount - 1; i >= 0; i--) {
             if (indicesToDelete.has(i)) {
                 pdf.removePage(i);
             }
         }
-
         if (pdf.getPageCount() === initialPageCount) {
-            throw new Error('No valid pages were selected for deletion. Please check the page numbers.');
+            throw new Error('No valid pages were selected for deletion.');
         }
         downloadFile(await pdf.save(), 'edited.pdf', 'application/pdf');
     }
-
-    function updateStatusToSuccess(originalFileName, newFileName) {
-    // Find the specific preview item using the data attribute we added.
-    const previewItem = filePreviews.querySelector(`[data-filename="${originalFileName}"]`);
-    if (previewItem) {
-        const statusBadge = previewItem.querySelector('.status-badge');
-        if (statusBadge) {
-            // Create a preview button
-            const previewBtn = document.createElement('button');
-            previewBtn.textContent = 'Preview';
-            previewBtn.className = 'cta-button'; // Style it like our other buttons
-            previewBtn.style.padding = '0.2rem 0.6rem'; // Make it smaller
-            previewBtn.style.fontSize = '0.8rem';
-            
-            // Add the click event to call our new Android bridge function
-            previewBtn.onclick = () => {
-                if (typeof Android !== 'undefined' && Android.previewFile) {
-                    Android.previewFile(newFileName);
-                } else {
-                    alert("Preview is only available in the Android app.");
+    
+    // THIS IS THE CORRECT 'updateStatusToSuccess' FUNCTION
+    function updateStatusToSuccess(originalFileName, newFileName, isMultiFile = false) {
+        if (isMultiFile) {
+            // For multi-file tools, just mark all as successful.
+            filePreviews.querySelectorAll('.status-badge').forEach(badge => {
+                badge.textContent = 'Success!';
+                badge.className = 'status-badge status-success';
+            });
+            // Optionally, create a new preview item for the final merged/converted file
+            if (newFileName) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'file-preview-item';
+                previewItem.innerHTML = `<span><i class="fas fa-check-circle"></i> ${newFileName}</span><span class="status-badge"></span>`;
+                const previewBtn = createPreviewButton(newFileName);
+                previewItem.querySelector('.status-badge').appendChild(previewBtn);
+                filePreviews.appendChild(previewItem);
+            }
+        } else if (originalFileName) {
+            const previewItem = filePreviews.querySelector(`[data-filename="${originalFileName}"]`);
+            if (previewItem) {
+                const statusBadge = previewItem.querySelector('.status-badge');
+                if (statusBadge) {
+                    if (newFileName) {
+                        const previewBtn = createPreviewButton(newFileName);
+                        statusBadge.innerHTML = '';
+                        statusBadge.appendChild(previewBtn);
+                    } else {
+                        statusBadge.textContent = 'Success!';
+                        statusBadge.className = 'status-badge status-success';
+                    }
                 }
-            };
-            
-            // Replace the status badge with the new button
-            statusBadge.innerHTML = '';
-            statusBadge.appendChild(previewBtn);
+            }
         }
     }
-}
+
+    // Helper to create a preview button to avoid code duplication
+    function createPreviewButton(fileName) {
+        const previewBtn = document.createElement('button');
+        previewBtn.textContent = 'Preview';
+        previewBtn.className = 'cta-button';
+        previewBtn.style.padding = '0.2rem 0.6rem';
+        previewBtn.style.fontSize = '0.8rem';
+        previewBtn.onclick = () => {
+            if (typeof Android !== 'undefined' && Android.previewFile) {
+                Android.previewFile(fileName);
+            } else {
+                alert("Preview is only available in the Android app.");
+            }
+        };
+        return previewBtn;
+    }
+
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
-    // --- THIS IS THE CORRECTED JAVASCRIPT CODE ---
-    function handleFiles(newFiles) {
-    const filesToAdd = Array.from(newFiles);
-    filesToAdd.forEach(file => {
-        uploadedFiles.push(file);
-        const previewItem = document.createElement('div');
-        previewItem.className = 'file-preview-item';
-        // THIS IS THE NEW PART: We add a data attribute to easily find this element later.
-        previewItem.setAttribute('data-filename', file.name);
-        previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
-        filePreviews.appendChild(previewItem);
-    });
-    if (uploadedFiles.length > 0) {
-        processBtn.style.display = 'inline-block';
+    // THIS IS THE CORRECT 'downloadFile' FUNCTION
+    function downloadFile(data, fileName, fileType) {
+        if (typeof Android !== 'undefined' && Android.saveBase64File) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                const base64 = reader.result.split(',')[1];
+                Android.saveBase64File(base64, fileName);
+            };
+            reader.onerror = function() {
+                alert('Error: Could not read the processed file.');
+            };
+            reader.readAsDataURL(new Blob([data], { type: fileType }));
+        } else {
+            alert("Error: Download feature only available in the Android app.");
+        }
     }
-}
 });
 </script>
 </body>
