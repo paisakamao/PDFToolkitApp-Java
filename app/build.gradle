@@ -1,4 +1,4 @@
-// This is now a pure Java-only configuration
+// This is now a pure Java-only configuration.
 plugins {
     id 'com.android.application'
 }
@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    // Only the absolute essentials for a Java AppCompat app
+    // Only the absolute essentials for a Java AppCompat app.
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
 }
