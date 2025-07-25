@@ -838,16 +838,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
 
     function downloadFile(data, fileName, fileType) {
-const blob = new Blob([data], { type: fileType });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = fileName;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-alert("File saved to Downloads folder.");
+if (typeof Android !== 'undefined' && Android.saveBase64File) {
+  const reader = new FileReader();
+  reader.onload = function () {
+    const base64 = reader.result.split(',')[1]; // remove `data:*/*;base64,`
+    Android.saveBase64File(base64, fileName);
+    alert("📁 File saved to Downloads folder.");
+  };
+  reader.readAsDataURL(new Blob([data], { type: fileType }));
+} else {
+  alert("❌ Download not supported in this environment.");
+}
+
     }
 });
 </script>
