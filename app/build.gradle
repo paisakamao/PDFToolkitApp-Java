@@ -1,7 +1,5 @@
-// This is now a pure Java-only configuration.
-plugins {
-    id 'com.android.application'
-}
+// We are now using the classic 'apply plugin' method, which is less ambiguous.
+apply plugin: 'com.android.application'
 
 android {
     namespace 'com.pdf.toolkit'
