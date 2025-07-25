@@ -1,20 +1,3 @@
-// This is the modern way to configure repositories for plugins.
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-// This configures repositories for the project's dependencies.
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
 
 // This file's only job is to define the project name and include the app module.
 // All repository configuration has been removed to resolve the build conflict.
