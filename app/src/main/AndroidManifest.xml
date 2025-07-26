@@ -2,6 +2,7 @@
 <!-- The 'package' attribute has been removed from this tag to comply with modern Android standards. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Each permission is a single, complete tag with its own 'name' attribute. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -17,10 +18,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!-- THIS IS THE FIX. THE CATEGORY IS NOW CORRECTLY SPELLED 'LAUNCHER'. -->
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
