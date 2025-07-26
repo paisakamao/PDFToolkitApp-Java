@@ -17,6 +17,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+            android:name=".RecentFilesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <!-- THIS IS THE FIX. THE CATEGORY IS NOW CORRECTLY SPELLED 'LAUNCHER'. -->
