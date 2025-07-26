@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FCFCF8"
+    android:background="@color/home_background"
     tools:context=".HomeActivity">
 
     <TextView
@@ -12,8 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="All Tools"
-        android:textColor="#000000"
+        android:text="All Document"
+        android:textColor="@color/black"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -34,17 +34,25 @@
         <!-- File Manager Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_file_manager"
-            style="@style/HomeCardStyle" >
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
                 <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- PDF Tool Button (This is the important one) -->
+        <!-- PDF Tool Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
-            style="@style/HomeCardStyle" >
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_edit" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
@@ -54,7 +62,11 @@
         <!-- Scanner Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
-            style="@style/HomeCardStyle" >
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_camera" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
@@ -64,23 +76,30 @@
         <!-- All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
-            style="@style/HomeCardStyle" >
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_sort_by_size" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- START: THIS IS THE NEW UNI TOOLS BUTTON -->
+        <!-- Uni Tools Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
-            style="@style/HomeCardStyle" >
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_compass" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
 
     </GridLayout>
 
