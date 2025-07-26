@@ -12,6 +12,8 @@
     
     <!-- START: THIS IS THE MISSING LINE THAT CAUSED THE BUILD TO FAIL -->
     <color name="soft_gray">#F0F0F0</color>
+    <!-- Add this new color for the file details text -->
+    <color name="file_details_text">#555555</color>
     <!-- END: THIS IS THE MISSING LINE -->
     
 </resources>
