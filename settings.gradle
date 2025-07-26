@@ -1,3 +1,23 @@
-// This file is simplified to its one essential job, removing all conflicts.
+// This file now controls all repository configurations for the entire project.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // --- THIS IS THE CRITICAL FIX ---
+        // This tells Gradle to also look for all libraries on JitPack.io
+        maven { url 'https://jitpack.io' }
+        // --- END OF THE FIX ---
+    }
+}
+
 rootProject.name = "PDF Toolkit"
 include ':app'
