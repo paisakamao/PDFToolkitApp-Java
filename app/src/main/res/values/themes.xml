@@ -14,8 +14,7 @@
         <!-- Setting the status bar and background -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
-        <item name="android:navigationBarColor">@color/home_background</item>
-    </style>
+        <item name="android:navigationBarColor">@color/soft_gray</item>
 
     <!-- 2. Styles for the New Native Home Screen -->
     <!-- These styles are used by the activity_home.xml layout. -->
