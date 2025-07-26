@@ -7,18 +7,20 @@
     android:background="@color/home_background"
     tools:context=".HomeActivity">
 
+    <!-- START: THIS IS THE CORRECTED TITLE -->
     <TextView
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
         android:text="All Document"
         android:textColor="@color/black"
         android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <!-- END: THIS IS THE CORRECTED TITLE -->
 
     <GridLayout
         android:layout_width="0dp"
@@ -31,6 +33,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
 
+        <!-- All your CardView buttons remain the same here... -->
         <!-- File Manager Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_file_manager"
@@ -41,7 +44,7 @@
 
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
-                <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
+                <TextView style="@style/HomeCardTextStyle" android:text="File" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
