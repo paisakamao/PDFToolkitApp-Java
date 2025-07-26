@@ -1,5 +1,7 @@
-// This uses the classic 'apply plugin' method which is required by the root build.gradle setup.
-apply plugin: 'com.android.application'
+// We now apply the plugins without a version, because the root build.gradle defined them.
+plugins {
+    id 'com.android.application'
+}
 
 android {
     namespace 'com.pdf.toolkit'
@@ -16,11 +18,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-    // THIS IS THE CORRECT, SYNTACTICALLY-VALID LOCATION FOR THIS BLOCK.
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -28,16 +27,13 @@ android {
 }
 
 dependencies {
-    // These are your existing, correct libraries
+    // All your existing, correct dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.cardview:cardview:1.0.0'
-    
-    // --- START: NEW LIBRARIES FOR IN-APP PDF VIEWER ---
-    // The main PDF viewer library
-    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
-    // A library it needs to work correctly
     implementation 'com.google.android.material:material:1.11.0'
-    // --- END: NEW LIBRARIES FOR IN-APP PDF VIEWER ---
+    
+    // The PDF viewer library dependency remains the same
+    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
 }
