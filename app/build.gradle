@@ -1,5 +1,7 @@
-// This uses the classic 'apply plugin' method, which is required by our classic setup.
-apply plugin: 'com.android.application'
+// We now apply the plugins without a version, because the root build.gradle defined them.
+plugins {
+    id 'com.android.application'
+}
 
 android {
     namespace 'com.pdf.toolkit'
@@ -16,7 +18,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -33,6 +34,8 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.11.0'
     
-    // The PDF viewer library dependency
-    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
+    // --- THIS IS THE CRITICAL FIX ---
+    // We are now using a newer, more reliable version of the PDF viewer library.
+    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
+    // --- END OF THE FIX ---
 }
