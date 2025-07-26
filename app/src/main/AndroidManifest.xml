@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.pdf.toolkit">
 
-    <!-- Permissions needed for the app -->
     <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- This is the NEW, powerful permission for Android 11+ -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    
+    <!-- These are for older Android versions -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -14,27 +19,15 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.PDFToolkit">
 
-        <!-- Activity 1: The Home Screen. This is the ONLY LAUNCHER. -->
-        <activity
-            android:name=".HomeActivity"
-            android:exported="true">
+        <!-- All your activity declarations remain the same -->
+        <activity android:name=".HomeActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <!-- Activity 2: The WebView screen for your PDF tools. It is not a launcher. -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false">
-        </activity>
-
-        <!-- Activity 3: The native screen for listing all files. It is not a launcher. -->
-        <activity
-            android:name=".AllFilesActivity"
-            android:exported="false">
-        </activity>
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".AllFilesActivity" android:exported="false" />
 
     </application>
 </manifest>
