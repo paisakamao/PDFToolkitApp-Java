@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
-import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -34,14 +33,16 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
 
-    // --- THIS IS THE CORRECTED JAVA CODE ---
+    // --- THIS IS THE MISSING KEY THAT CONNECTS TO THE HOME SCREEN ---
+    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
+    // --- END OF FIX ---
+
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (filePathCallback == null) return;
 
                 Uri[] results = null;
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    // Check if multiple files were selected
                     if (result.getData().getClipData() != null) {
                         int count = result.getData().getClipData().getItemCount();
                         results = new Uri[count];
@@ -49,14 +50,12 @@ public class MainActivity extends AppCompatActivity {
                             results[i] = result.getData().getClipData().getItemAt(i).getUri();
                         }
                     } else if (result.getData().getData() != null) {
-                        // A single file was selected
                         results = new Uri[]{ result.getData().getData() };
                     }
                 }
                 filePathCallback.onReceiveValue(results);
                 filePathCallback = null;
             });
-    // --- END OF CORRECTED JAVA CODE ---
 
     private String pendingBase64Data;
     private String pendingFileName;
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                 filePathCallback = fp;
                 try {
                     Intent intent = fcp.createIntent();
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); // Allow multi-select
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                     fileChooserLauncher.launch(intent);
                 } catch (Exception e) {
                     filePathCallback = null;
@@ -107,7 +106,16 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new JSBridge(this), "Android");
         
-        webView.loadUrl("file:///android_asset/index.html"); 
+        // --- THIS LOGIC NOW READS THE FILENAME FROM THE HOME SCREEN ---
+        Intent intent = getIntent();
+        String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
+
+        if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
+            htmlFileToLoad = "index.html"; // Default fallback
+        }
+
+        webView.loadUrl("file:///android_asset/" + htmlFileToLoad); 
+        // --- END OF FIX ---
     }
     
     public class JSBridge {
