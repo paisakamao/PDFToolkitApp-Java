@@ -45,6 +45,10 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivity(intent);
         });
+        }
+            private void launchWebViewActivity(String fileName) {
+        Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+        intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
+        startActivity(intent);
+        }
     }
-    }
-}
