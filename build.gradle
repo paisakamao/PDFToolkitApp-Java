@@ -5,15 +5,19 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // This explicitly defines the version of the Android build tools for the entire project.
+        // This is the explicit, unambiguous classpath for the Android Gradle Plugin.
         classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
 
-// Defines the repositories for the app's own libraries (like appcompat)
+// This block is for repositories for the app's own dependencies (like appcompat)
 allprojects {
     repositories {
         google()
         mavenCentral()
+        // --- START: THIS IS THE CRITICAL FIX ---
+        // This tells Gradle to also look for libraries on JitPack.io
+        maven { url 'https://jitpack.io' }
+        // --- END: THIS IS THE CRITICAL FIX ---
     }
 }
