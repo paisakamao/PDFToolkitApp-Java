@@ -1,3 +1,21 @@
-// In the classic setup, this file's only job is to include the 'app' module.
+// This file now controls all repository configurations for the entire project.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // This tells Gradle to also look for all libraries on JitPack.io
+        maven { url 'https://jitpack.io' }
+    }
+}
+
 rootProject.name = "PDF Toolkit"
 include ':app'
