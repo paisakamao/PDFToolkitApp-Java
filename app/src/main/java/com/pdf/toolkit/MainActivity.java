@@ -26,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONObject;
 import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,14 +60,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); 
+        setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webView);
 
+        // Enable WebView debugging
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
+        // Configure WebView settings
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setAllowFileAccessFromFileURLs(true);
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -84,17 +94,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.addJavascriptInterface(new JSBridge(this), "Android");
-        
-        webView.loadUrl("file:///android_asset/index.html"); 
+        webView.loadUrl("file:///android_asset/index.html");
     }
-    
+
     public class JSBridge {
         private final Context context;
-        JSBridge(Context context) { this.context = context; }
+
+        JSBridge(Context context) {
+            this.context = context;
+        }
 
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName) {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) { 
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     performSave(base64Data, fileName);
                 } else {
@@ -102,8 +114,52 @@ public class MainActivity extends AppCompatActivity {
                     pendingFileName = fileName;
                     requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
-            } else { 
+            } else {
                 performSave(base64Data, fileName);
+            }
+        }
+
+        @JavascriptInterface
+        public void processFiles(String jsonData) {
+            try {
+                JSONObject data = new JSONObject(jsonData);
+                String toolName = data.getString("tool");
+                
+                runOnUiThread(() -> {
+                    try {
+                        Toast.makeText(context, "Processing files with " + toolName + "...", Toast.LENGTH_SHORT).show();
+                        
+                        // Handle different tools
+                        switch (toolName) {
+                            case "Merge PDF":
+                                // Add merge PDF logic
+                                break;
+                            case "Split PDF":
+                                // Add split PDF logic
+                                break;
+                            case "PDF to JPG":
+                                // Add PDF to JPG conversion logic
+                                break;
+                            case "JPG to PDF":
+                                // Add JPG to PDF conversion logic
+                                break;
+                            case "Compress PDF":
+                                // Add PDF compression logic
+                                break;
+                            default:
+                                Toast.makeText(context, "Unknown tool: " + toolName, Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(context, "Error processing files: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(context, "Error parsing JSON data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
             }
         }
     }
@@ -111,60 +167,36 @@ public class MainActivity extends AppCompatActivity {
     private void performSave(String base64Data, String fileName) {
         runOnUiThread(() -> {
             try {
-                Uri downloadsCollection;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    downloadsCollection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                } else {
-                    downloadsCollection = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
-                }
-                
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-                contentValues.put(MediaStore.Downloads.MIME_TYPE, getMimeType(fileName));
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    contentValues.put(MediaStore.Downloads.IS_PENDING, 1);
-                }
+                byte[] fileData = Base64.decode(base64Data, Base64.DEFAULT);
+                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                        MimeTypeMap.getFileExtensionFromUrl(fileName));
 
-                Uri fileUri = getContentResolver().insert(downloadsCollection, contentValues);
-                
-                if (fileUri == null) throw new Exception("Failed to create MediaStore record.");
-
-                try (OutputStream os = getContentResolver().openOutputStream(fileUri)) {
-                    if (os == null) throw new Exception("Failed to get output stream.");
-                    byte[] fileAsBytes = Base64.decode(base64Data, Base64.DEFAULT);
-                    os.write(fileAsBytes);
+                if (mimeType == null) {
+                    mimeType = "application/pdf"; // Default to PDF if mime type cannot be determined
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    contentValues.clear();
-                    contentValues.put(MediaStore.Downloads.IS_PENDING, 0);
-                    getContentResolver().update(fileUri, contentValues, null, null);
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                    Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri != null) {
+                        try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+                            if (outputStream != null) {
+                                outputStream.write(fileData);
+                                Toast.makeText(this, "File saved successfully", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
                 }
-
-                Toast.makeText(this, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
-
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
-
-    // --- START: THIS IS THE CORRECTED FUNCTION ---
-    private String getMimeType(String fileName) {
-        String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
-        if (extension != null) {
-            String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
-            if (mime != null) {
-                return mime;
-            }
-        }
-        // This is the fallback return statement that was missing.
-        // It handles files with no extension or unknown extensions.
-        return "application/octet-stream";
-    }
-    // --- END: THIS IS THE CORRECTED FUNCTION ---
 
     @Override
     public void onBackPressed() {
