@@ -14,13 +14,13 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Find the "Pdf Tool" button by its ID
+        // Find all the buttons
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView scannerCard = findViewById(R.id.card_scanner);
         CardView allFilesCard = findViewById(R.id.card_all_files);
         CardView fileManagerCard = findViewById(R.id.card_file_manager);
 
-        // Set a click listener
+        // Set the click listener for the PDF Tool button
         pdfToolCard.setOnClickListener(v -> {
             // Launch the WebView with "index.html"
             launchWebViewActivity("index.html");
@@ -45,10 +45,11 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivity(intent);
         });
-        }
-            private void launchWebViewActivity(String fileName) {
+    } // <-- The onCreate method now correctly ends here.
+
+    private void launchWebViewActivity(String fileName) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
         startActivity(intent);
-        }
     }
+}
