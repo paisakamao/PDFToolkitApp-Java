@@ -33,6 +33,7 @@
 
         <!-- File Manager Button -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_file_manager"
             style="@style/HomeCardStyle" >
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
@@ -52,6 +53,7 @@
 
         <!-- Scanner Button -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_scanner"
             style="@style/HomeCardStyle" >
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_camera" />
@@ -61,6 +63,7 @@
 
         <!-- All Files Button -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/card_all_files"
             style="@style/HomeCardStyle" >
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_sort_by_size" />
