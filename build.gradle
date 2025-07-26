@@ -4,6 +4,11 @@ buildscript {
         google()
         mavenCentral()
     }
+    // In this modern setup, this file only defines the versions of the plugins.
+// The conflicting 'buildscript' and 'allprojects' blocks have been removed.
+plugins {
+    id 'com.android.application' version '8.2.1' apply false
+}
     dependencies {
         // This explicitly defines the version of the Android build tools for the entire project.
         classpath 'com.android.tools.build:gradle:8.2.1'
