@@ -19,33 +19,42 @@ public class HomeActivity extends AppCompatActivity {
         CardView scannerCard = findViewById(R.id.card_scanner);
         CardView allFilesCard = findViewById(R.id.card_all_files);
         CardView fileManagerCard = findViewById(R.id.card_file_manager);
+        // --- START: FIND THE NEW BUTTON ---
+        CardView uniToolsCard = findViewById(R.id.card_uni_tools);
+        // --- END: FIND THE NEW BUTTON ---
 
         // Set the click listener for the PDF Tool button
         pdfToolCard.setOnClickListener(v -> {
-            // Launch the WebView with "index.html"
             launchWebViewActivity("index.html");
         });
 
-        // Set the click listener for the new Scanner button
+        // Set the click listener for the Scanner button
         scannerCard.setOnClickListener(v -> {
-            // This is a placeholder for now, you can create scanner.html later
             launchWebViewActivity("scanner.html");
         });
         
         // Set the click listener for the "All Files" button
         allFilesCard.setOnClickListener(v -> {
-            // Launch our new native AllFilesActivity
             Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
             startActivity(intent);
         });
         
         // Set the click listener for the "File Manager" button
         fileManagerCard.setOnClickListener(v -> {
-            // Launch the phone's built-in file manager
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            startActivity(intent);
+            // This is a safer way to launch an external activity
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
         });
-    } // <-- The onCreate method now correctly ends here.
+
+        // --- START: SET THE CLICK LISTENER FOR THE NEW BUTTON ---
+        uniToolsCard.setOnClickListener(v -> {
+            // Tell the app to launch the WebView with "unitools.html"
+            launchWebViewActivity("unitools.html");
+        });
+        // --- END: SET THE CLICK LISTENER FOR THE NEW BUTTON ---
+    }
 
     private void launchWebViewActivity(String fileName) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
