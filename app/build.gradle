@@ -28,15 +28,16 @@ android {
 }
 
 dependencies {
-    // These are the essentials for a Java AppCompat app.
+    // These are your existing, correct libraries
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
-    
-    // --- START: NEW LIBRARIES FOR THE NATIVE HOME SCREEN ---
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.cardview:cardview:1.0.0'
-    // --- END: NEW LIBRARIES FOR THE NATIVE HOME SCREEN ---
-
-    // THIS IS THE MISSING LIBRARY that provides the color attributes like colorPrimaryVariant.
+    
+    // --- START: NEW LIBRARIES FOR IN-APP PDF VIEWER ---
+    // The main PDF viewer library
+    implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'
+    // A library it needs to work correctly
     implementation 'com.google.android.material:material:1.11.0'
+    // --- END: NEW LIBRARIES FOR IN-APP PDF VIEWER ---
 }
