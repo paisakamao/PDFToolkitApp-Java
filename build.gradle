@@ -1,26 +1,21 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// Top-level build file using the classic, stable setup.
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // This is the explicit, unambiguous classpath for the Android Gradle Plugin.
+        // This explicitly defines the version of the Android build tools for the entire project.
         classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
-plugins {
-    id 'com.android.application' version '8.2.1' apply false
-}
 
-// This block is for repositories for the app's own dependencies (like appcompat)
+// This block defines the repositories for all your app's libraries (like appcompat and the PDF viewer).
 allprojects {
     repositories {
         google()
         mavenCentral()
-        // --- START: THIS IS THE CRITICAL FIX ---
-        // This tells Gradle to also look for libraries on JitPack.io
+        // This is the CRITICAL line that tells Gradle where to find the PDF viewer library.
         maven { url 'https://jitpack.io' }
-        // --- END: THIS IS THE CRITICAL FIX ---
     }
 }
