@@ -28,10 +28,15 @@ android {
 }
 
 dependencies {
-    // These are the essentials
+    // These are the essentials for a Java AppCompat app.
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
     
+    // --- START: NEW LIBRARIES FOR THE NATIVE HOME SCREEN ---
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    // --- END: NEW LIBRARIES FOR THE NATIVE HOME SCREEN ---
+
     // THIS IS THE MISSING LIBRARY that provides the color attributes like colorPrimaryVariant.
     implementation 'com.google.android.material:material:1.11.0'
 }
