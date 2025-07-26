@@ -1,23 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#FFFFFF">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="All Files"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#000000"
-        android:padding="16dp"/>
-
-    <!-- This is the list that will be filled with your files -->
+    <!-- This is the list that will be filled with your files (initially hidden) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
-</LinearLayout>
+    <!-- This view is shown when permission is needed -->
+    <LinearLayout
+        android:id="@+id/permission_needed_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Permission Required"
+            android:textColor="#000000"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="To show all documents, this app needs special access to your device's storage."
+            android:textColor="#333333"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btn_grant_permission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Grant Permission" />
+
+    </LinearLayout>
+
+</FrameLayout>
