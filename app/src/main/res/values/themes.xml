@@ -1,106 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/home_background"
-    tools:context=".HomeActivity">
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/textViewTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="All Document"
-        android:textColor="@color/black"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <!-- 1. Base Application Theme -->
+    <!-- This is the main theme for your entire app. -->
+    <!-- It uses a standard, safe parent theme to prevent crashes. -->
+    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Your custom colors -->
+        <item name="colorPrimary">#1c222d</item>
+        <item name="colorPrimaryVariant">#12151a</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorSecondary">#00ffff</item>
 
-    <GridLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:columnCount="2"
-        android:rowCount="3"
-        android:useDefaultMargins="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+        <!-- Setting the status bar and background -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+        <item name="android:navigationBarColor">@color/home_background</item>
+    </style>
 
-        <!-- File Manager Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_file_manager"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+    <!-- 2. Styles for the New Native Home Screen -->
+    <!-- These styles are used by the activity_home.xml layout. -->
 
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
-                <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+    <style name="HomeCardStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_margin">12dp</item>
+    </style>
 
-        <!-- PDF Tool Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_pdf_tool"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+    <style name="HomeCardLayoutStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">120dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">16dp</item>
+    </style>
 
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_edit" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+    <style name="HomeCardIconStyle">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
 
-        <!-- Scanner Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_scanner"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+    <style name="HomeCardTextStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_camera" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- All Files Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_all_files"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_sort_by_size" />
-                <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Uni Tools Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_uni_tools"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_compass" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-    </GridLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</resources>
