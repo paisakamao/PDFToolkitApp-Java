@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".HomeActivity">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="All Document"
+        android:textColor="#000000"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <GridLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:columnCount="2"
+        android:rowCount="2"
+        android:useDefaultMargins="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+
+        <!-- File Manager Button -->
+        <androidx.cardview.widget.CardView
+            style="@style/HomeCardStyle" >
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
+                <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- PDF Tool Button (This is the important one) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_pdf_tool"
+            style="@style/HomeCardStyle" >
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_edit" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Scanner Button -->
+        <androidx.cardview.widget.CardView
+            style="@style/HomeCardStyle" >
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_camera" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- All Files Button -->
+        <androidx.cardview.widget.CardView
+            style="@style/HomeCardStyle" >
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_sort_by_size" />
+                <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
