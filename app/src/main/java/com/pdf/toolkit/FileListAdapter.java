@@ -12,13 +12,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-// This is now a standalone class, making it cleaner and more reliable.
 public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
 
     private final List<AllFilesActivity.FileItem> files;
     private final OnFileClickListener listener;
 
-    // An interface is the standard way to handle clicks in a list
     public interface OnFileClickListener {
         void onFileClick(AllFilesActivity.FileItem item);
     }
@@ -46,7 +44,6 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         return files.size();
     }
 
-    // The ViewHolder is now an inner class of the Adapter, which is standard practice.
     public static class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
@@ -64,12 +61,11 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
             fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
 
             if (item.name.toLowerCase().endsWith(".pdf")) {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_gallery); // Placeholder PDF icon
+                fileIcon.setImageResource(android.R.drawable.ic_menu_gallery);
             } else {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_edit); // Placeholder DOC icon
+                fileIcon.setImageResource(android.R.drawable.ic_menu_edit);
             }
-
-            // This is where the click is registered for the whole row
+            
             itemView.setOnClickListener(v -> listener.onFileClick(item));
         }
 
