@@ -1,101 +1,4 @@
-package com.pdf.toolkit;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-// This is now a standalone class, making it cleaner and more reliable.
-public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
-
-    private final List<AllFilesActivity.FileItem> files;
-    private final OnFileClickListener listener;
-
-    // An interface is the standard way to handle clicks in a list
-    public interface OnFileClickListener {
-        void onFileClick(AllFilesActivity.FileItem item);
-    }
-
-    public FileListAdapter(List<AllFilesActivity.FileItem> files, OnFileClickListener listener) {
-        this.files = files;
-        this.listener = listener;
-    }
-
-    @NonNull
-    @Override
-    public FileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-        return new FileViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
-        AllFilesActivity.FileItem file = files.get(position);
-        holder.bind(file, listener);
-    }
-
-    @Override
-    public int getItemCount() {
-        return files.size();
-    }
-
-    // The ViewHolder is now an inner class of the Adapter, which is standard practice.
-    public static class FileViewHolder extends RecyclerView.ViewHolder {
-        ImageView fileIcon;
-        TextView fileName;
-        TextView fileDetails;
-
-        public FileViewHolder(@NonNull View itemView) {
-            super(itemView);
-            fileIcon = itemView.findViewById(R.id.icon_file_type);
-            fileName = itemView.findViewById(R.id.text_file_name);
-            fileDetails = itemView.findViewById(R.id.text_file_details);
-        }
-
-        public void bind(final AllFilesActivity.FileItem item, final OnFileClickListener listener) {
-            fileName.setText(item.name);
-            fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
-
-            if (item.name.toLowerCase().endsWith(".pdf")) {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_gallery); // Placeholder PDF icon
-            } else {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_edit); // Placeholder DOC icon
-            }
-            
-            // This is where the click is registered for the whole row
-            itemView.setOnClickListener(v -> listener.onFileClick(item));
-        }
-
-        private static String formatDate(long millis) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-            return sdf.format(new Date(millis));
-        }
-
-        private static String formatFileSize(long size) {
-            if (size < 1024) return size + " B";
-            int z = (63 - Long.numberOfLeadingZeros(size)) / 10;
-            return String.format(Locale.US, "%.1f %sB", (double) size / (1L << (z * 10)), " KMGTPE".charAt(z));
-        }
-    }
-}```
-
----
-
-### Step 2: The Final, Simplified `AllFilesActivity.java`
-
-Now that the complex adapter logic is in its own file, this `AllFilesActivity` file becomes much simpler and cleaner. Its only job is to find the files and tell the new adapter to display them.
-
-*   **File to Update:** `app/src/main/java/com/pdf/toolkit/AllFilesActivity.java`
-*   **Action:** **Delete the entire content** of this file and **replace it** with this final, definitive version.
-
-```java
 package com.pdf.toolkit;
 
 // All your existing, correct imports
@@ -149,14 +52,14 @@ public class AllFilesActivity extends AppCompatActivity {
         Button grantPermissionButton = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
+
         // We now create an instance of our new, separate FileListAdapter class
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
-        
+
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
-    
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -193,7 +96,7 @@ public class AllFilesActivity extends AppCompatActivity {
             final List<FileItem> realFiles = new ArrayList<>();
             Uri collection = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ?
                     MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL) : MediaStore.Files.getContentUri("external");
-            
+
             String[] projection = {
                     MediaStore.Files.FileColumns.DISPLAY_NAME,
                     MediaStore.Files.FileColumns.SIZE,
@@ -228,7 +131,7 @@ public class AllFilesActivity extends AppCompatActivity {
                     Toast.makeText(AllFilesActivity.this, "Found " + realFiles.size() + " real files.", Toast.LENGTH_LONG).show();
                 }
                 hasLoadedFiles = true;
-                
+
                 fileList.clear();
                 fileList.addAll(realFiles);
                 adapter.notifyDataSetChanged();
@@ -247,7 +150,7 @@ public class AllFilesActivity extends AppCompatActivity {
     private String getMimeType(String n){String e=MimeTypeMap.getFileExtensionFromUrl(n);if(e!=null){String m=MimeTypeMap.getSingleton().getMimeTypeFromExtension(e.toLowerCase());if(m!=null)return m;}return"application/octet-stream";}
     private void showFileListUI(){recyclerView.setVisibility(View.VISIBLE);permissionView.setVisibility(View.GONE);}
     private void showPermissionNeededUI(){recyclerView.setVisibility(View.GONE);permissionView.setVisibility(View.VISIBLE);}
-    
+
     // This simple data class remains here.
     public static class FileItem {
         String name;
