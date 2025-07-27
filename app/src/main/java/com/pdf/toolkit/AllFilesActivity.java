@@ -1,7 +1,6 @@
-
 package com.pdf.toolkit;
 
-// All your existing, correct imports
+// All your existing, correct imports are here...
 import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -39,7 +38,7 @@ public class AllFilesActivity extends AppCompatActivity {
     private boolean hasLoadedFiles = false;
 
     // All your permission launchers are correct
-    private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), r -> checkPermissionAndLoadFiles());
+    private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher = registerForActivityResult(new Activity_ResultContracts.StartActivityForResult(), r -> checkPermissionAndLoadFiles());
     private final ActivityResultLauncher<String> requestLegacyPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), g -> { if (g) loadFilesFromStorage(); else showPermissionNeededUI(); });
 
     @Override
@@ -51,15 +50,14 @@ public class AllFilesActivity extends AppCompatActivity {
         permissionView = findViewById(R.id.permission_needed_view);
         Button grantPermissionButton = findViewById(R.id.btn_grant_permission);
 
+        // This is the critical setup
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // We now create an instance of our new, separate FileListAdapter class
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
-
+        
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
-
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -96,13 +94,8 @@ public class AllFilesActivity extends AppCompatActivity {
             final List<FileItem> realFiles = new ArrayList<>();
             Uri collection = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ?
                     MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL) : MediaStore.Files.getContentUri("external");
-
-            String[] projection = {
-                    MediaStore.Files.FileColumns.DISPLAY_NAME,
-                    MediaStore.Files.FileColumns.SIZE,
-                    MediaStore.Files.FileColumns.DATE_MODIFIED,
-                    MediaStore.Files.FileColumns.DATA
-            };
+            
+            String[] projection = { MediaStore.Files.FileColumns.DISPLAY_NAME, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED, MediaStore.Files.FileColumns.DATA };
             String sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC";
 
             try (Cursor cursor = getContentResolver().query(collection, projection, null, null, sortOrder)) {
@@ -122,20 +115,17 @@ public class AllFilesActivity extends AppCompatActivity {
                         }
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
 
             runOnUiThread(() -> {
                 if (!hasLoadedFiles) {
                     Toast.makeText(AllFilesActivity.this, "Found " + realFiles.size() + " real files.", Toast.LENGTH_LONG).show();
                 }
                 hasLoadedFiles = true;
-
+                
                 fileList.clear();
                 fileList.addAll(realFiles);
                 adapter.notifyDataSetChanged();
-                // --- ADDED DEBUGGING ---
                 if (realFiles.isEmpty()) {
                     Toast.makeText(AllFilesActivity.this, "List is empty, but data is loaded.", Toast.LENGTH_SHORT).show();
                 }
@@ -150,16 +140,9 @@ public class AllFilesActivity extends AppCompatActivity {
     private String getMimeType(String n){String e=MimeTypeMap.getFileExtensionFromUrl(n);if(e!=null){String m=MimeTypeMap.getSingleton().getMimeTypeFromExtension(e.toLowerCase());if(m!=null)return m;}return"application/octet-stream";}
     private void showFileListUI(){recyclerView.setVisibility(View.VISIBLE);permissionView.setVisibility(View.GONE);}
     private void showPermissionNeededUI(){recyclerView.setVisibility(View.GONE);permissionView.setVisibility(View.VISIBLE);}
-
-    // This simple data class remains here.
+    
     public static class FileItem {
-        String name;
-        long size;
-        long date;
-        public FileItem(String name, long size, long date) {
-            this.name = name;
-            this.size = size;
-            this.date = date;
-        }
+        String name; long size; long date;
+        public FileItem(String name, long size, long date) { this.name = name; this.size = size; this.date = date; }
     }
 }
