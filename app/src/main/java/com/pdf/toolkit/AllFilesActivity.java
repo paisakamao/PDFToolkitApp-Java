@@ -1,6 +1,6 @@
 package com.pdf.toolkit;
 
-// All your existing, correct imports are here...
+// All your existing, correct imports
 import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -12,18 +12,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -31,11 +26,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class AllFilesActivity extends AppCompatActivity {
 
@@ -45,6 +37,7 @@ public class AllFilesActivity extends AppCompatActivity {
     private View permissionView;
     private boolean hasLoadedFiles = false;
 
+    // All your permission launchers are correct
     private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), r -> checkPermissionAndLoadFiles());
     private final ActivityResultLauncher<String> requestLegacyPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), g -> { if (g) loadFilesFromStorage(); else showPermissionNeededUI(); });
 
@@ -59,6 +52,7 @@ public class AllFilesActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
+        // We now create an instance of our new, separate FileListAdapter class
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
         
@@ -112,20 +106,15 @@ public class AllFilesActivity extends AppCompatActivity {
 
             try (Cursor cursor = getContentResolver().query(collection, projection, null, null, sortOrder)) {
                 if (cursor != null) {
-                    int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
-                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
-                    int dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
-                    int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
-
                     while (cursor.moveToNext()) {
-                        String path = cursor.getString(dataColumn);
+                        String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA));
                         if (path != null) {
                             File file = new File(path);
                             if (file.exists()) {
-                                String name = cursor.getString(nameColumn);
+                                String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME));
                                 if (name != null && (name.toLowerCase().endsWith(".pdf") || name.toLowerCase().endsWith(".doc") || name.toLowerCase().endsWith(".docx") || name.toLowerCase().endsWith(".txt"))) {
-                                    long size = cursor.getLong(sizeColumn);
-                                    long date = cursor.getLong(dateColumn);
+                                    long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE));
+                                    long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED));
                                     realFiles.add(new FileItem(name, size, date * 1000));
                                 }
                             }
@@ -145,6 +134,10 @@ public class AllFilesActivity extends AppCompatActivity {
                 fileList.clear();
                 fileList.addAll(realFiles);
                 adapter.notifyDataSetChanged();
+                // --- ADDED DEBUGGING ---
+                if (realFiles.isEmpty()) {
+                    Toast.makeText(AllFilesActivity.this, "List is empty, but data is loaded.", Toast.LENGTH_SHORT).show();
+                }
             });
         }).start();
     }
@@ -157,76 +150,15 @@ public class AllFilesActivity extends AppCompatActivity {
     private void showFileListUI(){recyclerView.setVisibility(View.VISIBLE);permissionView.setVisibility(View.GONE);}
     private void showPermissionNeededUI(){recyclerView.setVisibility(View.GONE);permissionView.setVisibility(View.VISIBLE);}
     
-    public static class FileItem{String name;long size;long date;public FileItem(String n,long s,long d){name=n;size=s;date=d;}}
-    
-    // --- START: THIS IS THE CLEAN, FULLY-FORMATTED, AND CORRECT ADAPTER ---
-    public static class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
-        private final List<FileItem> files;
-        private final OnFileClickListener listener;
-
-        public interface OnFileClickListener {
-            void onFileClick(FileItem item);
-        }
-
-        public FileListAdapter(List<FileItem> files, OnFileClickListener listener) {
-            this.files = files;
-            this.listener = listener;
-        }
-
-        @NonNull
-        @Override
-        public FileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
-            FileItem file = files.get(position);
-            holder.bind(file, listener);
-        }
-
-        @Override
-        public int getItemCount() {
-            return files.size();
-        }
-
-        public static class FileViewHolder extends RecyclerView.ViewHolder {
-            ImageView fileIcon;
-            TextView fileName;
-            TextView fileDetails;
-
-            public FileViewHolder(@NonNull View itemView) {
-                super(itemView);
-                fileIcon = itemView.findViewById(R.id.icon_file_type);
-                fileName = itemView.findViewById(R.id.text_file_name);
-                fileDetails = itemView.findViewById(R.id.text_file_details);
-            }
-
-            public void bind(final FileItem item, final OnFileClickListener listener) {
-                fileName.setText(item.name);
-                fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
-                
-                if (item.name.toLowerCase().endsWith(".pdf")) {
-                    fileIcon.setImageResource(android.R.drawable.ic_menu_gallery);
-                } else {
-                    fileIcon.setImageResource(android.R.drawable.ic_menu_edit);
-                }
-                
-                itemView.setOnClickListener(v -> listener.onFileClick(item));
-            }
-
-            private static String formatDate(long millis) {
-                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-                return sdf.format(new Date(millis));
-            }
-
-            private static String formatFileSize(long size) {
-                if (size < 1024) return size + " B";
-                int z = (63 - Long.numberOfLeadingZeros(size)) / 10;
-                return String.format(Locale.US, "%.1f %sB", (double) size / (1L << (z * 10)), " KMGTPE".charAt(z));
-            }
+    // This simple data class remains here.
+    public static class FileItem {
+        String name;
+        long size;
+        long date;
+        public FileItem(String name, long size, long date) {
+            this.name = name;
+            this.size = size;
+            this.date = date;
         }
     }
-    // --- END: THIS IS THE CLEAN, FULLY-FORMATTED, AND CORRECT ADAPTER ---
 }
