@@ -42,6 +42,10 @@ public class AllFilesActivity extends AppCompatActivity {
     private FileListAdapter adapter;
     private final List<FileItem> fileList = new ArrayList<>();
     private View permissionView;
+    
+    // --- START: NEW "LOAD ONCE" LOGIC ---
+    private boolean hasLoadedFiles = false;
+    // --- END: NEW "LOAD ONCE" LOGIC ---
 
     // All your permission launchers are correct and remain the same
     private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), r -> checkPermissionAndLoadFiles());
@@ -57,18 +61,50 @@ public class AllFilesActivity extends AppCompatActivity {
         Button grantPermissionButton = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
         
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // --- START: NEW "LOAD ONCE" LOGIC ---
+        // Only check permissions and load files if we haven't already done so.
+        if (!hasLoadedFiles) {
+            checkPermissionAndLoadFiles();
+        }
+        // --- END: NEW "LOAD ONCE" LOGIC ---
+    }
 
-    // --- START: THIS IS THE CORRECTED AND FINAL VERSION ---
+    private void checkPermissionAndLoadFiles() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                showFileListUI();
+                loadFilesFromStorage();
+            } else {
+                showPermissionNeededUI();
+                Intent i = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri u = Uri.fromParts("package", getPackageName(), null);
+                i.setData(u);
+                requestAllFilesAccessLauncher.launch(i);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                showFileListUI();
+                loadFilesFromStorage();
+            } else {
+                showPermissionNeededUI();
+                requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }
+    }
+
+    // --- START: THIS IS THE FINAL, CORRECTED VERSION WITH THE "REALITY CHECK" ---
     private void loadFilesFromStorage() {
         new Thread(() -> {
-            // This is a temporary list to hold the files we find.
-            final List<FileItem> foundFiles = new ArrayList<>();
+            final List<FileItem> realFiles = new ArrayList<>();
             
             Uri collection;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -80,56 +116,57 @@ public class AllFilesActivity extends AppCompatActivity {
             String[] projection = {
                     MediaStore.Files.FileColumns.DISPLAY_NAME,
                     MediaStore.Files.FileColumns.SIZE,
-                    MediaStore.Files.FileColumns.DATE_MODIFIED
+                    MediaStore.Files.FileColumns.DATE_MODIFIED,
+                    MediaStore.Files.FileColumns.DATA // This is the key: the actual file path
             };
             
-            // This is a more robust way to select only the file types you want.
-            String selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " +
-                               MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " +
-                               MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " +
-                               MediaStore.Files.FileColumns.MIME_TYPE + " = ?";
-            String[] selectionArgs = new String[]{
-                "application/pdf", 
-                "application/msword", // .doc
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
-                "text/plain" // .txt
-            };
-
             String sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC";
 
-            try (Cursor cursor = getContentResolver().query(collection, projection, selection, selectionArgs, sortOrder)) {
+            try (Cursor cursor = getContentResolver().query(collection, projection, null, null, sortOrder)) {
                 if (cursor != null) {
                     int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
                     int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
                     int dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+                    int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
 
                     while (cursor.moveToNext()) {
-                       String name = cursor.getString(nameColumn);
-                       long size = cursor.getLong(sizeColumn);
-                       long date = cursor.getLong(dateColumn);
-                       foundFiles.add(new FileItem(name, size, date * 1000));
+                        String path = cursor.getString(dataColumn);
+                        // The "Reality Check": This time it will work because we are checking the path.
+                        if (path != null) {
+                            File file = new File(path);
+                            if (file.exists()) { // This is the critical check for "ghost files"
+                                String name = cursor.getString(nameColumn);
+                                if (name != null && (name.toLowerCase().endsWith(".pdf") || name.toLowerCase().endsWith(".doc") || name.toLowerCase().endsWith(".docx") || name.toLowerCase().endsWith(".txt"))) {
+                                    long size = cursor.getLong(sizeColumn);
+                                    long date = cursor.getLong(dateColumn);
+                                    realFiles.add(new FileItem(name, size, date * 1000));
+                                }
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            // Update the UI on the main thread
             runOnUiThread(() -> {
-                // --- THIS IS THE CRITICAL DEBUGGING STEP ---
-                Toast.makeText(AllFilesActivity.this, "Found " + foundFiles.size() + " files.", Toast.LENGTH_LONG).show();
+                // --- START: NEW "LOAD ONCE" LOGIC ---
+                // We show the toast only the very first time.
+                if (!hasLoadedFiles) {
+                    Toast.makeText(AllFilesActivity.this, "Found " + realFiles.size() + " real files.", Toast.LENGTH_LONG).show();
+                }
+                hasLoadedFiles = true; // Mark that we have loaded the files.
+                // --- END: NEW "LOAD ONCE" LOGIC ---
                 
                 fileList.clear();
-                fileList.addAll(foundFiles);
+                fileList.addAll(realFiles);
                 adapter.notifyDataSetChanged();
             });
         }).start();
     }
-    // --- END: THIS IS THE CORRECTED AND FINAL VERSION ---
+    // --- END: THIS IS THE FINAL, CORRECTED VERSION ---
 
-    // The rest of your AllFilesActivity.java code is already correct and does not need to be changed.
-    @Override protected void onResume(){super.onResume();checkPermissionAndLoadFiles();}
-    private void checkPermissionAndLoadFiles(){if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){if(Environment.isExternalStorageManager()){showFileListUI();loadFilesFromStorage();}else{showPermissionNeededUI();Intent i=new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);Uri u=Uri.fromParts("package",getPackageName(),null);i.setData(u);requestAllFilesAccessLauncher.launch(i);}}else{if(ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){showFileListUI();loadFilesFromStorage();}else{showPermissionNeededUI();requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);}}}
+    // The rest of your AllFilesActivity.java code is already correct.
     private void openFileBasedOnType(FileItem item){if(item.name!=null&&item.name.toLowerCase().endsWith(".pdf")){openPdfInApp(item);}else{openFileExternally(item);}}
     private void openPdfInApp(FileItem item){Intent i=new Intent(this,PdfViewerActivity.class);i.putExtra(PdfViewerActivity.EXTRA_FILE_NAME,item.name);startActivity(i);}
     private void openFileExternally(FileItem item){File d=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);File f=new File(d,item.name);if(!f.exists()){Toast.makeText(this,"Error: File not found.",Toast.LENGTH_SHORT).show();return;}
