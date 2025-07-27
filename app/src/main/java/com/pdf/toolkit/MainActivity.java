@@ -32,15 +32,14 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
-
-    // --- THIS IS THE MISSING KEY THAT CONNECTS TO THE HOME SCREEN ---
     public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
-    // --- END OF FIX ---
+
+    private String pendingBase64Data;
+    private String pendingFileName;
 
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (filePathCallback == null) return;
-
                 Uri[] results = null;
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     if (result.getData().getClipData() != null) {
@@ -57,13 +56,9 @@ public class MainActivity extends AppCompatActivity {
                 filePathCallback = null;
             });
 
-    private String pendingBase64Data;
-    private String pendingFileName;
-    
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    Toast.makeText(this, "Permission granted. Saving file...", Toast.LENGTH_SHORT).show();
                     saveFile(pendingBase64Data, pendingFileName);
                 } else {
                     Toast.makeText(this, "Permission denied. File cannot be saved.", Toast.LENGTH_LONG).show();
@@ -88,9 +83,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
-                if (filePathCallback != null) {
-                    filePathCallback.onReceiveValue(null);
-                }
+                if (filePathCallback != null) filePathCallback.onReceiveValue(null);
                 filePathCallback = fp;
                 try {
                     Intent intent = fcp.createIntent();
@@ -106,22 +99,17 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new JSBridge(this), "Android");
         
-        // --- THIS LOGIC NOW READS THE FILENAME FROM THE HOME SCREEN ---
         Intent intent = getIntent();
         String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
-
         if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
-            htmlFileToLoad = "index.html"; // Default fallback
+            htmlFileToLoad = "index.html";
         }
-
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad); 
-        // --- END OF FIX ---
     }
     
     public class JSBridge {
         private final Context context;
         JSBridge(Context context) { this.context = context; }
-
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName) {
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
