@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- This tells the FileProvider that it's allowed to share files from the public "Downloads" directory. -->
+    <!-- START: THIS IS THE CRITICAL CHANGE -->
+    <!-- The path="." means this provider can securely share files from ANYWHERE on external storage -->
     <external-path
-        name="downloads"
-        path="Download/" />
+        name="external_files"
+        path="." />
+    <!-- END: THIS IS THE CRITICAL CHANGE -->
 </paths>
