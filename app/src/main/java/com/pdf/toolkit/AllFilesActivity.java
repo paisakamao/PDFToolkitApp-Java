@@ -1,6 +1,5 @@
 package com.pdf.toolkit;
 
-// All your existing, correct imports are here...
 import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +34,13 @@ public class AllFilesActivity extends AppCompatActivity {
     private View permissionView;
     private boolean hasLoadedFiles = false;
 
-    // All your permission launchers are correct
-    private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher = registerForActivityResult(new Activity_ResultContracts.StartActivityForResult(), r -> checkPermissionAndLoadFiles());
-    private final ActivityResultLauncher<String> requestLegacyPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), g -> { if (g) loadFilesFromStorage(); else showPermissionNeededUI(); });
+    private final ActivityResultLauncher<Intent> requestAllFilesAccessLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> checkPermissionAndLoadFiles());
+    
+    private final ActivityResultLauncher<String> requestLegacyPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) loadFilesFromStorage(); else showPermissionNeededUI();
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +51,9 @@ public class AllFilesActivity extends AppCompatActivity {
         permissionView = findViewById(R.id.permission_needed_view);
         Button grantPermissionButton = findViewById(R.id.btn_grant_permission);
 
-        // This is the critical setup
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
-        
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
     
@@ -126,9 +125,6 @@ public class AllFilesActivity extends AppCompatActivity {
                 fileList.clear();
                 fileList.addAll(realFiles);
                 adapter.notifyDataSetChanged();
-                if (realFiles.isEmpty()) {
-                    Toast.makeText(AllFilesActivity.this, "List is empty, but data is loaded.", Toast.LENGTH_SHORT).show();
-                }
             });
         }).start();
     }
