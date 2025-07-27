@@ -2,18 +2,14 @@ package com.pdf.toolkit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.github.barteksc.pdfviewer.PDFView;
-
 import java.io.File;
 
 public class PdfViewerActivity extends AppCompatActivity {
 
-    public static final String EXTRA_FILE_NAME = "com.pdf.toolkit.FILE_NAME";
+    public static final String EXTRA_FILE_NAME = "com.pdf.toolkit.FILE_NAME"; // This is now a PATH
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,17 +17,21 @@ public class PdfViewerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pdf_viewer);
 
         PDFView pdfView = findViewById(R.id.pdfView);
-
         Intent intent = getIntent();
-        String fileName = intent.getStringExtra(EXTRA_FILE_NAME);
+        String filePath = intent.getStringExtra(EXTRA_FILE_NAME);
 
-        if (fileName != null && !fileName.isEmpty()) {
-            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(downloadsDir, fileName);
+        if (filePath != null && !filePath.isEmpty()) {
+            // --- THE CRITICAL CHANGE IS HERE: WE USE THE FULL PATH ---
+            File file = new File(filePath);
+
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(file.getName()); // Show just the filename in the title
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
 
             if (file.exists()) {
                 pdfView.fromFile(file)
-                        .enableSwipe(true) // allow changing pages with swipe
+                        .enableSwipe(true)
                         .swipeHorizontal(false)
                         .enableDoubletap(true)
                         .defaultPage(0)
@@ -42,5 +42,12 @@ public class PdfViewerActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Error: No file specified", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // This handles the back arrow in the ActionBar
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }
