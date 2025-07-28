@@ -12,9 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -57,19 +54,21 @@ public class AllFilesActivity extends AppCompatActivity {
         Button grantPermissionButton = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        
-        // This now correctly creates an instance of our new, separate FileListAdapter class
         adapter = new FileListAdapter(fileList, this::openFileBasedOnType);
         recyclerView.setAdapter(adapter);
         
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
     
+    // --- START: THIS IS THE CRITICAL CHANGE FOR AUTO-REFRESH ---
     @Override
     protected void onResume() {
         super.onResume();
+        // The onResume() method is called EVERY time the user enters this screen.
+        // By putting the check here, we guarantee the list is always fresh.
         checkPermissionAndLoadFiles();
     }
+    // --- END: THIS IS THE CRITICAL CHANGE ---
 
     private void checkPermissionAndLoadFiles() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -77,21 +76,12 @@ public class AllFilesActivity extends AppCompatActivity {
                 loadFilesFromStorage();
             } else {
                 showPermissionNeededUI();
-                if (fileList.isEmpty()) {
-                    Intent i = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                    Uri u = Uri.fromParts("package", getPackageName(), null);
-                    i.setData(u);
-                    requestAllFilesAccessLauncher.launch(i);
-                }
             }
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 loadFilesFromStorage();
             } else {
                 showPermissionNeededUI();
-                if (fileList.isEmpty()) {
-                    requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                }
             }
         }
     }
@@ -103,11 +93,29 @@ public class AllFilesActivity extends AppCompatActivity {
             Uri collection = MediaStore.Files.getContentUri("external");
             
             String[] projection = { MediaStore.Files.FileColumns.DISPLAY_NAME, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED, MediaStore.Files.FileColumns.DATA };
-            String selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " + MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " + MediaStore.Files.FileColumns.MIME_TYPE + " = ? OR " + MediaStore.Files.FileColumns.MIME_TYPE + " = ?";
-            String[] selectionArgs = new String[]{ "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain" };
-            String sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC";
+            
+            List<String> selectionArgsList = new ArrayList<>();
+            StringBuilder selection = new StringBuilder();
+            String[] mimeTypes = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"};
+            selection.append(MediaStore.Files.FileColumns.MIME_TYPE + " IN (");
+            for (int i = 0; i < mimeTypes.length; i++) {
+                selection.append("?,");
+                selectionArgsList.add(mimeTypes[i]);
+            }
+            selection.deleteCharAt(selection.length() - 1);
+            selection.append(")");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                selection.append(" AND " + MediaStore.MediaColumns.IS_TRASHED + " = 0");
+            }
+            selection.append(" AND " + MediaStore.Files.FileColumns.DATA + " NOT LIKE ?");
+            selectionArgsList.add("%/.%");
+            selection.append(" AND " + MediaStore.Files.FileColumns.DATA + " NOT LIKE ?");
+            selectionArgsList.add("%/Android/data/%");
 
-            try (Cursor cursor = getContentResolver().query(collection, projection, selection, sortOrder, null)) {
+            String sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC";
+            String[] selectionArgs = selectionArgsList.toArray(new String[0]);
+
+            try (Cursor cursor = getContentResolver().query(collection, projection, selection.toString(), selectionArgs, sortOrder)) {
                 if (cursor != null) {
                     while (cursor.moveToNext()) {
                         String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME));
@@ -127,23 +135,8 @@ public class AllFilesActivity extends AppCompatActivity {
             });
         }).start();
     }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.all_files_menu, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_refresh) {
-            Toast.makeText(this, "Refreshing file list...", Toast.LENGTH_SHORT).show();
-            loadFilesFromStorage();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+    // All manual refresh button code has been removed.
 
     private void openFileBasedOnType(FileItem item){if(item.name!=null&&item.name.toLowerCase().endsWith(".pdf")){openPdfInApp(item);}else{openFileExternally(item);}}
     private void openPdfInApp(FileItem item){Intent i=new Intent(this,PdfViewerActivity.class);i.putExtra(PdfViewerActivity.EXTRA_FILE_NAME,item.path);startActivity(i);}
