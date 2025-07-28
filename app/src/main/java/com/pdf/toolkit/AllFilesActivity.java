@@ -12,8 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -27,15 +26,10 @@ import java.util.List;
 
 public class AllFilesActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_REQUEST_CODE = 1001;
-
+    private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
-    private Button btnGrantPermission;
-
-    private List<FileItem> fileList = new ArrayList<>();
-    private FileListAdapter fileAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,23 +39,21 @@ public class AllFilesActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
         permissionView = findViewById(R.id.permission_needed_view);
-        btnGrantPermission = findViewById(R.id.btn_grant_permission);
+        Button btnGrant = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        fileAdapter = new FileListAdapter(fileList, this::onFileSelected);
-        recyclerView.setAdapter(fileAdapter);
 
-        btnGrantPermission.setOnClickListener(v -> checkAndLoadFiles());
+        btnGrant.setOnClickListener(v -> requestStoragePermission());
 
-        checkAndLoadFiles();
-    }
-
-    private void checkAndLoadFiles() {
         if (hasStoragePermission()) {
-            permissionView.setVisibility(View.GONE);
-            loadAllPdfFiles();
+            loadPDFFiles();
         } else {
-            requestStoragePermission();
+            permissionView.setVisibility(View.VISIBLE);
+        }
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("All PDF Files");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -77,73 +69,75 @@ public class AllFilesActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                storagePermissionLauncher.launch(intent);
+                startActivity(intent);
             } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Error opening permission settings", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(android.net.Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
             }
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
         }
     }
-
-    private final ActivityResultLauncher<Intent> storagePermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (hasStoragePermission()) {
-                    checkAndLoadFiles();
-                } else {
-                    permissionView.setVisibility(View.VISIBLE);
-                }
-            }
-    );
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                checkAndLoadFiles();
-            } else {
-                permissionView.setVisibility(View.VISIBLE);
-            }
+        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            loadPDFFiles();
         } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void loadAllPdfFiles() {
+    private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
-        fileList.clear();
+        permissionView.setVisibility(View.GONE);
 
-        File rootDir = Environment.getExternalStorageDirectory();
-        scanForPdfRecursively(rootDir);
+        new Thread(() -> {
+            List<FileItem> fileList = new ArrayList<>();
+            File root = Environment.getExternalStorageDirectory();
+            searchPDFFilesRecursively(root, fileList);
 
-        fileAdapter.notifyDataSetChanged();
-        progressBar.setVisibility(View.GONE);
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                if (fileList.isEmpty()) {
+                    Toast.makeText(this, "No PDF files found", Toast.LENGTH_SHORT).show();
+                } else {
+                    FileListAdapter adapter = new FileListAdapter(fileList, item -> {
+                        Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
+                        intent.putExtra(PdfViewerActivity.EXTRA_FILE_NAME, item.path);
+                        startActivity(intent);
+                    });
+                    recyclerView.setAdapter(adapter);
+                }
+            });
+        }).start();
     }
 
-    private void scanForPdfRecursively(File dir) {
-        if (dir != null && dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        scanForPdfRecursively(file); // recursive call
-                    } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                        fileList.add(new FileItem(file.getName(), file.getAbsolutePath(), file.length(), file.lastModified()));
-                    }
-                }
+    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
+        if (dir == null || !dir.isDirectory()) return;
+
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                searchPDFFilesRecursively(file, fileList);
+            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
+                // ✅ Correct constructor order: name, size, date, path
+                fileList.add(new FileItem(
+                        file.getName(),
+                        file.length(),
+                        file.lastModified(),
+                        file.getAbsolutePath()
+                ));
             }
         }
     }
 
-    private void onFileSelected(FileItem item) {
-        if (item != null && item.path != null) {
-            Intent intent = new Intent(this, PdfViewerActivity.class);
-            intent.putExtra(PdfViewerActivity.EXTRA_FILE_NAME, item.path);
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Error: No file specified", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }
