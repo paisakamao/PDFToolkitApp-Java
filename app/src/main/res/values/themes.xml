@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 1. Base Application Theme -->
-    <!-- This is the main theme for your entire app. -->
-    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Your custom colors -->
-        <item name="colorPrimary">#1c222d</item>
-        <item name="colorPrimaryVariant">#12151a</item>
-        <item name="colorOnPrimary">#ffffff</item>
-        <item name="colorSecondary">#00ffff</item>
-        
-        <!-- Setting the status bar, background, and navigation bar -->
+    <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR (Home Screen & WebViews) -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
         <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
 
-    <!-- 2. Styles for the New Native Home Screen -->
-    <!-- These styles are used by the activity_home.xml layout. -->
-    <!-- They are OUTSIDE the other style block, but INSIDE the resources block. -->
+    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR (All Files & PDF Viewer) -->
+    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">@color/home_background</item>
+        <item name="colorPrimaryVariant">@color/home_background</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+    </style>
 
+    <!-- Your styles for the Home Screen Cards -->
+    <style name="HomeCardStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_margin">12dp</item>
+    </style>
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
