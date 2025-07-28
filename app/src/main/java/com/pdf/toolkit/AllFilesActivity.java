@@ -44,6 +44,7 @@ public class AllFilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
+        // This is the old code that might be here
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("All Files");
         }
