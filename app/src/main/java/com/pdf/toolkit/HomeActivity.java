@@ -11,20 +11,31 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        // --- START: THIS IS THE FIX ---
-        // We now set the title in the system-provided title bar.
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("All Document");
         }
-        // --- END: THIS IS THE FIX ---
 
-        // The rest of your code for finding and clicking buttons is correct.
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
-        // ... find other cards ...
-        
+        CardView scannerCard = findViewById(R.id.card_scanner);
+        CardView allFilesCard = findViewById(R.id.card_all_files);
+        CardView fileManagerCard = findViewById(R.id.card_file_manager);
+        CardView uniToolsCard = findViewById(R.id.card_uni_tools);
+
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
-        // ... set other listeners ...
+        scannerCard.setOnClickListener(v -> launchWebViewActivity("scanner.html"));
+        uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
+        
+        allFilesCard.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
+            startActivity(intent);
+        });
+        
+        fileManagerCard.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        });
     }
 
     private void launchWebViewActivity(String fileName) {
