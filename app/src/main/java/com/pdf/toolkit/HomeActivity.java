@@ -11,9 +11,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("All Document");
-        }
 
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView scannerCard = findViewById(R.id.card_scanner);
