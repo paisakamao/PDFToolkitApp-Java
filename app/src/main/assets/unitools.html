@@ -6,70 +6,223 @@
     <title>Ultimate Toolkit</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* ------------------- */
+        /* --- CSS STYLING --- */
+        /* ------------------- */
+
+        /* --- 1. Global Styles & Color Palette --- */
         :root {
             --color-bg-main: #f0f0f0;
-            --color-bg-element: #E1F5FE;
-            --color-primary-accent: #007BFF;
-            --color-accent-shade: #6f42c1;
-            --color-text-primary: #212529;
-            --color-text-secondary: #6c757d;
+            --color-bg-element: #E1F5FE; /* Card and Modal background */
+            --color-primary-accent: #007BFF; /* A more standard, readable blue */
+            --color-accent-shade: #6f42c1; /* A nice purple for secondary buttons */
+            --color-text-primary: #212529; /* Dark text for light background */
+            --color-text-secondary: #6c757d; /* Dark grey for secondary text */
             --color-border: rgba(0, 0, 0, 0.1);
+            --color-hover-bg: rgba(0, 123, 255, 0.1);
             --font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
-            --border-radius: 12px;
-            --transition-speed: 0.3s;
+            --border-radius: 12px; /* Increased for rounder corners */
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { font-family: var(--font-family); background-color: var(--color-bg-main); color: var(--color-text-primary); line-height: 1.6; overflow-x: hidden; }
 
-        .header { background-color: var(--color-bg-main); padding: 1rem 5%; position: sticky; top: 0; z-index: 1000; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #42F8F5; }
-        .logo a { font-size: 1.8rem; font-weight: 700; color: var(--color-text-primary); text-decoration: none; }
-        .logo span { color: var(--color-primary-accent); }
-        .navbar, .menu-toggle { display: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .main-content { padding: 2rem 5%; }
-        .hero-section { text-align: center; margin-bottom: 3rem; }
-        .hero-section p { font-size: 1.1rem; color: var(--color-text-secondary); max-width: 700px; margin: 0 auto; }
+        html {
+            scroll-behavior: smooth;
+        }
 
-        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .tool-card { background-color: var(--color-bg-element); border: 1px solid var(--color-border); border-radius: var(--border-radius); padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer; text-align: center; }
-        .tool-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .tool-card .card-icon { font-size: 2.5rem; color: var(--color-primary-accent); margin-bottom: 1rem; }
-        .tool-card h2 { font-size: 1.2rem; color: var(--color-text-primary); word-break: break-word; }
-        
-        /* === MODAL & FILE HANDLING STYLES (INTEGRATED) === */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,.6); backdrop-filter: blur(5px); z-index: 2000; opacity: 0; visibility: hidden; transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease; }
-        .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.9); background-color: var(--color-bg-main); border-radius: var(--border-radius); box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 2001; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: all var(--transition-speed) ease; overflow: hidden; }
-        .modal-overlay.show, .modal-container.show { opacity: 1; visibility: visible; }
-        .modal-container.show { transform: translate(-50%,-50%) scale(1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--color-border); }
-        .modal-header h2 { font-size: 1.5rem; color: var(--color-primary-accent); }
-        .modal-close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--color-text-secondary); transition: color 0.3s, transform 0.3s; }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg-main);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. Header & Navigation (MODIFIED) --- */
+        .header {
+            background-color: var(--color-bg-main);
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #42F8F5; /* <-- YOUR CHANGE IS HERE */
+        }
+
+        .logo a {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--color-primary-accent);
+        }
+
+        .navbar, .menu-toggle {
+            display: none;
+        }
+
+        /* --- 3. Main Content & Tool Grid --- */
+        .main-content {
+            padding: 2rem 5%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero-section p {
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* --- 4. Tool Card Styling --- */
+        .tool-card {
+            background-color: var(--color-bg-element);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .tool-card .card-icon {
+            font-size: 2.5rem;
+            color: var(--color-primary-accent);
+            margin-bottom: 1rem;
+        }
+
+        .tool-card h2 {
+            font-size: 1.2rem;
+            color: var(--color-text-primary);
+            word-break: break-word;
+        }
+
+        /* --- 5. Buttons & Inputs --- */
+        .btn {
+            background-color: var(--color-primary-accent);
+            color: #fff;
+            border: 2px solid var(--color-primary-accent);
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover, .btn:focus {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            outline: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--color-text-secondary);
+            border-color: var(--color-text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .tool-input, .tool-select, .tool-textarea {
+            width: 100%; padding: 0.75rem; background-color: #fff; border: 1px solid #ccc;
+            border-radius: var(--border-radius); color: var(--color-text-primary);
+            font-size: 1rem; margin-bottom: 1rem;
+        }
+        .tool-input:focus, .tool-select:focus, .tool-textarea:focus {
+            outline: none; border-color: var(--color-primary-accent); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .tool-textarea { min-height: 120px; resize: vertical; }
+        .result-box {
+            background-color: #fff; border: 1px solid #ccc; padding: 1rem; margin-top: 1rem;
+            border-radius: var(--border-radius); word-wrap: break-word; min-height: 50px;
+        }
+
+        /* --- 6. Modal --- */
+        .modal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-container.show { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: var(--color-bg-main); padding: 2.5rem; border-radius: var(--border-radius);
+            border: 1px solid var(--color-border); box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            width: 90%; max-width: 700px; max-height: 90vh;
+            overflow-y: auto; position: relative; transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-container.show .modal-content { transform: scale(1); }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #42F8F5;
+        }
+        .modal-header h2 { font-size: 2rem; color: var(--color-primary-accent); }
+        .modal-description {
+            font-size: 1.1rem; color: var(--color-text-secondary); margin-bottom: 2rem; text-align: center;
+        }
+        .modal-close-btn {
+            background: none; border: none; color: var(--color-text-secondary);
+            font-size: 2rem; cursor: pointer; transition: color 0.3s, transform 0.3s;
+        }
         .modal-close-btn:hover { color: var(--color-primary-accent); transform: rotate(90deg); }
-        .modal-body { padding: 1.5rem; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 1.5rem; }
-        .modal-description { font-size: 1.1rem; color: var(--color-text-secondary); text-align: center; margin-bottom: 0; }
         .tool-section { display: flex; flex-direction: column; gap: 1rem; }
-        .file-drop-area { border: 2px dashed var(--color-primary-accent); border-radius: var(--border-radius); padding: 2rem; text-align: center; transition: all var(--transition-speed) ease; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
-        .file-drop-area.dragover { border-style: solid; background-color: rgba(0, 123, 255, 0.05); }
-        .file-drop-area .fas { font-size: 3rem; color: var(--color-primary-accent); margin-bottom: 1rem; }
-        .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-        .file-previews { max-height: 150px; overflow-y: auto; width: 100%; margin-top: 1rem; }
-        .file-preview-item { background-color: var(--color-bg-element); padding: .75rem; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; font-size: .9rem; word-break: break-all; }
-        .status-badge { font-size: .8rem; padding: .2rem .6rem; border-radius: 20px; font-weight: 700; color: #fff; }
-        .status-processing { background-color: #ffa500; color: #000; }
-        .status-success { background-color: #28a745; }
-        .status-error { background-color: #dc3545; }
-        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--color-border); text-align: right; }
-        .btn { background-color: var(--color-primary-accent); color: #fff; border: 2px solid var(--color-primary-accent); border-radius: var(--border-radius); padding: 0.75rem 1.5rem; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
-        .btn:hover, .btn:focus { background-color: #0056b3; border-color: #0056b3; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4); outline: none; }
-        .btn-secondary { background-color: var(--color-text-secondary); border-color: var(--color-text-secondary); }
-        .btn-secondary:hover { background-color: #5a6268; border-color: #5a6268; box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4); }
-        .tool-input, .tool-select, .tool-textarea { width: 100%; padding: 0.75rem; background-color: #fff; border: 1px solid #ccc; border-radius: var(--border-radius); color: var(--color-text-primary); font-size: 1rem; margin-bottom: 1rem; }
-        .tool-input:focus, .tool-select:focus, .tool-textarea:focus { outline: none; border-color: var(--color-primary-accent); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
+        .tool-controls { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
 
-        @media (max-width: 992px) { .tools-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 768px) { .modal-content { width: 95%; padding: 1.5rem; } .modal-header h2 { font-size: 1.5rem; } }
-        @media (max-width: 600px) { .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } .tool-card h2 { font-size: 1rem; } .hero-section p { font-size: 1rem; } }
+        /* --- 7. Utility & Helper Classes --- */
+        .hidden { display: none !important; }
+        .mt-1 { margin-top: 1rem; }
+
+        /* --- 8. Responsive Design --- */
+        @media (max-width: 992px) {
+            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .modal-content { width: 95%; padding: 1.5rem; }
+            .modal-header h2 { font-size: 1.5rem; }
+        }
+        @media (max-width: 600px) {
+            .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .tool-card h2 { font-size: 1rem; }
+            .hero-section p { font-size: 1rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -78,272 +231,331 @@
             <a href="#">Ultimate <span>Tool</span>kit</a>
         </div>
     </header>
+
     <main class="main-content">
         <section class="hero-section">
-            <p>Replace countless single-purpose apps. Ultimate Toolkit provides a powerful, easy-to-use suite of essential utilities right on your device.</p>
+            <p>Tired of a cluttered phone with single-purpose apps? Our Multi-Tool app combines all your essential utilities into one powerful and easy-to-use toolkit. Whether you're doing a DIY project, traveling, or just need a quick measurement, we've got you covered.</p>
         </section>
         <section id="tools">
             <div class="tools-grid"></div>
         </section>
     </main>
 
-    <div id="modal-overlay" class="modal-overlay"></div>
     <div id="modal-container" class="modal-container">
-        <div class="modal-header">
-            <h2 id="modal-title">Tool Name</h2>
-            <button id="modal-close-btn" class="modal-close-btn">×</button>
-        </div>
-        <div class="modal-body">
-            <p id="modal-description"></p> 
-            <div id="tool-options-container" class="tool-section"></div>
-            <div id="file-handling-container">
-                <div class="file-drop-area" id="file-drop-area">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Drag & Drop files here or</p>
-                    <label for="file-input" class="btn" id="file-input-label">Choose Files</label>
-                    <input type="file" id="file-input" class="visually-hidden">
-                </div>
-                <div class="file-previews" id="file-previews"></div>
-            </div>
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <button class="btn" id="process-btn" style="display: none;">Process Files</button>
-        </div>
+        <div id="modal-content" class="modal-content"></div>
     </div>
-    
+
+    <div id="notification" class="notification" style="opacity: 0; bottom: -100px;"></div>
+
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const toolsGrid = document.querySelector('.tools-grid');
-        const modalOverlay = document.getElementById('modal-overlay');
         const modalContainer = document.getElementById('modal-container');
-        const modalTitle = document.getElementById('modal-title');
-        const modalDescription = document.getElementById('modal-description');
-        const toolOptionsContainer = document.getElementById('tool-options-container');
-        const fileHandlingContainer = document.getElementById('file-handling-container');
-        const modalFooter = document.getElementById('modal-footer');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        const fileDropArea = document.getElementById('file-drop-area');
-        const fileInput = document.getElementById('file-input');
-        const filePreviews = document.getElementById('file-previews');
-        
-        let uploadedFiles = [];
-        let lastProcessedFile = { data: null, name: null, type: null };
-        let currentToolId = null;
+        const modalContent = document.getElementById('modal-content');
+        const notificationEl = document.getElementById('notification');
 
         const tools = [
-            { id: "image-converter", title: "Image Converter", desc: "Convert images to JPG, PNG, or WEBP.", icon: "fa-retweet", isFileTool: true, accept: "image/*", multiple: false },
-            { id: "image-compressor", title: "Image Compressor", desc: "Reduce image file sizes with adjustable quality.", icon: "fa-compress-arrows-alt", isFileTool: true, accept: "image/jpeg,image/png", multiple: false },
-            { id: "image-cropper", title: "Image Cropper", desc: "Crop and resize your images.", icon: "fa-crop-alt", isFileTool: true, accept: "image/*", multiple: false },
-            { id: "video-converter", title: "Video Converter (to WEBM)", desc: "Re-record video clips to the efficient WEBM format.", icon: "fa-video", isFileTool: true, accept: "video/*", multiple: false },
-            { id: "audio-converter", title: "Audio Converter (to WEBM)", desc: "Re-record audio to the efficient WEBM/Opus format.", icon: "fa-music", isFileTool: true, accept: "audio/*", multiple: false },
-            { id: "audio-trimmer", title: "Audio Trimmer", desc: "Cut sections of your audio files.", icon: "fa-cut", isFileTool: true, accept: "audio/*", multiple: false },
-            { id: "age-calculator", title: "Age Calculator", desc: "Calculate exact age from a date of birth.", icon: "fa-calendar-alt", isFileTool: false },
-            { id: "emi-calculator", title: "EMI Calculator", desc: "Calculate your Equated Monthly Installment for loans.", icon: "fa-percent", isFileTool: false },
-            { id: "sip-calculator", title: "SIP Calculator", desc: "Estimate the returns on your Systematic Investment Plan.", icon: "fa-chart-line", isFileTool: false },
-            { id: "qr-code-generator", title: "QR Code Generator", desc: "Create and download QR codes for URLs, text, and more.", icon: "fa-qrcode", isFileTool: false },
-            { id: "password-generator", title: "Password Generator", desc: "Generate strong, secure passwords.", icon: "fa-key", isFileTool: false },
-            { id: "word-counter", title: "Word & Character Counter", desc: "Count words, characters, and sentences in your text.", icon: "fa-file-word", isFileTool: false },
-            { id: "base64-encoder", title: "Base64 Encoder/Decoder", desc: "Encode text to Base64 or decode from Base64.", icon: "fa-exchange-alt", isFileTool: false },
-            { id: "color-picker", title: "Color Picker & Converter", desc: "Pick a color and get its HEX, RGB, and HSL values.", icon: "fa-palette", isFileTool: false },
-            { id: "text-to-speech", title: "Text to Speech", desc: "Convert written text into natural-sounding speech.", icon: "fa-volume-up", isFileTool: false },
-            { id: "speech-to-text", title: "Speech to Text", desc: "Transcribe your spoken words into text.", icon: "fa-microphone-alt", isFileTool: false },
-            { id: "json-formatter", title: "JSON Formatter", desc: "Validate, format, and beautify your JSON data.", icon: "fa-code", isFileTool: false },
-            { id: "unit-converter", title: "Unit Converter", desc: "Convert between various units of measurement.", icon: "fa-ruler-combined", isFileTool: false },
-            { id: "bmi-calculator", title: "BMI Calculator", desc: "Calculate your Body Mass Index.", icon: "fa-weight", isFileTool: false },
-            { id: "timer-stopwatch", title: "Timer / Stopwatch", desc: "A versatile timer and stopwatch for your needs.", icon: "fa-stopwatch", isFileTool: false },
+            { id: "image-converter", title: "Image Converter", desc: "Convert images to JPG, PNG, or WEBP format right in your browser.", icon: "fa-retweet" },
+            { id: "image-compressor", title: "Image Compressor", desc: "Reduce image file sizes with adjustable quality for faster web loading.", icon: "fa-compress-arrows-alt" },
+            { id: "image-cropper", title: "Image Cropper", desc: "Crop and resize your images with a simple, interactive interface.", icon: "fa-crop-alt" },
+            { id: "video-converter", title: "Video Converter (to WEBM)", desc: "Re-record video clips to the efficient WEBM format. (Browser-based)", icon: "fa-video" },
+            { id: "audio-converter", title: "Audio Converter (to WEBM)", desc: "Re-record audio to the efficient WEBM/Opus format. (Browser-based)", icon: "fa-music" },
+            { id: "audio-trimmer", title: "Audio Trimmer", desc: "Cut sections of your audio files. Load, select a range, and save.", icon: "fa-cut" },
+            { id: "age-calculator", title: "Age Calculator", desc: "Calculate exact age from a date of birth to the current date.", icon: "fa-calendar-alt" },
+            { id: "emi-calculator", title: "EMI Calculator", desc: "Calculate your Equated Monthly Installment for loans.", icon: "fa-percent" },
+            { id: "sip-calculator", title: "SIP Calculator", desc: "Estimate the returns on your Systematic Investment Plan (SIP).", icon: "fa-chart-line" },
+            { id: "qr-code-generator", title: "QR Code Generator", desc: "Create and download QR codes for URLs, text, and more.", icon: "fa-qrcode" },
+            { id: "password-generator", title: "Password Generator", desc: "Generate strong, secure, and customizable passwords.", icon: "fa-key" },
+            { id: "word-counter", title: "Word & Character Counter", desc: "Count words, characters, sentences, and paragraphs in your text.", icon: "fa-file-word" },
+            { id: "base64-encoder", title: "Base64 Encoder/Decoder", desc: "Encode text to Base64 or decode from Base64 back to text.", icon: "fa-exchange-alt" },
+            { id: "color-picker", title: "Color Picker & Converter", desc: "Pick a color and get its HEX, RGB, and HSL values.", icon: "fa-palette" },
+            { id: "text-to-speech", title: "Text to Speech", desc: "Convert written text into natural-sounding speech with various voices.", icon: "fa-volume-up" },
+            { id: "speech-to-text", title: "Speech to Text", desc: "Transcribe your spoken words into text using your microphone.", icon: "fa-microphone-alt" },
+            { id: "json-formatter", title: "JSON Formatter", desc: "Validate, format, and beautify your JSON data for readability.", icon: "fa-code" },
+            { id: "unit-converter", title: "Unit Converter", desc: "Convert between various units of length, weight, and temperature.", icon: "fa-ruler-combined" },
+            { id: "bmi-calculator", title: "BMI Calculator", desc: "Calculate your Body Mass Index using metric or imperial units.", icon: "fa-weight" },
+            { id: "timer-stopwatch", title: "Timer / Stopwatch", desc: "A versatile timer and stopwatch for all your timing needs.", icon: "fa-stopwatch" },
         ];
-        
+
         function renderToolCards() {
-            toolsGrid.innerHTML = tools.map(tool => `<article class="tool-card" data-tool-id="${tool.id}"><i class="fas ${tool.icon} card-icon"></i><h2>${tool.title}</h2></article>`).join('');
+            toolsGrid.innerHTML = tools.map(tool => `
+                <article class="tool-card" data-tool-id="${tool.id}">
+                    <i class="fas ${tool.icon} card-icon"></i>
+                    <h2>${tool.title}</h2>
+                </article>
+            `).join('');
         }
-        
-        function resetProcessButton() {
-            const oldBtn = document.getElementById('process-btn');
-            const newBtn = oldBtn.cloneNode(true);
-            newBtn.textContent = 'Process Files';
-            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-            newBtn.addEventListener('click', processFiles);
+
+        let notificationTimeout;
+        function showNotification(message, duration = 3000) {
+            clearTimeout(notificationTimeout);
+            notificationEl.textContent = message;
+            notificationEl.style.opacity = '1';
+            notificationEl.style.bottom = '20px';
+            notificationTimeout = setTimeout(() => {
+                notificationEl.style.opacity = '0';
+                notificationEl.style.bottom = '-100px';
+            }, duration);
         }
 
         function openModal(toolId) {
-            const tool = tools.find(t => t.id === toolId);
-            if (!tool) return;
-            currentToolId = toolId;
-            modalTitle.textContent = tool.title;
-            modalDescription.textContent = tool.desc;
-            uploadedFiles = [];
-            lastProcessedFile = { data: null, name: null, type: null };
-            filePreviews.innerHTML = '';
-            
-            const toolImplementation = toolImplementations[tool.id]();
-            toolOptionsContainer.innerHTML = toolImplementation.content;
-            if (toolImplementation.onMount) toolImplementation.onMount();
-
-            if (tool.isFileTool) {
-                fileHandlingContainer.style.display = 'flex';
-                fileHandlingContainer.style.flexDirection = 'column';
-                modalFooter.style.display = 'block';
-                fileInput.accept = tool.accept;
-                fileInput.multiple = tool.multiple;
-                resetProcessButton();
-                document.getElementById('process-btn').style.display = 'none';
-            } else {
-                fileHandlingContainer.style.display = 'none';
-                modalFooter.style.display = 'none';
-            }
-            modalOverlay.classList.add('show');
+            const toolData = tools.find(t => t.id === toolId);
+            const tool = toolImplementations[toolId];
+            if (!toolData || !tool) return;
+            const { content, onMount } = tool();
+            modalContent.innerHTML = `
+                <div class="modal-header">
+                    <h2>${toolData.title}</h2>
+                    <button id="modal-close-btn" class="modal-close-btn">×</button>
+                </div>
+                <p class="modal-description">${toolData.desc}</p>
+                <div class="tool-section">
+                    ${content}
+                </div>
+            `;
             modalContainer.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+            if (onMount) {
+                onMount();
+            }
         }
 
         function closeModal() {
-            modalOverlay.classList.remove('show');
             modalContainer.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            modalContent.innerHTML = '';
         }
 
-        function handleFiles(newFiles) {
-            uploadedFiles = Array.from(newFiles);
-            filePreviews.innerHTML = '';
-            uploadedFiles.forEach(file => {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'file-preview-item';
-                previewItem.innerHTML = `<span><i class="fas fa-file-alt"></i> ${file.name}</span><span class="status-badge">Ready</span>`;
-                filePreviews.appendChild(previewItem);
-            });
-            if (uploadedFiles.length > 0) {
-                document.getElementById('process-btn').style.display = 'inline-block';
+        toolsGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.tool-card');
+            if (card) {
+                const toolId = card.dataset.toolId;
+                openModal(toolId);
             }
-        }
+        });
 
-        async function processFiles() {
-            const statusBadges = filePreviews.querySelectorAll('.status-badge');
-            statusBadges.forEach(badge => { badge.textContent = 'Processing...'; badge.className = 'status-badge status-processing'; });
-            try {
-                const processor = toolImplementations[currentToolId].processor;
-                if(processor) {
-                    await processor();
-                    updateStatusToSuccess();
-                } else { throw new Error("No processor found for this tool."); }
-            } catch (error) {
-                console.error('Processing Error:', error);
-                alert(`An error occurred: ${error.message}`);
-                updateStatusToError();
-            }
-        }
-        
-        function updateStatusToSuccess() {
-            filePreviews.querySelectorAll('.status-badge').forEach(badge => {
-                badge.textContent = 'Success!';
-                badge.className = 'status-badge status-success';
-            });
-            if (lastProcessedFile.type) {
-                const btn = document.getElementById('process-btn');
-                const newBtn = btn.cloneNode(true);
-                newBtn.textContent = 'View File';
-                btn.parentNode.replaceChild(newBtn, btn);
-                newBtn.addEventListener('click', () => {
-                    if (lastProcessedFile.data && typeof Android !== 'undefined') {
-                        if (lastProcessedFile.type.startsWith('image/') && Android.viewImage) {
-                            Android.viewImage(lastProcessedFile.data, lastProcessedFile.name);
-                        } else { alert("App handler for this file type is not available."); }
-                    } else { alert("Cannot view file. Make sure you are in the Android app."); }
-                });
-            }
-        }
+        modalContainer.addEventListener('click', (e) => {
+            if (e.target === modalContainer) { closeModal(); }
+        });
 
-        function updateStatusToError() { filePreviews.querySelectorAll('.status-badge').forEach(badge => { badge.textContent = 'Error!'; badge.className = 'status-badge status-error'; }); }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalContainer.classList.contains('show')) { closeModal(); }
+        });
 
-        function downloadFile(data, fileName, fileType) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function () {
-                    try {
-                        const base64 = reader.result.split(',')[1];
-                        lastProcessedFile = { data: base64, name: fileName, type: fileType };
-                        if (typeof Android !== 'undefined' && Android.saveBase64File) {
-                            Android.saveBase64File(base64, fileName);
-                        } else {
-                            console.log("Android interface not found. Fallback to browser download.");
-                            const link = document.createElement('a');
-                            link.href = reader.result;
-                            link.download = fileName;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }
-                        resolve();
-                    } catch (e) { reject(e); }
-                };
-                reader.onerror = () => reject(new Error('Could not read the processed file.'));
-                reader.readAsDataURL(new Blob([data], { type: fileType }));
-            });
-        }
-        
-        toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) openModal(card.dataset.toolId); });
-        modalOverlay.addEventListener('click', closeModal);
-        modalCloseBtn.addEventListener('click', closeModal);
-        ['dragover', 'dragleave', 'drop'].forEach(eventName => { fileDropArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }); });
-        fileDropArea.addEventListener('dragover', () => fileDropArea.classList.add('dragover'));
-        fileDropArea.addEventListener('dragleave', () => fileDropArea.classList.remove('dragover'));
-        fileDropArea.addEventListener('drop', (e) => { fileDropArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
-        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
+        // --- TOOL IMPLEMENTATIONS ---
         const toolImplementations = {
             'image-converter': () => ({
-                content: `<div class="tool-controls"> <select id="img-conv-format" class="tool-select"> <option value="image/jpeg">JPEG</option> <option value="image/png">PNG</option> <option value="image/webp">WEBP</option> </select> </div> <div id="img-conv-output" class="text-center mt-1"></div>`,
-                processor: async () => {
-                    if (uploadedFiles.length === 0) throw new Error("Please select an image.");
-                    const file = uploadedFiles[0];
-                    const format = document.getElementById('img-conv-format').value;
-                    const extension = format.split('/')[1];
-                    const reader = new FileReader();
-                    const img = new Image();
-                    await new Promise(resolve => { reader.onload = e => { img.src = e.target.result; img.onload = resolve; }; reader.readAsDataURL(file); });
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width; canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    const blob = await new Promise(res => canvas.toBlob(res, format));
-                    await downloadFile(blob, `converted-image.${extension}`, format);
+                title: 'Image Converter',
+                content: `
+                    <input type="file" id="img-conv-input" class="tool-input" accept="image/*">
+                    <div class="tool-controls">
+                        <select id="img-conv-format" class="tool-select">
+                            <option value="image/jpeg">JPEG</option>
+                            <option value="image/png">PNG</option>
+                            <option value="image/webp">WEBP</option>
+                        </select>
+                        <button id="img-conv-btn" class="btn">Convert</button>
+                    </div>
+                    <div id="img-conv-output" class="text-center mt-1"></div>
+                `,
+                onMount: () => {
+                    const input = document.getElementById('img-conv-input');
+                    const convertBtn = document.getElementById('img-conv-btn');
+                    const formatSelect = document.getElementById('img-conv-format');
+                    const outputDiv = document.getElementById('img-conv-output');
+
+                    convertBtn.addEventListener('click', () => {
+                        if (input.files.length === 0) {
+                            showNotification("Please select an image first.", 3000);
+                            return;
+                        }
+                        const file = input.files[0];
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0);
+
+                                const format = formatSelect.value;
+                                const extension = format.split('/')[1];
+                                const dataUrl = canvas.toDataURL(format);
+
+                                outputDiv.innerHTML = `
+                                    <p>Conversion successful!</p>
+                                    <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
+                                    <button class="btn mt-1" id="download-converted-image">Download Image</button>
+                                `;
+
+                                // Event listener for the new download button
+                                document.getElementById('download-converted-image').addEventListener('click', () => {
+                                    if (window.Android && typeof window.Android.downloadFile === 'function') {
+                                        // Call Android native function to download
+                                        window.Android.downloadFile(dataUrl, `converted-image.${extension}`);
+                                        showNotification("Download initiated via Android.", 3000);
+                                    } else {
+                                        // Fallback for browsers or if Android interface is not set up
+                                        const a = document.createElement('a');
+                                        a.href = dataUrl;
+                                        a.download = `converted-image.${extension}`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        showNotification("Download started.", 3000);
+                                    }
+                                });
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 }
             }),
             'image-compressor': () => ({
-                content: `<label for="img-comp-quality">Quality (0.1 to 1.0):</label> <input type="range" id="img-comp-quality" min="0.1" max="1.0" step="0.1" value="0.7" class="tool-input"> <div id="img-comp-output" class="mt-1"></div>`,
-                processor: async () => {
-                    if (uploadedFiles.length === 0) throw new Error("Please select an image.");
-                    const file = uploadedFiles[0];
-                    const quality = parseFloat(document.getElementById('img-comp-quality').value);
-                    const reader = new FileReader();
-                    const img = new Image();
-                    await new Promise(resolve => { reader.onload = e => { img.src = e.target.result; img.onload = resolve; }; reader.readAsDataURL(file); });
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width; canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    const blob = await new Promise(res => canvas.toBlob(res, file.type, quality));
-                    await downloadFile(blob, `compressed-image.${file.type.split('/')[1]}`, file.type);
+                title: 'Image Compressor',
+                content: `
+                    <input type="file" id="img-comp-input" class="tool-input" accept="image/jpeg,image/png">
+                    <label for="img-comp-quality">Quality (0.1 to 1.0):</label>
+                    <input type="range" id="img-comp-quality" min="0.1" max="1.0" step="0.1" value="0.7" class="tool-input">
+                    <button id="img-comp-btn" class="btn">Compress</button>
+                    <div id="img-comp-output" class="mt-1"></div>
+                `,
+                onMount: () => {
+                    const input = document.getElementById('img-comp-input');
+                    const qualitySlider = document.getElementById('img-comp-quality');
+                    const compressBtn = document.getElementById('img-comp-btn');
+                    const outputDiv = document.getElementById('img-comp-output');
+
+                    compressBtn.addEventListener('click', () => {
+                        if (input.files.length === 0) {
+                            showNotification("Please select an image.", 3000);
+                            return;
+                        }
+                        const file = input.files[0];
+                        if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+                            showNotification("Only JPG and PNG images are supported for compression.", 4000);
+                            return;
+                        }
+                        const reader = new FileReader();
+
+                        reader.onload = e => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0);
+
+                                const quality = parseFloat(qualitySlider.value);
+                                const dataUrl = canvas.toDataURL(file.type, quality);
+                                const originalSize = (file.size / 1024).toFixed(2);
+                                const newSize = (dataUrl.length * 0.75 / 1024).toFixed(2); // Approximation for Base64
+
+                                outputDiv.innerHTML = `
+                                    <p>Original Size: ${originalSize} KB | New Size: ${newSize} KB</p>
+                                    <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
+                                    <button class="btn mt-1" id="download-compressed-image">Download Image</button>
+                                `;
+
+                                // Event listener for the new download button
+                                document.getElementById('download-compressed-image').addEventListener('click', () => {
+                                    if (window.Android && typeof window.Android.downloadFile === 'function') {
+                                        // Determine file extension based on original type for more accuracy
+                                        const extension = file.type.split('/')[1] === 'jpeg' ? 'jpg' : file.type.split('/')[1];
+                                        window.Android.downloadFile(dataUrl, `compressed-image.${extension}`);
+                                        showNotification("Download initiated via Android.", 3000);
+                                    } else {
+                                        const a = document.createElement('a');
+                                        a.href = dataUrl;
+                                        a.download = `compressed-image.jpg`; // Fallback to .jpg for simplicity
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        showNotification("Download started.", 3000);
+                                    }
+                                });
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
                 }
             }),
-            'image-cropper': () => ({
-                content: `<div id="img-crop-container" style="position: relative; max-width: 100%; margin-top: 1rem;"></div>`,
-                processor: async () => { throw new Error("Image Cropper is not fully implemented yet."); }
-            }),
-            'video-converter': () => ({
-                content: `<video id="video-conv-preview" controls class="hidden" style="max-width: 100%; margin-top: 1rem;"></video>`,
-                processor: async () => { throw new Error("Video Converter is not fully implemented yet."); }
-            }),
-            'audio-converter': () => ({
-                content: `<audio id="audio-conv-preview" controls class="hidden" style="width: 100%; margin-top: 1rem;"></audio>`,
-                processor: async () => { throw new Error("Audio Converter is not fully implemented yet."); }
-            }),
-            'audio-trimmer': () => ({
-                content: `<p>Start Time (s): <input type="number" id="audio-trim-start" class="tool-input" value="0"></p><p>End Time (s): <input type="number" id="audio-trim-end" class="tool-input" value="10"></p>`,
-                processor: async () => { throw new Error("Audio Trimmer is not fully implemented yet."); }
-            }),
+            'image-cropper': () => ({ title: 'Image Cropper', content: ` <input type="file" id="img-crop-input" class="tool-input" accept="image/*"> <div id="img-crop-container" style="position: relative; max-width: 100%; margin-top: 1rem;"></div> <button id="img-crop-btn" class="btn mt-1 hidden">Crop & Download</button> <div id="img-crop-output" class="mt-1"></div> `, onMount: () => { showNotification("Cropper is a basic implementation. More features coming soon!", 4000); const input = document.getElementById('img-crop-input'); const container = document.getElementById('img-crop-container'); const cropBtn = document.getElementById('img-crop-btn'); let canvas, ctx, img, selection = {}; input.addEventListener('change', e => { if (e.target.files.length === 0) return; const reader = new FileReader(); reader.onload = res => { img = new Image(); img.onload = () => { container.innerHTML = ''; canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; container.append(canvas); canvas.style.maxWidth = '100%'; ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0); cropBtn.classList.remove('hidden'); let startX, startY; canvas.onmousedown = (e) => { startX = e.offsetX; startY = e.offsetY; canvas.onmousemove = (e) => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img, 0, 0); ctx.strokeStyle = 'red'; ctx.lineWidth = 2; ctx.strokeRect(startX, startY, e.offsetX - startX, e.offsetY - startY); }; }; canvas.onmouseup = (e) => { canvas.onmousemove = null; selection = { x: Math.min(startX, e.offsetX), y: Math.min(startY, e.offsetY), w: Math.abs(e.offsetX - startX), h: Math.abs(e.offsetY - startY) }; }; }; img.src = res.target.result; }; reader.readAsDataURL(e.target.files[0]); }); cropBtn.addEventListener('click', () => { if (!selection.w || !selection.h) { showNotification("Please select an area to crop.", 3000); return; } const cropCanvas = document.createElement('canvas'); cropCanvas.width = selection.w; cropCanvas.height = selection.h; const cropCtx = cropCanvas.getContext('2d'); cropCtx.drawImage(img, selection.x, selection.y, selection.w, selection.h, 0, 0, selection.w, selection.h); const dataUrl = cropCanvas.toDataURL('image/png');
+                // Use the Android interface for cropper as well for consistency
+                if (window.Android && typeof window.Android.downloadFile === 'function') {
+                    window.Android.downloadFile(dataUrl, 'cropped-image.png');
+                    showNotification("Image cropped and download initiated via Android.", 3000);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = 'cropped-image.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showNotification("Image cropped and download started.", 3000);
+                }
+            }); } }),
+            'video-converter': () => ({ title: 'Video Converter (to WEBM)', content: ` <input type="file" id="video-conv-input" class="tool-input" accept="video/*"> <video id="video-conv-preview" controls class="hidden" style="max-width: 100%; margin-top: 1rem;"></video> <div id="video-conv-controls" class="tool-controls mt-1 hidden"> <button id="video-conv-start-btn" class="btn">Start Conversion</button> </div> <div id="video-conv-output" class="mt-1"></div> `, onMount: () => { const input = document.getElementById('video-conv-input'); const preview = document.getElementById('video-conv-preview'); const controls = document.getElementById('video-conv-controls'); const startBtn = document.getElementById('video-conv-start-btn'); const outputDiv = document.getElementById('video-conv-output'); let stream, mediaRecorder, chunks = []; input.addEventListener('change', e => { if (e.target.files.length === 0) return; const file = e.target.files[0]; const url = URL.createObjectURL(file); preview.src = url; preview.classList.remove('hidden'); controls.classList.remove('hidden'); }); startBtn.addEventListener('click', () => { if (!preview.src) { showNotification("Please load a video first.", 3000); return; } showNotification("Conversion started... please wait.", 5000); startBtn.disabled = true; startBtn.textContent = "Converting..."; stream = preview.captureStream(); mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); mediaRecorder.ondataavailable = e => chunks.push(e.data); mediaRecorder.onstop = () => { const blob = new Blob(chunks, { type: 'video/webm' }); const url = URL.createObjectURL(blob); outputDiv.innerHTML = ` <p>Conversion to WEBM complete!</p> <button class="btn mt-1" id="download-converted-video">Download WEBM</button> `; // New: Handle download for video
+                document.getElementById('download-converted-video').addEventListener('click', () => {
+                    if (window.Android && typeof window.Android.downloadFile === 'function') {
+                        // For blobs, you might need to read them as DataURL first
+                        const reader = new FileReader();
+                        reader.onloadend = function() {
+                            window.Android.downloadFile(reader.result, 'converted-video.webm');
+                            showNotification("Video download initiated via Android.", 3000);
+                        };
+                        reader.readAsDataURL(blob);
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'converted-video.webm';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showNotification("Video download started.", 3000);
+                    }
+                });
+                startBtn.disabled = false; startBtn.textContent = "Start Conversion"; chunks = []; }; preview.play(); preview.onplaying = () => mediaRecorder.start(); preview.onended = () => mediaRecorder.stop(); }); } }),
+            'audio-converter': () => ({ title: 'Audio Converter (to WEBM/Opus)', content: ` <input type="file" id="audio-conv-input" class="tool-input" accept="audio/*"> <audio id="audio-conv-preview" controls class="hidden" style="width: 100%; margin-top: 1rem;"></audio> <button id="audio-conv-btn" class="btn mt-1 hidden">Convert</button> <div id="audio-conv-output" class="mt-1"></div> `, onMount: () => { showNotification("This tool is a placeholder. Implementation is similar to the video converter.", 4000); document.getElementById('audio-conv-input').addEventListener('change', e => { if (e.target.files.length > 0) { document.getElementById('audio-conv-preview').src = URL.createObjectURL(e.target.files[0]); document.getElementById('audio-conv-preview').classList.remove('hidden'); document.getElementById('audio-conv-btn').classList.remove('hidden'); } }); } }),
+            'audio-trimmer': () => ({ title: 'Audio Trimmer', content: ` <input type="file" id="audio-trim-input" class="tool-input" accept="audio/*"> <p>Start Time (s): <input type="number" id="audio-trim-start" class="tool-input" value="0"></p> <p>End Time (s): <input type="number" id="audio-trim-end" class="tool-input" value="10"></p> <button id="audio-trim-btn" class="btn">Trim</button> <div id="audio-trim-output" class="mt-1"></div> `, onMount: () => { showNotification("Audio Trimmer is a placeholder due to complexity. Full implementation requires Web Audio API.", 5000); } }),
             'age-calculator': () => ({ content: `<input type="date" id="age-dob-input" class="tool-input"><button id="age-calc-btn" class="btn">Calculate Age</button><div id="age-result" class="result-box mt-1"></div>`, onMount: () => { document.getElementById('age-calc-btn').addEventListener('click', () => { const dobInput = document.getElementById('age-dob-input'), resultBox = document.getElementById('age-result'); if (!dobInput.value) { resultBox.textContent = "Please select a date."; return; } const dob = new Date(dobInput.value), today = new Date(); let age = today.getFullYear() - dob.getFullYear(); const m = today.getMonth() - dob.getMonth(); if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; } resultBox.textContent = `You are ${age} years old.`; }); } }),
             'emi-calculator': () => ({ content: `<label for="emi-principal">Loan Amount ($):</label><input type="number" id="emi-principal" class="tool-input" placeholder="e.g., 100000"><label for="emi-rate">Annual Interest Rate (%):</label><input type="number" id="emi-rate" class="tool-input" placeholder="e.g., 7.5"><label for="emi-tenure">Loan Tenure (Years):</label><input type="number" id="emi-tenure" class="tool-input" placeholder="e.g., 10"><button id="emi-calc-btn" class="btn">Calculate EMI</button><div id="emi-result" class="result-box mt-1"></div>`, onMount: () => { document.getElementById('emi-calc-btn').addEventListener('click', () => { const P = parseFloat(document.getElementById('emi-principal').value), annualRate = parseFloat(document.getElementById('emi-rate').value), T = parseFloat(document.getElementById('emi-tenure').value), resultBox = document.getElementById('emi-result'); if (isNaN(P) || isNaN(annualRate) || isNaN(T) || P <= 0 || annualRate <= 0 || T <= 0) { resultBox.textContent = "Please enter valid positive numbers in all fields."; return; } const R = (annualRate / 12) / 100, N = T * 12, EMI = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1); if (isNaN(EMI)) { resultBox.textContent = "Could not calculate. Please check your inputs."; } else { resultBox.textContent = `Your monthly EMI is: $${EMI.toFixed(2)}`; } }); } }),
             'sip-calculator': () => ({ content: `<label for="sip-investment">Monthly Investment ($):</label><input type="number" id="sip-investment" class="tool-input" placeholder="e.g., 5000"><label for="sip-rate">Expected Annual Return Rate (%):</label><input type="number" id="sip-rate" class="tool-input" placeholder="e.g., 12"><label for="sip-tenure">Investment Period (Years):</label><input type="number" id="sip-tenure" class="tool-input" placeholder="e.g., 15"><button id="sip-calc-btn" class="btn">Calculate</button><div id="sip-result" class="result-box mt-1"></div>`, onMount: () => { document.getElementById('sip-calc-btn').addEventListener('click', () => { const P = parseFloat(document.getElementById('sip-investment').value), annualRate = parseFloat(document.getElementById('sip-rate').value), T = parseFloat(document.getElementById('sip-tenure').value), resultBox = document.getElementById('sip-result'); if (isNaN(P) || isNaN(annualRate) || isNaN(T) || P <= 0 || annualRate <= 0 || T <= 0) { resultBox.textContent = "Please enter valid positive numbers."; return; } const n = T * 12, i = (annualRate / 100) / 12, M = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i), totalInvested = P * n, wealthGained = M - totalInvested; resultBox.innerHTML = `<p>Total Invested: $${totalInvested.toFixed(2)}</p><p>Wealth Gained: $${wealthGained.toFixed(2)}</p><p><strong>Estimated Future Value: $${M.toFixed(2)}</strong></p>`; }); } }),
             'bmi-calculator': () => ({ content: `<div class="tool-controls"><select id="bmi-units" class="tool-select"><option value="metric">Metric (kg, cm)</option><option value="imperial">Imperial (lbs, in)</option></select></div><div id="bmi-metric-inputs"><label for="bmi-weight-kg">Weight (kg):</label><input type="number" id="bmi-weight-kg" class="tool-input"><label for="bmi-height-cm">Height (cm):</label><input type="number" id="bmi-height-cm" class="tool-input"></div><div id="bmi-imperial-inputs" class="hidden"><label for="bmi-weight-lbs">Weight (lbs):</label><input type="number" id="bmi-weight-lbs" class="tool-input"><label for="bmi-height-in">Height (in):</label><input type="number" id="bmi-height-in" class="tool-input"></div><button id="bmi-calc-btn" class="btn">Calculate BMI</button><div id="bmi-result" class="result-box mt-1"></div>`, onMount: () => { const unitSelect = document.getElementById('bmi-units'), metricInputs = document.getElementById('bmi-metric-inputs'), imperialInputs = document.getElementById('bmi-imperial-inputs'); unitSelect.addEventListener('change', () => { metricInputs.classList.toggle('hidden', unitSelect.value === 'imperial'); imperialInputs.classList.toggle('hidden', unitSelect.value === 'metric'); }); document.getElementById('bmi-calc-btn').addEventListener('click', () => { let weight, height; const resultBox = document.getElementById('bmi-result'); if (unitSelect.value === 'metric') { weight = parseFloat(document.getElementById('bmi-weight-kg').value); height = parseFloat(document.getElementById('bmi-height-cm').value) / 100; } else { weight = parseFloat(document.getElementById('bmi-weight-lbs').value); height = parseFloat(document.getElementById('bmi-height-in').value); } if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) { resultBox.textContent = "Please enter valid weight and height."; return; } let bmi; if (unitSelect.value === 'metric') { bmi = weight / (height * height); } else { bmi = (weight / (height * height)) * 703; } let category = ''; if (bmi < 18.5) category = 'Underweight'; else if (bmi < 24.9) category = 'Normal weight'; else if (bmi < 29.9) category = 'Overweight'; else category = 'Obesity'; resultBox.innerHTML = `Your BMI is <strong>${bmi.toFixed(1)}</strong>. This is considered <strong>${category}</strong>.`; }); } }),
-            'qr-code-generator': () => ({ content: `<input type="text" id="qr-text" class="tool-input" placeholder="https://example.com"><button id="qr-gen-btn" class="btn">Generate QR</button><div id="qr-output" class="text-center mt-1"></div>`, onMount: () => { const qrText = document.getElementById('qr-text'), genBtn = document.getElementById('qr-gen-btn'), output = document.getElementById('qr-output'); genBtn.addEventListener('click', () => { const text = qrText.value.trim(); if (!text) { return; } const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(text)}`; output.innerHTML = `<img src="${qrUrl}" alt="Generated QR Code" style="border:5px solid white; border-radius:var(--border-radius);"><a href="${qrUrl}&format=svg" download="qrcode.svg" class="btn mt-1">Download SVG</a>`; }); } }),
+            'qr-code-generator': () => ({ content: `<input type="text" id="qr-text" class="tool-input" placeholder="https://example.com"><button id="qr-gen-btn" class="btn">Generate QR</button><div id="qr-output" class="text-center mt-1"></div>`, onMount: () => { const qrText = document.getElementById('qr-text'), genBtn = document.getElementById('qr-gen-btn'), output = document.getElementById('qr-output'); genBtn.addEventListener('click', () => { const text = qrText.value.trim(); if (!text) { return; } const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(text)}`; output.innerHTML = `<img src="${qrUrl}" alt="Generated QR Code" style="border:5px solid white; border-radius:var(--border-radius);"><button class="btn mt-1" id="download-qr-code">Download SVG</button>`; // Changed to button for Android WebView
+                document.getElementById('download-qr-code').addEventListener('click', () => {
+                    const svgUrl = `${qrUrl}&format=svg`;
+                    // Fetch the SVG data and then pass it to Android as Data URL
+                    fetch(svgUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const reader = new FileReader();
+                            reader.onloadend = function() {
+                                if (window.Android && typeof window.Android.downloadFile === 'function') {
+                                    window.Android.downloadFile(reader.result, 'qrcode.svg');
+                                    showNotification("QR code download initiated via Android.", 3000);
+                                } else {
+                                    const a = document.createElement('a');
+                                    a.href = reader.result; // Use data URL from FileReader
+                                    a.download = 'qrcode.svg';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    showNotification("QR code download started.", 3000);
+                                }
+                            };
+                            reader.readAsDataURL(blob);
+                        })
+                        .catch(e => showNotification("Failed to download QR code.", 3000));
+                });
+            }); } }),
             'password-generator': () => ({ content: `<label for="pass-length">Password Length: <span id="pass-length-val">16</span></label><input type="range" id="pass-length" min="8" max="32" value="16" class="tool-input"><div class="tool-controls"><label><input type="checkbox" id="pass-upper" checked> Uppercase</label><label><input type="checkbox" id="pass-lower" checked> Lowercase</label><label><input type="checkbox" id="pass-nums" checked> Numbers</label><label><input type="checkbox" id="pass-syms" checked> Symbols</label></div><button id="pass-gen-btn" class="btn mt-1">Generate</button><div id="pass-result" class="result-box mt-1" style="cursor:pointer;" title="Click to copy"></div>`, onMount: () => { const lengthSlider = document.getElementById('pass-length'), lengthVal = document.getElementById('pass-length-val'), resultBox = document.getElementById('pass-result'), genBtn = document.getElementById('pass-gen-btn'), options = { upper: document.getElementById('pass-upper'), lower: document.getElementById('pass-lower'), nums: document.getElementById('pass-nums'), syms: document.getElementById('pass-syms'), }, chars = { upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', lower: 'abcdefghijklmnopqrstuvwxyz', nums: '0123456789', syms: '!@#$%^&*()_+-=[]{}|;:,.<>?' }; lengthSlider.addEventListener('input', () => lengthVal.textContent = lengthSlider.value); genBtn.addEventListener('click', () => { const length = parseInt(lengthSlider.value); let charset = ''; if (options.upper.checked) charset += chars.upper; if (options.lower.checked) charset += chars.lower; if (options.nums.checked) charset += chars.nums; if (options.syms.checked) charset += chars.syms; if (charset === '') { resultBox.textContent = "Please select at least one character type."; return; } let password = ''; for (let i = 0; i < length; i++) { password += charset.charAt(Math.floor(Math.random() * charset.length)); } resultBox.textContent = password; }); resultBox.addEventListener('click', () => { if (resultBox.textContent && resultBox.textContent.length > 1) { navigator.clipboard.writeText(resultBox.textContent); } }); } }),
             'word-counter': () => ({ content: `<textarea id="wc-text" class="tool-textarea" placeholder="Start typing or paste your text here..."></textarea><div id="wc-result" class="result-box">Words: 0 | Characters: 0 | Sentences: 0</div>`, onMount: () => { const textarea = document.getElementById('wc-text'), resultBox = document.getElementById('wc-result'); textarea.addEventListener('input', () => { const text = textarea.value, words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length, chars = text.length, sentences = (text.match(/[.!?]+/g) || []).length; resultBox.textContent = `Words: ${words} | Characters: ${chars} | Sentences: ${sentences}`; }); } }),
             'base64-encoder': () => ({ content: `<textarea id="b64-input" class="tool-textarea" placeholder="Enter text to encode or Base64 to decode..."></textarea><div class="tool-controls"><button id="b64-encode-btn" class="btn">Encode</button><button id="b64-decode-btn" class="btn btn-secondary">Decode</button></div><div id="b64-result" class="result-box mt-1"></div>`, onMount: () => { const input = document.getElementById('b64-input'), resultBox = document.getElementById('b64-result'); document.getElementById('b64-encode-btn').addEventListener('click', () => { try { resultBox.textContent = btoa(input.value); } catch(e) { resultBox.textContent = "Error encoding text."; } }); document.getElementById('b64-decode-btn').addEventListener('click', () => { try { resultBox.textContent = atob(input.value); } catch(e) { resultBox.textContent = "Invalid Base64 string."; } }); } }),
@@ -354,7 +566,7 @@
             'unit-converter': () => ({ content: `<div class="tool-controls"><input type="number" id="unit-input" class="tool-input" placeholder="Enter value"><select id="unit-from" class="tool-select"></select><span>to</span><select id="unit-to" class="tool-select"></select></div><select id="unit-category" class="tool-select mt-1"><option value="length">Length</option><option value="weight">Weight</option><option value="temperature">Temperature</option></select><div id="unit-result" class="result-box mt-1"></div>`, onMount: () => { const units = { length: { meter: 1, kilometer: 1000, centimeter: 0.01, mile: 1609.34, foot: 0.3048, inch: 0.0254 }, weight: { gram: 1, kilogram: 1000, pound: 453.592, ounce: 28.3495 }, temperature: {} }; const categorySelect = document.getElementById('unit-category'), fromSelect = document.getElementById('unit-from'), toSelect = document.getElementById('unit-to'), input = document.getElementById('unit-input'), resultBox = document.getElementById('unit-result'); function populateUnits() { const category = categorySelect.value; let options = ''; if (category === 'temperature') { options = `<option>celsius</option><option>fahrenheit</option><option>kelvin</option>`; } else { options = Object.keys(units[category]).map(u => `<option value="${u}">${u}</option>`).join(''); } fromSelect.innerHTML = options; toSelect.innerHTML = options; } function convert() { const val = parseFloat(input.value); if (isNaN(val)) { resultBox.textContent = ''; return; } const category = categorySelect.value, fromUnit = fromSelect.value, toUnit = toSelect.value; let result; if (category === 'temperature') { if (fromUnit === toUnit) result = val; else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') result = (val * 9/5) + 32; else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') result = (val - 32) * 5/9; else if (fromUnit === 'celsius' && toUnit === 'kelvin') result = val + 273.15; else if (fromUnit === 'kelvin' && toUnit === 'celsius') result = val - 273.15; else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') result = (val - 32) * 5/9 + 273.15; else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') result = (val - 273.15) * 9/5 + 32; } else { const baseValue = val * units[category][fromUnit]; result = baseValue / units[category][toUnit]; } resultBox.textContent = `${val} ${fromUnit} = ${result.toFixed(4)} ${toUnit}`; } categorySelect.addEventListener('change', populateUnits); input.addEventListener('input', convert); fromSelect.addEventListener('change', convert); toSelect.addEventListener('change', convert); populateUnits(); } }),
             'timer-stopwatch': () => ({ content: `<div class="tool-controls"><button id="ts-mode-stopwatch" class="btn">Stopwatch</button><button id="ts-mode-timer" class="btn btn-secondary">Timer</button></div><div id="ts-timer-inputs" class="hidden mt-1 tool-controls"><input type="number" id="ts-hours" class="tool-input" min="0" placeholder="H"><input type="number" id="ts-minutes" class="tool-input" min="0" max="59" placeholder="M"><input type="number" id="ts-seconds" class="tool-input" min="0" max="59" placeholder="S"></div><div id="ts-display" class="result-box mt-1" style="font-size: 2.5rem; text-align: center; font-family: 'Courier New', monospace;">00:00:00.000</div><div class="tool-controls mt-1"><button id="ts-start-btn" class="btn">Start</button><button id="ts-stop-btn" class="btn btn-secondary">Stop</button><button id="ts-reset-btn" class="btn">Reset</button></div>`, onMount: () => { let mode = 'stopwatch', interval, startTime, elapsedTime = 0, timerDuration = 0; const display = document.getElementById('ts-display'), timerInputs = document.getElementById('ts-timer-inputs'), h_in = document.getElementById('ts-hours'), m_in = document.getElementById('ts-minutes'), s_in = document.getElementById('ts-seconds'); function formatTime(ms) { const date = new Date(ms), minutes = date.getUTCMinutes().toString().padStart(2, '0'), seconds = date.getUTCSeconds().toString().padStart(2, '0'), milliseconds = date.getUTCMilliseconds().toString().padStart(3, '0'); if(ms >= 3600000) { const hours = Math.floor(ms / 3600000).toString().padStart(2, '0'); return `${hours}:${minutes}:${seconds}.${milliseconds}`; } return `${minutes}:${seconds}.${milliseconds}`; } function updateDisplay() { if (mode === 'stopwatch') { const now = Date.now(); elapsedTime = now - startTime; display.textContent = formatTime(elapsedTime); } else { const remaining = timerDuration - (Date.now() - startTime); if (remaining <= 0) { clearInterval(interval); interval = null; display.textContent = '00:00:00.000'; return; } display.textContent = formatTime(remaining); } } document.getElementById('ts-mode-stopwatch').addEventListener('click', () => { mode = 'stopwatch'; timerInputs.classList.add('hidden'); reset(); }); document.getElementById('ts-mode-timer').addEventListener('click', () => { mode = 'timer'; timerInputs.classList.remove('hidden'); reset(); }); document.getElementById('ts-start-btn').addEventListener('click', () => { if (interval) return; if (mode === 'timer') { const h = parseInt(h_in.value) || 0, m = parseInt(m_in.value) || 0, s = parseInt(s_in.value) || 0; timerDuration = (h * 3600 + m * 60 + s) * 1000; if (timerDuration <= 0) { return; } } startTime = Date.now() - elapsedTime; interval = setInterval(updateDisplay, 10); }); document.getElementById('ts-stop-btn').addEventListener('click', () => { clearInterval(interval); interval = null; }); function reset() { clearInterval(interval); interval = null; elapsedTime = 0; if (mode === 'stopwatch') { display.textContent = '00:00:00.000'; } else { display.textContent = '00:00:00.000'; h_in.value = ''; m_in.value = ''; s_in.value = ''; } } document.getElementById('ts-reset-btn').addEventListener('click', reset); } })
         };
-        
+
         renderToolCards();
     });
     </script>
