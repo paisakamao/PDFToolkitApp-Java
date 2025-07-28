@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pdf.toolkit">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- All your permissions are correct -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
@@ -16,31 +14,25 @@
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.PDFToolkit">
 
-        <!-- Activity 1: The Home Screen (The only LAUNCHER) -->
         <activity android:name=".HomeActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Activity 2: The WebView for your tools -->
         <activity android:name=".MainActivity" android:exported="false" />
+        
+        <!-- THIS IS THE FIX: This activity now uses a theme WITH a title bar. -->
+        <activity
+            android:name=".AllFilesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
-        <!-- Activity 3: The native screen for listing all files -->
-        <activity android:name=".AllFilesActivity" android:exported="false" />
-
-        <!-- START: THIS IS THE NEW ACTIVITY DECLARATION -->
-        <!-- This tells the Android system that your in-app PDF viewer screen exists. -->
         <activity
             android:name=".PdfViewerActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <!-- END: THIS IS THE NEW ACTIVITY DECLARATION -->
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
-
-        <!-- START: THIS IS THE NEW FILE PROVIDER BLOCK -->
-        <!-- This is the 'security guard' that allows safe file sharing. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.pdf.toolkit.fileprovider"
@@ -50,7 +42,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <!-- END: THIS IS THE NEW FILE PROVIDER BLOCK -->
 
     </application>
 </manifest>
