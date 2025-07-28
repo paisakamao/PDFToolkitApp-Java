@@ -16,6 +16,10 @@ public class PdfViewerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_viewer);
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("File Viewer");
+        }
+
         PDFView pdfView = findViewById(R.id.pdfView);
         Intent intent = getIntent();
         String filePath = intent.getStringExtra(EXTRA_FILE_NAME);
