@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Your existing, correct colors -->
+    <!-- Default Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
 
-    <!-- The colors for your new theme -->
+    <!-- Your Custom Theme Colors -->
     <color name="home_background">#FCFCF8</color>
     <color name="card_background">#E1F5FE</color>
-    
-    <!-- START: THIS IS THE MISSING LINE THAT CAUSED THE BUILD TO FAIL -->
     <color name="soft_gray">#F0F0F0</color>
-    <!-- Add this new color for the file details text -->
-    <color name="file_details_text">#555555</color>
-    <!-- END: THIS IS THE MISSING LINE -->
     
+    <!-- Title and Separator Colors -->
+    <color name="title_text_color">#4267B2</color>
+    <color name="subtitle_text_color">#666666</color>
+    <color name="separator_color">#42F8F5</color> <!-- Your custom separator color -->
 </resources>
