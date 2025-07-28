@@ -44,9 +44,11 @@ public class AllFilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
+        // --- START: THIS IS THE MISSING TITLE BAR CODE ---
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("All Files");
         }
+        // --- END: THIS IS THE MISSING TITLE BAR CODE ---
 
         recyclerView = findViewById(R.id.recycler_view_files);
         permissionView = findViewById(R.id.permission_needed_view);
@@ -66,81 +68,12 @@ public class AllFilesActivity extends AppCompatActivity {
         checkPermissionAndLoadFiles();
     }
 
-    private void checkPermissionAndLoadFiles() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (Environment.isExternalStorageManager()) {
-                loadFilesFromStorage();
-            } else {
-                showPermissionNeededUI();
-                if (fileList.isEmpty()) {
-                    Intent i = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                    Uri u = Uri.fromParts("package", getPackageName(), null);
-                    i.setData(u);
-                    requestAllFilesAccessLauncher.launch(i);
-                }
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                loadFilesFromStorage();
-            } else {
-                showPermissionNeededUI();
-                if (fileList.isEmpty()) {
-                    requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                }
-            }
-        }
-    }
-
-    private void loadFilesFromStorage() {
-        showLoadingUI();
-        new Thread(() -> {
-            final List<FileItem> realFiles = new ArrayList<>();
-            Uri collection = MediaStore.Files.getContentUri("external");
-            
-            String[] projection = { MediaStore.Files.FileColumns.DISPLAY_NAME, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED, MediaStore.Files.FileColumns.DATA };
-            
-            List<String> selectionArgsList = new ArrayList<>();
-            StringBuilder selection = new StringBuilder();
-            String[] mimeTypes = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"};
-            selection.append(MediaStore.Files.FileColumns.MIME_TYPE + " IN (");
-            for (int i = 0; i < mimeTypes.length; i++) {
-                selection.append("?,");
-                selectionArgsList.add(mimeTypes[i]);
-            }
-            selection.deleteCharAt(selection.length() - 1);
-            selection.append(")");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                selection.append(" AND " + MediaStore.MediaColumns.IS_TRASHED + " = 0");
-            }
-            selection.append(" AND " + MediaStore.Files.FileColumns.DATA + " NOT LIKE ?");
-            selectionArgsList.add("%/.%");
-            selection.append(" AND " + MediaStore.Files.FileColumns.DATA + " NOT LIKE ?");
-            selectionArgsList.add("%/Android/data/%");
-
-            String sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC";
-            String[] selectionArgs = selectionArgsList.toArray(new String[0]);
-
-            try (Cursor cursor = getContentResolver().query(collection, projection, selection.toString(), selectionArgs, sortOrder)) {
-                if (cursor != null) {
-                    while (cursor.moveToNext()) {
-                        String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME));
-                        long size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE));
-                        long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED));
-                        String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA));
-                        realFiles.add(new FileItem(name, size, date * 1000, path));
-                    }
-                }
-            } catch (Exception e) { e.printStackTrace(); }
-
-            runOnUiThread(() -> {
-                showFileListUI();
-                fileList.clear();
-                fileList.addAll(realFiles);
-                adapter.notifyDataSetChanged();
-            });
-        }).start();
-    }
-
+    // The rest of your AllFilesActivity.java file is already correct and does not need to be changed.
+    private void checkPermissionAndLoadFiles(){if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){if(Environment.isExternalStorageManager()){loadFilesFromStorage();}else{showPermissionNeededUI();if(fileList.isEmpty()){Intent i=new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);Uri u=Uri.fromParts("package",getPackageName(),null);i.setData(u);requestAllFilesAccessLauncher.launch(i);}}}else{if(ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){loadFilesFromStorage();}else{showPermissionNeededUI();if(fileList.isEmpty()){requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);}}}}
+    private void loadFilesFromStorage(){showLoadingUI();new Thread(()->{final List<FileItem>realFiles=new ArrayList<>();Uri c=MediaStore.Files.getContentUri("external");String[]p={MediaStore.Files.FileColumns.DISPLAY_NAME,MediaStore.Files.FileColumns.SIZE,MediaStore.Files.FileColumns.DATE_MODIFIED,MediaStore.Files.FileColumns.DATA};List<String>saL=new ArrayList<>();StringBuilder s=new StringBuilder();String[]m={"application/pdf","application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document","text/plain"};s.append(MediaStore.Files.FileColumns.MIME_TYPE+" IN (");for(int i=0;i<m.length;i++){s.append("?,");saL.add(m[i]);}
+    s.deleteCharAt(s.length()-1);s.append(")");if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){s.append(" AND "+MediaStore.MediaColumns.IS_TRASHED+" = 0");}
+    s.append(" AND "+MediaStore.Files.FileColumns.DATA+" NOT LIKE ?");saL.add("%/.%");s.append(" AND "+MediaStore.Files.FileColumns.DATA+" NOT LIKE ?");saL.add("%/Android/data/%");String so=MediaStore.Files.FileColumns.DATE_MODIFIED+" DESC";String[]sa=saL.toArray(new String[0]);try(Cursor cs=getContentResolver().query(c,p,s.toString(),sa,so)){if(cs!=null){while(cs.moveToNext()){String n=cs.getString(cs.getColumnIndexOrThrow(p[0]));long si=cs.getLong(cs.getColumnIndexOrThrow(p[1]));long d=cs.getLong(cs.getColumnIndexOrThrow(p[2]));String pa=cs.getString(cs.getColumnIndexOrThrow(p[3]));realFiles.add(new FileItem(n,si,d*1000,pa));}}}catch(Exception e){e.printStackTrace();}
+    runOnUiThread(()->{showFileListUI();fileList.clear();fileList.addAll(realFiles);adapter.notifyDataSetChanged();});}).start();}
     private void openFileBasedOnType(FileItem item){if(item.name!=null&&item.name.toLowerCase().endsWith(".pdf")){openPdfInApp(item);}else{openFileExternally(item);}}
     private void openPdfInApp(FileItem item){Intent i=new Intent(this,PdfViewerActivity.class);i.putExtra(PdfViewerActivity.EXTRA_FILE_NAME,item.path);startActivity(i);}
     private void openFileExternally(FileItem item){File f=new File(item.path);if(!f.exists()){Toast.makeText(this,"Error: File no longer exists.",Toast.LENGTH_SHORT).show();return;}
