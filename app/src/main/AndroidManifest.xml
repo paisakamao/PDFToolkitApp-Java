@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- All your permissions are correct -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- We REMOVE the global theme from the <application> tag to be explicit. -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="PDF Toolkit"
         android:supportsRtl="true"
-        android:requestLegacyExternalStorage="true"
-        android:theme="@style/Theme.PDFToolkit.NoActionBar"> <!-- Default is NoActionBar -->
+        android:requestLegacyExternalStorage="true">
 
+        <!-- Home Activity uses the NO ACTION BAR theme -->
         <activity
             android:name=".HomeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity" android:exported="false" />
+        <!-- WebView Activity uses the NO ACTION BAR theme -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
         
+        <!-- All Files Activity uses the theme WITH an ACTION BAR -->
         <activity
             android:name=".AllFilesActivity"
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.WithActionBar" />
 
+        <!-- PDF Viewer Activity also uses the theme WITH an ACTION BAR -->
         <activity
             android:name=".PdfViewerActivity"
             android:exported="false"
