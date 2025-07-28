@@ -1,49 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-Generated code
-<!-- 1. Base Application Theme -->
-<!-- This is the main theme for your entire app. -->
-<style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
-    <!-- Your custom colors -->
-    <item name="colorPrimary">#1c222d</item>
-    <item name="colorPrimaryVariant">#12151a</item>
-    <item name="colorOnPrimary">#ffffff</item>
-    <item name="colorSecondary">#00ffff</item>
+
+    <!-- 1. Base Application Theme (NO title bar) -->
+    <!-- This is the main theme for your Home Screen. -->
+    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Setting the status bar, background, and navigation bar -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+        <item name="android:navigationBarColor">@color/soft_gray</item>
+    </style>
+
+    <!-- 2. A separate theme for screens that HAVE a title bar -->
+    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Set the background color of the title bar to match the screen -->
+        <item name="colorPrimary">@color/home_background</item>
+        <!-- Set the color of the text in the title bar to black to be visible -->
+        <item name="android:textColorPrimary">@color/black</item>
+        <!-- Set the color of the status bar (the very top of the phone screen) -->
+        <item name="colorPrimaryDark">@color/home_background</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+    </style>
+
+    <!-- 3. Styles for the Home Screen Cards -->
+    <!-- These styles are used by the activity_home.xml layout. -->
+    <style name="HomeCardStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_margin">12dp</item>
+    </style>
+
+    <style name="HomeCardLayoutStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">120dp</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">16dp</item>
+    </style>
     
-    <!-- Setting the status bar, background, and navigation bar -->
-    <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
-    <item name="android:windowBackground">@color/home_background</item>
-    <item name="android:navigationBarColor">@color/soft_gray</item>
-</style>
+    <style name="HomeCardIconStyle">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
 
-<!-- 2. Styles for the New Native Home Screen -->
-<!-- These styles are used by the activity_home.xml layout. -->
-<!-- They are OUTSIDE the other style block, but INSIDE the resources block. -->
+    <style name="HomeCardTextStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 
-<style name="HomeCardStyle">
-    <item name="android:layout_width">0dp</item>
-    <item name="android:layout_height">wrap_content</item>
-    <item name="android:layout_columnWeight">1</item>
-    <item name="android:layout_margin">12dp</item>
-</style>
-
-<style name="HomeCardLayoutStyle">
-    <item name="android:layout_width">match_parent</item>
-    <item name="android:layout_height">120dp</item>
-    <item name="android:orientation">vertical</item>
-    <item name="android:gravity">center</item>
-    <item name="android:padding">16dp</item>
-</style>
-
-<style name="HomeCardIconStyle">
-    <item name="android:layout_width">48dp</item>
-    <item name="android:layout_height">48dp</item>
-    <item name="android:layout_marginBottom">8dp</item>
-</style>
-
-<style name="HomeCardTextStyle">
-    <item name="android:layout_width">wrap_content</item>
-    <item name="android:layout_height">wrap_content</item>
-    <item name="android:textColor">#000000</item>
-    <item name="android:textSize">16sp</item>
-</style>
+</resources>
