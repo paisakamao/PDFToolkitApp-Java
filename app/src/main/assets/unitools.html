@@ -394,8 +394,8 @@
 
                                 // Event listener for the new download button
                                 document.getElementById('download-converted-image').addEventListener('click', () => {
+                                    // Modified to call Android.downloadFile directly with base64 data
                                     if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                        // Call Android native function to download
                                         window.Android.downloadFile(dataUrl, `converted-image.${extension}`);
                                         showNotification("Download initiated via Android.", 3000);
                                     } else {
@@ -406,7 +406,7 @@
                                         document.body.appendChild(a);
                                         a.click();
                                         document.body.removeChild(a);
-                                        showNotification("Download started.", 3000);
+                                        showNotification("Download started (browser fallback).", 3000);
                                     }
                                 });
                             };
@@ -477,7 +477,7 @@
                                         document.body.appendChild(a);
                                         a.click();
                                         document.body.removeChild(a);
-                                        showNotification("Download started.", 3000);
+                                        showNotification("Download started (browser fallback).", 3000);
                                     }
                                 });
                             };
@@ -499,7 +499,7 @@
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    showNotification("Image cropped and download started.", 3000);
+                    showNotification("Image cropped and download started (browser fallback).", 3000);
                 }
             }); } }),
             'video-converter': () => ({ title: 'Video Converter (to WEBM)', content: ` <input type="file" id="video-conv-input" class="tool-input" accept="video/*"> <video id="video-conv-preview" controls class="hidden" style="max-width: 100%; margin-top: 1rem;"></video> <div id="video-conv-controls" class="tool-controls mt-1 hidden"> <button id="video-conv-start-btn" class="btn">Start Conversion</button> </div> <div id="video-conv-output" class="mt-1"></div> `, onMount: () => { const input = document.getElementById('video-conv-input'); const preview = document.getElementById('video-conv-preview'); const controls = document.getElementById('video-conv-controls'); const startBtn = document.getElementById('video-conv-start-btn'); const outputDiv = document.getElementById('video-conv-output'); let stream, mediaRecorder, chunks = []; input.addEventListener('change', e => { if (e.target.files.length === 0) return; const file = e.target.files[0]; const url = URL.createObjectURL(file); preview.src = url; preview.classList.remove('hidden'); controls.classList.remove('hidden'); }); startBtn.addEventListener('click', () => { if (!preview.src) { showNotification("Please load a video first.", 3000); return; } showNotification("Conversion started... please wait.", 5000); startBtn.disabled = true; startBtn.textContent = "Converting..."; stream = preview.captureStream(); mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); mediaRecorder.ondataavailable = e => chunks.push(e.data); mediaRecorder.onstop = () => { const blob = new Blob(chunks, { type: 'video/webm' }); const url = URL.createObjectURL(blob); outputDiv.innerHTML = ` <p>Conversion to WEBM complete!</p> <button class="btn mt-1" id="download-converted-video">Download WEBM</button> `; // New: Handle download for video
@@ -519,7 +519,7 @@
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        showNotification("Video download started.", 3000);
+                        showNotification("Video download started (browser fallback).", 3000);
                     }
                 });
                 startBtn.disabled = false; startBtn.textContent = "Start Conversion"; chunks = []; }; preview.play(); preview.onplaying = () => mediaRecorder.start(); preview.onended = () => mediaRecorder.stop(); }); } }),
@@ -548,7 +548,7 @@
                                     document.body.appendChild(a);
                                     a.click();
                                     document.body.removeChild(a);
-                                    showNotification("QR code download started.", 3000);
+                                    showNotification("QR code download started (browser fallback).", 3000);
                                 }
                             };
                             reader.readAsDataURL(blob);
@@ -561,8 +561,64 @@
             'base64-encoder': () => ({ content: `<textarea id="b64-input" class="tool-textarea" placeholder="Enter text to encode or Base64 to decode..."></textarea><div class="tool-controls"><button id="b64-encode-btn" class="btn">Encode</button><button id="b64-decode-btn" class="btn btn-secondary">Decode</button></div><div id="b64-result" class="result-box mt-1"></div>`, onMount: () => { const input = document.getElementById('b64-input'), resultBox = document.getElementById('b64-result'); document.getElementById('b64-encode-btn').addEventListener('click', () => { try { resultBox.textContent = btoa(input.value); } catch(e) { resultBox.textContent = "Error encoding text."; } }); document.getElementById('b64-decode-btn').addEventListener('click', () => { try { resultBox.textContent = atob(input.value); } catch(e) { resultBox.textContent = "Invalid Base64 string."; } }); } }),
             'json-formatter': () => ({ content: `<textarea id="json-input" class="tool-textarea" placeholder="Paste your JSON here..."></textarea><button id="json-format-btn" class="btn">Format JSON</button><div id="json-result" class="result-box mt-1"><pre><code id="json-output"></code></pre></div>`, onMount: () => { const input = document.getElementById('json-input'), outputCode = document.getElementById('json-output'), resultBox = document.getElementById('json-result'); document.getElementById('json-format-btn').addEventListener('click', () => { try { const jsonObj = JSON.parse(input.value); outputCode.textContent = JSON.stringify(jsonObj, null, 4); resultBox.style.borderColor = 'var(--color-border)'; } catch (e) { outputCode.textContent = `Invalid JSON: ${e.message}`; resultBox.style.borderColor = 'red'; } }); } }),
             'color-picker': () => ({ content: `<div class="text-center"><input type="color" id="color-picker-input" value="#007bff" style="width:150px; height:150px; border:none; background:none; padding:0; border-radius: 50%; cursor: pointer;"></div><div id="color-values" class="result-box mt-1"></div>`, onMount: () => { const picker = document.getElementById('color-picker-input'), valuesBox = document.getElementById('color-values'); function updateValues(hex) { const rgb = hexToRgb(hex), hsl = rgbToHsl(rgb.r, rgb.g, rgb.b); valuesBox.innerHTML = `<strong>HEX:</strong> ${hex}<br><strong>RGB:</strong> rgb(${rgb.r}, ${rgb.g}, ${rgb.b})<br><strong>HSL:</strong> hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`; } picker.addEventListener('input', () => updateValues(picker.value)); updateValues(picker.value); function hexToRgb(hex) { let r = 0, g = 0, b = 0; if (hex.length == 4) { r = "0x" + hex[1] + hex[1]; g = "0x" + hex[2] + hex[2]; b = "0x" + hex[3] + hex[3]; } else if (hex.length == 7) { r = "0x" + hex[1] + hex[2]; g = "0x" + hex[3] + hex[4]; b = "0x" + hex[5] + hex[6]; } return { r: +r, g: +g, b: +b }; } function rgbToHsl(r, g, b) { r /= 255; g /= 255; b /= 255; let max = Math.max(r, g, b), min = Math.min(r, g, b); let h, s, l = (max + min) / 2; if (max == min) { h = s = 0; } else { let d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min); switch (max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; } h /= 6; } return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) }; } } }),
-            'text-to-speech': () => ({ content: `<textarea id="tts-text" class="tool-textarea" placeholder="Enter text to speak..."></textarea><label for="tts-voice">Voice:</label><select id="tts-voice" class="tool-select"></select><div class="tool-controls"><button id="tts-speak-btn" class="btn">Speak</button><button id="tts-stop-btn" class="btn btn-secondary">Stop</button></div>`, onMount: () => { const synth = window.speechSynthesis; if (!synth) { return; } const textInput = document.getElementById('tts-text'), voiceSelect = document.getElementById('tts-voice'); let voices = []; function populateVoiceList() { voices = synth.getVoices(); voiceSelect.innerHTML = voices.map((voice, i) => `<option value="${i}">${voice.name} (${voice.lang})</option>`).join(''); } populateVoiceList(); if (synth.onvoiceschanged !== undefined) { synth.onvoiceschanged = populateVoiceList; } document.getElementById('tts-speak-btn').addEventListener('click', () => { if (synth.speaking) { return; } if (textInput.value !== '') { const utterThis = new SpeechSynthesisUtterance(textInput.value); utterThis.voice = voices[voiceSelect.value]; synth.speak(utterThis); } }); document.getElementById('tts-stop-btn').addEventListener('click', () => { synth.cancel(); }); } }),
-            'speech-to-text': () => ({ content: `<div class="tool-controls"><button id="stt-start-btn" class="btn">Start Listening</button><button id="stt-stop-btn" class="btn btn-secondary">Stop Listening</button></div><div id="stt-result" class="result-box mt-1">Your transcribed text will appear here...</div>`, onMount: () => { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { return; } const recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US'; const startBtn = document.getElementById('stt-start-btn'), stopBtn = document.getElementById('stt-stop-btn'), resultBox = document.getElementById('stt-result'); let final_transcript = ''; recognition.onresult = (event) => { let interim_transcript = ''; for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { final_transcript += event.results[i][0].transcript; } else { interim_transcript += event.results[i][0].transcript; } } resultBox.innerHTML = final_transcript + `<span style="color:var(--color-text-secondary);">${interim_transcript}</span>`; }; startBtn.addEventListener('click', () => { final_transcript = ''; resultBox.textContent = 'Listening...'; recognition.start(); startBtn.disabled = true; stopBtn.disabled = false; }); stopBtn.addEventListener('click', () => { recognition.stop(); startBtn.disabled = false; stopBtn.disabled = true; }); } }),
+            'text-to-speech': () => ({
+                content: `<textarea id="tts-text" class="tool-textarea" placeholder="Enter text to speak..."></textarea><label for="tts-voice">Voice:</label><select id="tts-voice" class="tool-select"></select><div class="tool-controls"><button id="tts-speak-btn" class="btn">Speak</button><button id="tts-stop-btn" class="btn btn-secondary">Stop</button></div>`,
+                onMount: () => {
+                    const synth = window.speechSynthesis;
+                    if (!synth) {
+                        showNotification("Text-to-Speech is not supported in this browser/WebView.", 5000);
+                        return;
+                    }
+
+                    const textInput = document.getElementById('tts-text');
+                    const voiceSelect = document.getElementById('tts-voice');
+                    let voices = [];
+
+                    function populateVoiceList() {
+                        voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name)); // Sort voices alphabetically
+                        voiceSelect.innerHTML = voices.map((voice, i) =>
+                            `<option value="${i}" ${voice.default ? 'selected' : ''}>${voice.name} (${voice.lang})</option>`
+                        ).join('');
+                        if (voices.length === 0) {
+                            showNotification("No Text-to-Speech voices found. Please check device settings.", 5000);
+                        }
+                    }
+
+                    // Attempt to populate voices immediately
+                    populateVoiceList();
+
+                    // Listen for when voices are loaded/changed
+                    if (synth.onvoiceschanged !== undefined) {
+                        synth.onvoiceschanged = populateVoiceList;
+                    } else {
+                        // Fallback for browsers that don't trigger onvoiceschanged immediately
+                        setTimeout(populateVoiceList, 500); // Try again after a short delay
+                    }
+
+                    document.getElementById('tts-speak-btn').addEventListener('click', () => {
+                        if (synth.speaking) {
+                            showNotification("Already speaking. Please stop current speech first.", 3000);
+                            return;
+                        }
+                        if (textInput.value.trim() !== '') {
+                            const utterThis = new SpeechSynthesisUtterance(textInput.value);
+                            utterThis.voice = voices[voiceSelect.value];
+                            // Optional: Set language explicitly if voice is not found
+                            if (!utterThis.voice && voices.length > 0) {
+                                utterThis.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+                            }
+                            synth.speak(utterThis);
+                        } else {
+                            showNotification("Please enter text to speak.", 3000);
+                        }
+                    });
+
+                    document.getElementById('tts-stop-btn').addEventListener('click', () => {
+                        synth.cancel();
+                    });
+                }
+            }),
+            'speech-to-text': () => ({ content: `<div class="tool-controls"><button id="stt-start-btn" class="btn">Start Listening</button><button id="stt-stop-btn" class="btn btn-secondary">Stop Listening</button></div><div id="stt-result" class="result-box mt-1">Your transcribed text will appear here...</div>`, onMount: () => { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { showNotification("Speech-to-Text is not supported in this browser/WebView.", 5000); return; } const recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US'; const startBtn = document.getElementById('stt-start-btn'), stopBtn = document.getElementById('stt-stop-btn'), resultBox = document.getElementById('stt-result'); let final_transcript = ''; recognition.onresult = (event) => { let interim_transcript = ''; for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { final_transcript += event.results[i][0].transcript; } else { interim_transcript += event.results[i][0].transcript; } } resultBox.innerHTML = final_transcript + `<span style="color:var(--color-text-secondary);">${interim_transcript}</span>`; }; // Handle errors, e.g., if mic permission is denied recognition.onerror = (event) => { showNotification(`Speech recognition error: ${event.error}`, 5000); startBtn.disabled = false; stopBtn.disabled = true; }; recognition.onend = () => { showNotification("Speech recognition stopped.", 3000); }; startBtn.addEventListener('click', () => { final_transcript = ''; resultBox.textContent = 'Listening...'; recognition.start(); startBtn.disabled = true; stopBtn.disabled = false; }); stopBtn.addEventListener('click', () => { recognition.stop(); startBtn.disabled = false; stopBtn.disabled = true; }); } }),
             'unit-converter': () => ({ content: `<div class="tool-controls"><input type="number" id="unit-input" class="tool-input" placeholder="Enter value"><select id="unit-from" class="tool-select"></select><span>to</span><select id="unit-to" class="tool-select"></select></div><select id="unit-category" class="tool-select mt-1"><option value="length">Length</option><option value="weight">Weight</option><option value="temperature">Temperature</option></select><div id="unit-result" class="result-box mt-1"></div>`, onMount: () => { const units = { length: { meter: 1, kilometer: 1000, centimeter: 0.01, mile: 1609.34, foot: 0.3048, inch: 0.0254 }, weight: { gram: 1, kilogram: 1000, pound: 453.592, ounce: 28.3495 }, temperature: {} }; const categorySelect = document.getElementById('unit-category'), fromSelect = document.getElementById('unit-from'), toSelect = document.getElementById('unit-to'), input = document.getElementById('unit-input'), resultBox = document.getElementById('unit-result'); function populateUnits() { const category = categorySelect.value; let options = ''; if (category === 'temperature') { options = `<option>celsius</option><option>fahrenheit</option><option>kelvin</option>`; } else { options = Object.keys(units[category]).map(u => `<option value="${u}">${u}</option>`).join(''); } fromSelect.innerHTML = options; toSelect.innerHTML = options; } function convert() { const val = parseFloat(input.value); if (isNaN(val)) { resultBox.textContent = ''; return; } const category = categorySelect.value, fromUnit = fromSelect.value, toUnit = toSelect.value; let result; if (category === 'temperature') { if (fromUnit === toUnit) result = val; else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') result = (val * 9/5) + 32; else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') result = (val - 32) * 5/9; else if (fromUnit === 'celsius' && toUnit === 'kelvin') result = val + 273.15; else if (fromUnit === 'kelvin' && toUnit === 'celsius') result = val - 273.15; else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') result = (val - 32) * 5/9 + 273.15; else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') result = (val - 273.15) * 9/5 + 32; } else { const baseValue = val * units[category][fromUnit]; result = baseValue / units[category][toUnit]; } resultBox.textContent = `${val} ${fromUnit} = ${result.toFixed(4)} ${toUnit}`; } categorySelect.addEventListener('change', populateUnits); input.addEventListener('input', convert); fromSelect.addEventListener('change', convert); toSelect.addEventListener('change', convert); populateUnits(); } }),
             'timer-stopwatch': () => ({ content: `<div class="tool-controls"><button id="ts-mode-stopwatch" class="btn">Stopwatch</button><button id="ts-mode-timer" class="btn btn-secondary">Timer</button></div><div id="ts-timer-inputs" class="hidden mt-1 tool-controls"><input type="number" id="ts-hours" class="tool-input" min="0" placeholder="H"><input type="number" id="ts-minutes" class="tool-input" min="0" max="59" placeholder="M"><input type="number" id="ts-seconds" class="tool-input" min="0" max="59" placeholder="S"></div><div id="ts-display" class="result-box mt-1" style="font-size: 2.5rem; text-align: center; font-family: 'Courier New', monospace;">00:00:00.000</div><div class="tool-controls mt-1"><button id="ts-start-btn" class="btn">Start</button><button id="ts-stop-btn" class="btn btn-secondary">Stop</button><button id="ts-reset-btn" class="btn">Reset</button></div>`, onMount: () => { let mode = 'stopwatch', interval, startTime, elapsedTime = 0, timerDuration = 0; const display = document.getElementById('ts-display'), timerInputs = document.getElementById('ts-timer-inputs'), h_in = document.getElementById('ts-hours'), m_in = document.getElementById('ts-minutes'), s_in = document.getElementById('ts-seconds'); function formatTime(ms) { const date = new Date(ms), minutes = date.getUTCMinutes().toString().padStart(2, '0'), seconds = date.getUTCSeconds().toString().padStart(2, '0'), milliseconds = date.getUTCMilliseconds().toString().padStart(3, '0'); if(ms >= 3600000) { const hours = Math.floor(ms / 3600000).toString().padStart(2, '0'); return `${hours}:${minutes}:${seconds}.${milliseconds}`; } return `${minutes}:${seconds}.${milliseconds}`; } function updateDisplay() { if (mode === 'stopwatch') { const now = Date.now(); elapsedTime = now - startTime; display.textContent = formatTime(elapsedTime); } else { const remaining = timerDuration - (Date.now() - startTime); if (remaining <= 0) { clearInterval(interval); interval = null; display.textContent = '00:00:00.000'; return; } display.textContent = formatTime(remaining); } } document.getElementById('ts-mode-stopwatch').addEventListener('click', () => { mode = 'stopwatch'; timerInputs.classList.add('hidden'); reset(); }); document.getElementById('ts-mode-timer').addEventListener('click', () => { mode = 'timer'; timerInputs.classList.remove('hidden'); reset(); }); document.getElementById('ts-start-btn').addEventListener('click', () => { if (interval) return; if (mode === 'timer') { const h = parseInt(h_in.value) || 0, m = parseInt(m_in.value) || 0, s = parseInt(s_in.value) || 0; timerDuration = (h * 3600 + m * 60 + s) * 1000; if (timerDuration <= 0) { return; } } startTime = Date.now() - elapsedTime; interval = setInterval(updateDisplay, 10); }); document.getElementById('ts-stop-btn').addEventListener('click', () => { clearInterval(interval); interval = null; }); function reset() { clearInterval(interval); interval = null; elapsedTime = 0; if (mode === 'stopwatch') { display.textContent = '00:00:00.000'; } else { display.textContent = '00:00:00.000'; h_in.value = ''; m_in.value = ''; s_in.value = ''; } } document.getElementById('ts-reset-btn').addEventListener('click', reset); } })
         };
