@@ -2,7 +2,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR -->
-    <!-- This will be used by your Home Screen and your WebViews. -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
@@ -10,17 +9,14 @@
     </style>
 
     <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR -->
-    <!-- This will be used by your "All Files" and "PDF Viewer" screens. -->
     <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Title bar background -->
         <item name="colorPrimary">@color/home_background</item>
         <!-- Status bar color -->
         <item name="colorPrimaryVariant">@color/home_background</item>
-        <!-- Title text color in the toolbar -->
+        <!-- Title and icon color (in action bar) -->
         <item name="colorOnPrimary">@color/black</item>
-        <!-- Default text color for TextViews and other elements -->
         <item name="android:textColorPrimary">@color/black</item>
-
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 
@@ -39,7 +35,7 @@
         <item name="android:gravity">center</item>
         <item name="android:padding">16dp</item>
     </style>
-    
+
     <style name="HomeCardIconStyle">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">48dp</item>
