@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -21,7 +22,9 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String pendingBase64Data;
     private String pendingFileName;
+    
+    private PermissionRequest currentPermissionRequest;
 
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -65,6 +70,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    private final ActivityResultLauncher<String> microphonePermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (currentPermissionRequest != null) {
+                    if (isGranted) {
+                        currentPermissionRequest.grant(currentPermissionRequest.getResources());
+                    } else {
+                        Toast.makeText(this, "Microphone permission denied.", Toast.LENGTH_SHORT).show();
+                        currentPermissionRequest.deny();
+                    }
+                    currentPermissionRequest = null;
+                }
+            });
+
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
@@ -94,6 +113,30 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
                 return true;
+            }
+
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                String url = webView.getUrl();
+
+                // === THIS IS THE KEY CHANGE ===
+                // Only handle the permission request if it's coming from unitools.html
+                if (url != null && url.contains("unitools.html")) {
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                            currentPermissionRequest = request;
+                            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                                microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+                            } else {
+                                request.grant(request.getResources());
+                            }
+                            return; // We've handled the request
+                        }
+                    }
+                }
+                
+                // For any other page (like index.html) or any other permission, do the default action.
+                super.onPermissionRequest(request);
             }
         });
 
