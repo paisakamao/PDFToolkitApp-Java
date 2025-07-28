@@ -86,7 +86,7 @@
             app:cardElevation="8dp">
 
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_sort_by_size" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_recent_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
