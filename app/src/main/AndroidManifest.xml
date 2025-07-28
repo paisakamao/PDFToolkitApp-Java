@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- All your permissions are correct -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <!-- START: THIS IS THE FIX -->
+    <!-- The one true theme is applied to the entire application here. -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -13,7 +16,10 @@
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:theme="@style/Theme.PDFToolkit">
+    <!-- END: THIS IS THE FIX -->
 
+        <!-- All activities will now inherit the same theme automatically. -->
+        <!-- All special 'android:theme' tags have been removed from the activities. -->
         <activity android:name=".HomeActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,17 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity" android:exported="false" />
-        
-        <!-- THIS IS THE FIX: This activity now uses a theme WITH a title bar. -->
-        <activity
-            android:name=".AllFilesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
-        <activity
-            android:name=".PdfViewerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity android:name=".AllFilesActivity" android:exported="false" />
+        <activity android:name=".PdfViewerActivity" android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
