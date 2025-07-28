@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR (Home Screen & WebViews) -->
-    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR -->
+    <!-- This will be used by your Home Screen and your WebViews. -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
         <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
 
-    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR (All Files & PDF Viewer) -->
+    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR -->
+    <!-- This will be used by your "All Files" and "PDF Viewer" screens. -->
     <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- This sets the TITLE BAR color -->
         <item name="colorPrimary">@color/home_background</item>
+        <!-- This sets the STATUS BAR color -->
         <item name="colorPrimaryVariant">@color/home_background</item>
+        <!-- This sets the color of the text and icons in the title bar to BLACK -->
         <item name="colorOnPrimary">@color/black</item>
+        
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 
