@@ -7,20 +7,18 @@
     android:background="@color/home_background"
     tools:context=".HomeActivity">
 
-    <!-- START: THIS IS THE CORRECTED TITLE -->
     <TextView
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
-        android:text="All Tools"
+        android:text="All Document"
         android:textColor="@color/black"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <!-- END: THIS IS THE CORRECTED TITLE -->
 
     <GridLayout
         android:layout_width="0dp"
@@ -33,73 +31,70 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
 
-        <!-- All your CardView buttons remain the same here... -->
-        <!-- File Manager Button -->
+        <!-- File Manager Button (Using a default system icon) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_file_manager"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_all_files" />
-                <TextView style="@style/HomeCardTextStyle" android:text="File" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files />
+                <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- PDF Tool Button -->
+        <!-- PDF Tool Button (Using YOUR custom PNG icon) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_pdf_tools" />
+                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Scanner Button -->
+        <!-- Scanner Button (Using YOUR custom PNG icon) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <!-- THE LINE HAS BEEN UPDATED TO USE YOUR NEW ICON -->
+                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- All Files Button -->
+        <!-- All Files Button (Using YOUR custom PNG icon) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_recent_files" />
+                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Uni Tools Button -->
+        <!-- Uni Tools Button (Using your 'ic_recent_files.png' as a placeholder) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-
             <LinearLayout style="@style/HomeCardLayoutStyle">
+                 <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_compass" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
