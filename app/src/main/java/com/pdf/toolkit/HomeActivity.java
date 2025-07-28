@@ -12,6 +12,12 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // We now set the title in the system-provided title bar.
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("All Document");
+        }
+
+        // All your button finding and click listeners are here.
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView scannerCard = findViewById(R.id.card_scanner);
         CardView allFilesCard = findViewById(R.id.card_all_files);
