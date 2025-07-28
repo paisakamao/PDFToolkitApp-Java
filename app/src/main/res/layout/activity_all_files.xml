@@ -3,10 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android.layout_height="match_parent"
+    android:layout_height="match_parent"
     android:background="@color/home_background"
     tools:context=".AllFilesActivity">
 
+    <!-- The list of files, initially hidden so the progress bar can show -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="0dp"
@@ -19,6 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
         
+    <!-- THIS IS THE MISSING PROGRESS BAR THAT WAS CAUSING THE CRASH -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -30,15 +32,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- The "Permission Needed" view remains the same -->
     <LinearLayout
         android:id="@+id/permission_needed_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/home_background"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="32dp"
-        android:visibility="gone"
-        android:background="@color/home_background">
+        android:visibility="gone">
         
         <TextView
             android:layout_width="wrap_content"
