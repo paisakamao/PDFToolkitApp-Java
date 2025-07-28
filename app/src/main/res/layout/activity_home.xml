@@ -31,7 +31,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
 
-        <!-- File Manager Button (Using a default system icon) -->
+        <!-- Card 1: File Manager Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_file_manager"
             style="@style/HomeCardStyle"
@@ -39,12 +39,13 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files />
+                <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_all_files icon -->
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- PDF Tool Button (Using YOUR custom PNG icon) -->
+        <!-- Card 2: PDF Tool Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
             style="@style/HomeCardStyle"
@@ -52,13 +53,13 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_pdf_tools icon -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Scanner Button (Using YOUR custom PNG icon) -->
+        <!-- Card 3: Scanner Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
             style="@style/HomeCardStyle"
@@ -66,13 +67,13 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_scan_file icon -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- All Files Button (Using YOUR custom PNG icon) -->
+        <!-- Card 4: All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
             style="@style/HomeCardStyle"
@@ -80,13 +81,13 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_recent_files icon -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Uni Tools Button (Using your 'ic_recent_files.png' as a placeholder) -->
+        <!-- Card 5: Uni Tools Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
             style="@style/HomeCardStyle"
@@ -94,11 +95,13 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                 <!-- THIS IS THE FIX. It correctly uses '@drawable/' NOT '@android:drawable/' -->
+                <!-- CORRECT ICON MAPPING: Using the correct system @android:drawable/ic_menu_compass icon -->
                 <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_compass" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- There is no 6th card, exactly as you requested. -->
 
     </GridLayout>
 
