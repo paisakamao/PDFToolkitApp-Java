@@ -3,6 +3,7 @@ package com.pdf.toolkit;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class AllFilesActivity extends AppCompatActivity {
@@ -51,9 +54,9 @@ public class AllFilesActivity extends AppCompatActivity {
             permissionView.setVisibility(View.VISIBLE);
         }
 
+        // ❌ REMOVE default system ActionBar title
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("All PDF Files");
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().hide();
         }
     }
 
@@ -67,16 +70,20 @@ public class AllFilesActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                startActivity(intent);
-            } catch (Exception e) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.setData(android.net.Uri.parse("package:" + getPackageName()));
-                startActivity(intent);
-            }
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (hasStoragePermission()) {
+            permissionView.setVisibility(View.GONE);
+            loadPDFFiles();
         }
     }
 
@@ -97,6 +104,9 @@ public class AllFilesActivity extends AppCompatActivity {
             List<FileItem> fileList = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileList);
+
+            // ✅ Sort by date DESC (newest files first)
+            Collections.sort(fileList, (a, b) -> Long.compare(b.date, a.date));
 
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
@@ -124,7 +134,6 @@ public class AllFilesActivity extends AppCompatActivity {
             if (file.isDirectory()) {
                 searchPDFFilesRecursively(file, fileList);
             } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                // ✅ Correct constructor order: name, size, date, path
                 fileList.add(new FileItem(
                         file.getName(),
                         file.length(),
