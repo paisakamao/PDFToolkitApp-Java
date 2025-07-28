@@ -30,14 +30,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewTitle" />
 
+    <!--
+        THIS IS THE FIX. The XML comments have been moved outside the tag,
+        and the tag itself is now syntactically correct.
+    -->
     <View
         android:id="@+id/separator"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginTop="16dp"
-        <!-- START: THIS IS THE CRITICAL FIX -->
         android:background="@color/separator_color"
-        <!-- END: THIS IS THE CRITICAL FIX -->
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewSubtitle" />
