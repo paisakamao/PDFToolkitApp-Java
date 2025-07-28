@@ -60,15 +60,11 @@ public class AllFilesActivity extends AppCompatActivity {
         grantPermissionButton.setOnClickListener(v -> checkPermissionAndLoadFiles());
     }
     
-    // --- START: THIS IS THE CRITICAL CHANGE FOR AUTO-REFRESH ---
     @Override
     protected void onResume() {
         super.onResume();
-        // The onResume() method is called EVERY time the user enters this screen.
-        // By putting the check here, we guarantee the list is always fresh.
         checkPermissionAndLoadFiles();
     }
-    // --- END: THIS IS THE CRITICAL CHANGE ---
 
     private void checkPermissionAndLoadFiles() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -76,12 +72,21 @@ public class AllFilesActivity extends AppCompatActivity {
                 loadFilesFromStorage();
             } else {
                 showPermissionNeededUI();
+                if (fileList.isEmpty()) {
+                    Intent i = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    Uri u = Uri.fromParts("package", getPackageName(), null);
+                    i.setData(u);
+                    requestAllFilesAccessLauncher.launch(i);
+                }
             }
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 loadFilesFromStorage();
             } else {
                 showPermissionNeededUI();
+                if (fileList.isEmpty()) {
+                    requestLegacyPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
             }
         }
     }
@@ -135,8 +140,6 @@ public class AllFilesActivity extends AppCompatActivity {
             });
         }).start();
     }
-
-    // All manual refresh button code has been removed.
 
     private void openFileBasedOnType(FileItem item){if(item.name!=null&&item.name.toLowerCase().endsWith(".pdf")){openPdfInApp(item);}else{openFileExternally(item);}}
     private void openPdfInApp(FileItem item){Intent i=new Intent(this,PdfViewerActivity.class);i.putExtra(PdfViewerActivity.EXTRA_FILE_NAME,item.path);startActivity(i);}
