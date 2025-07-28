@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".HomeActivity">
 
-    <!-- The custom title bar has been DELETED. The system theme will provide the title bar. -->
+    <!-- The custom TextView for the title has been DELETED. -->
+    <!-- The system theme will now provide the title bar. -->
 
     <GridLayout
         android:layout_width="0dp"
@@ -19,8 +20,66 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- All your CardView buttons remain the same here... -->
+        <!-- All your CardView buttons are here, with the correct icons -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_file_manager"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
+                <TextView style="@style/HomeCardTextStyle" android:text="File Manager" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_pdf_tool"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_scanner"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_all_files"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
+                <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_uni_tools"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_compass" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
