@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 1. Base Application Theme -->
-    <!-- This is the main theme for your entire app. -->
+    <!-- 1. Base Application Theme (NO title bar) -->
+    <!-- This is the main theme for your Home Screen. It is already correct. -->
     <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Your custom colors -->
         <item name="colorPrimary">#1c222d</item>
@@ -16,10 +16,23 @@
         <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
 
-    <!-- 2. Styles for the New Native Home Screen -->
-    <!-- These styles are used by the activity_home.xml layout. -->
-    <!-- They are OUTSIDE the other style block, but INSIDE the resources block. -->
+    <!-- 2. START: THIS IS THE NEW THEME THAT WAS MISSING -->
+    <!-- This is a new theme for screens that HAVE a title bar, like "All Files". -->
+    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Set the background color of the title bar to match the screen -->
+        <item name="colorPrimary">@color/home_background</item>
+        
+        <!-- Set the color of the text in the title bar to black to be visible -->
+        <item name="android:textColorPrimary">@color/black</item>
+        
+        <!-- Set the color of the status bar (the very top of the phone screen) -->
+        <item name="colorPrimaryDark">@color/home_background</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+    </style>
+    <!-- END: THIS IS THE NEW THEME THAT WAS MISSING -->
 
+    <!-- 3. Styles for the Home Screen Cards -->
+    <!-- These styles are used by the activity_home.xml layout and are already correct. -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
