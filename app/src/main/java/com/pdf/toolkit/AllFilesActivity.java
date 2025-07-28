@@ -11,7 +11,7 @@ import com.github.barteksc.pdfviewer.PDFView;
 
 import java.io.File;
 
-public class PdfViewerActivity extends AppCompatActivity {
+public class AllFilesActivity extends AppCompatActivity {
 
     public static final String EXTRA_FILE_NAME = "com.pdf.toolkit.FILE_NAME"; // This is now a PATH
 
