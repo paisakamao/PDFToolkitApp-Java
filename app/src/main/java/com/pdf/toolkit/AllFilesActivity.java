@@ -44,10 +44,10 @@ public class AllFilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        // This is the old code that might be here
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("All Files");
-        }
+        // --- START: THIS IS THE CORRECTED CODE ---
+        // We find the custom TextView from your layout and set its title.
+        TextView title = findViewById(R.id.textViewAllFilesTitle);
+        title.setText("All Files");
 
         recyclerView = findViewById(R.id.recycler_view_files);
         permissionView = findViewById(R.id.permission_needed_view);
