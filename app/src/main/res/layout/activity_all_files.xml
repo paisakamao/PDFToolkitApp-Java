@@ -4,35 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/home_background"
     tools:context=".AllFilesActivity">
 
-    <!-- The list of files, initially hidden so the progress bar can show -->
+    <!-- The custom title bar has been DELETED. The system theme will provide the title bar. -->
+    
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone"
-        tools:listitem="@layout/item_file"
-        tools:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-        
-    <!-- THIS IS THE MISSING PROGRESS BAR THAT WAS CAUSING THE CRASH -->
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_file" />
+
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        tools:visibility="visible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- The "Permission Needed" view remains the same -->
     <LinearLayout
         android:id="@+id/permission_needed_view"
         android:layout_width="match_parent"
