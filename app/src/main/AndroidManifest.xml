@@ -43,7 +43,7 @@
         <activity
             android:name=".PdfViewerActivity"
             android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.WithActionBar" />
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
