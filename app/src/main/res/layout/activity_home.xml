@@ -43,7 +43,7 @@
             app:cardElevation="8dp">
 
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_save" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_all_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="File" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -57,7 +57,7 @@
             app:cardElevation="8dp">
 
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_edit" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_pdf_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -71,7 +71,8 @@
             app:cardElevation="8dp">
 
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_menu_camera" />
+                <!-- THE LINE HAS BEEN UPDATED TO USE YOUR NEW ICON -->
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
