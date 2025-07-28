@@ -11,19 +11,20 @@
 
     <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR -->
     <!-- This will be used by your "All Files" and "PDF Viewer" screens. -->
-    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- This sets the TITLE BAR color -->
+    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Title bar background -->
         <item name="colorPrimary">@color/home_background</item>
-        <!-- This sets the STATUS BAR color -->
+        <!-- Status bar color -->
         <item name="colorPrimaryVariant">@color/home_background</item>
-        <!-- This sets the color of the text and icons in the title bar to BLACK -->
+        <!-- Title text color in the toolbar -->
         <item name="colorOnPrimary">@color/black</item>
-        
+        <!-- Default text color for TextViews and other elements -->
+        <item name="android:textColorPrimary">@color/black</item>
+
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 
     <!-- STYLES FOR THE HOME SCREEN CARDS -->
-    <!-- These are now correctly located in this single file. -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
