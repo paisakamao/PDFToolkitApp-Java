@@ -1,29 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR (like your Home Screen) -->
-    <style name="Theme.PDFToolkit" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- This theme sets the background and status bar color -->
-        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
-        <item name="android:windowBackground">@color/home_background</item>
-        <item name="android:navigationBarColor">@color/soft_gray</item>
-    </style>
-
-    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR (like All Files & PDF Viewer) -->
-    <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.AppCompat.Light">
-        <!-- Set the background color of the title bar to match the screen -->
+    <!-- START: THIS IS THE ONLY THEME YOUR APP NEEDS -->
+    <!-- It has a title bar and all your custom colors. -->
+    <style name="Theme.PDFToolkit" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- This sets the TITLE BAR color -->
         <item name="colorPrimary">@color/home_background</item>
+        <!-- This sets the STATUS BAR color -->
+        <item name="colorPrimaryVariant">@color/home_background</item>
+        <!-- This sets the color of the text and icons in the title bar to black -->
+        <item name="colorOnPrimary">@color/black</item>
         
-        <!-- Set the color of the text in the title bar to black to be visible -->
-        <item name="android:textColorPrimary">@color/black</item>
+        <!-- This sets the main background color for all screens -->
+        <item name="android:windowBackground">@color/home_background</item>
+        <!-- This sets the bottom navigation bar color -->
+        <item name="android:navigationBarColor">@color/soft_gray</item>
         
-        <!-- Set the color of the status bar (the very top of the phone screen) -->
-        <item name="colorPrimaryDark">@color/home_background</item>
-        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <!-- This is a fallback for older devices -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
+    <!-- END: THIS IS THE ONLY THEME YOUR APP NEEDS -->
 
-    <!-- START: THIS IS THE MISSING CODE THAT CAUSED THE BUILD TO FAIL -->
-    <!-- These are the styles for your Home Screen Cards, now in the correct place. -->
+    <!-- Your styles for the Home Screen Cards remain the same -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -51,6 +49,5 @@
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
     </style>
-    <!-- END: THIS IS THE MISSING CODE THAT CAUSED THE BUILD TO FAIL -->
 
 </resources>
