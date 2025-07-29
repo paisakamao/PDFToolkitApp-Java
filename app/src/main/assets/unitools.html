@@ -52,7 +52,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            border-bottom: 1px solid #42F8F5; /* <-- YOUR CHANGE IS HERE */
+            border-bottom: 1px solid #42F8F5;
         }
 
         .logo a {
@@ -157,6 +157,17 @@
             border-color: #5a6268;
             box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
         }
+        
+        .btn-green {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .btn-green:hover {
+            background-color: #218838;
+            border-color: #218838;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
 
         .tool-input, .tool-select, .tool-textarea {
             width: 100%; padding: 0.75rem; background-color: #fff; border: 1px solid #ccc;
@@ -253,6 +264,26 @@
         const modalContainer = document.getElementById('modal-container');
         const modalContent = document.getElementById('modal-content');
         const notificationEl = document.getElementById('notification');
+
+        // --- JS BRIDGE HELPER FUNCTION ---
+        // This helper function centralizes the logic for passing data to the Android interface.
+        // It's used by multiple tools (Image Converter, QR Code, Speech to Text, etc.)
+        function downloadFile(data, fileName, fileType) {
+            if (typeof Android !== 'undefined' && Android.downloadFile) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    // Extract the Base64 data from the data URL
+                    const base64Data = reader.result.split(',')[1];
+                    Android.downloadFile(base64Data, fileName);
+                };
+                reader.onerror = function() {
+                    showNotification('Error: Could not read the file for download.', 3000);
+                };
+                reader.readAsDataURL(new Blob([data], { type: fileType }));
+            } else {
+                showNotification("Android interface not found. Download will not be saved.", 4000);
+            }
+        }
 
         const tools = [
             { id: "image-converter", title: "Image Converter", desc: "Convert images to JPG, PNG, or WEBP format right in your browser.", icon: "fa-retweet" },
@@ -384,31 +415,17 @@
 
                                 const format = formatSelect.value;
                                 const extension = format.split('/')[1];
-                                const dataUrl = canvas.toDataURL(format);
-
-                                outputDiv.innerHTML = `
-                                    <p>Conversion successful!</p>
-                                    <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
-                                    <button class="btn mt-1" id="download-converted-image">Download Image</button>
-                                `;
-
-                                // Event listener for the new download button
-                                document.getElementById('download-converted-image').addEventListener('click', () => {
-                                    // Modified to call Android.downloadFile directly with base64 data
-                                    if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                        window.Android.downloadFile(dataUrl, `converted-image.${extension}`);
-                                        showNotification("Download initiated via Android.", 3000);
-                                    } else {
-                                        // Fallback for browsers or if Android interface is not set up
-                                        const a = document.createElement('a');
-                                        a.href = dataUrl;
-                                        a.download = `converted-image.${extension}`;
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        document.body.removeChild(a);
-                                        showNotification("Download started (browser fallback).", 3000);
-                                    }
-                                });
+                                canvas.toBlob((blob) => {
+                                    const dataUrl = URL.createObjectURL(blob);
+                                    outputDiv.innerHTML = `
+                                        <p>Conversion successful!</p>
+                                        <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
+                                        <button class="btn mt-1" id="download-converted-image">Download Image</button>
+                                    `;
+                                    document.getElementById('download-converted-image').addEventListener('click', () => {
+                                        downloadFile(blob, `converted-image.${extension}`, format);
+                                    });
+                                }, format);
                             };
                             img.src = e.target.result;
                         };
@@ -453,33 +470,22 @@
                                 ctx.drawImage(img, 0, 0);
 
                                 const quality = parseFloat(qualitySlider.value);
-                                const dataUrl = canvas.toDataURL(file.type, quality);
-                                const originalSize = (file.size / 1024).toFixed(2);
-                                const newSize = (dataUrl.length * 0.75 / 1024).toFixed(2); // Approximation for Base64
+                                canvas.toBlob(blob => {
+                                    const dataUrl = URL.createObjectURL(blob);
+                                    const originalSize = (file.size / 1024).toFixed(2);
+                                    const newSize = (blob.size / 1024).toFixed(2);
 
-                                outputDiv.innerHTML = `
-                                    <p>Original Size: ${originalSize} KB | New Size: ${newSize} KB</p>
-                                    <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
-                                    <button class="btn mt-1" id="download-compressed-image">Download Image</button>
-                                `;
+                                    outputDiv.innerHTML = `
+                                        <p>Original Size: ${originalSize} KB | New Size: ${newSize} KB</p>
+                                        <img src="${dataUrl}" style="max-width:100%; margin-top:1rem; border-radius:var(--border-radius);">
+                                        <button class="btn mt-1" id="download-compressed-image">Download Image</button>
+                                    `;
 
-                                // Event listener for the new download button
-                                document.getElementById('download-compressed-image').addEventListener('click', () => {
-                                    if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                        // Determine file extension based on original type for more accuracy
+                                    document.getElementById('download-compressed-image').addEventListener('click', () => {
                                         const extension = file.type.split('/')[1] === 'jpeg' ? 'jpg' : file.type.split('/')[1];
-                                        window.Android.downloadFile(dataUrl, `compressed-image.${extension}`);
-                                        showNotification("Download initiated via Android.", 3000);
-                                    } else {
-                                        const a = document.createElement('a');
-                                        a.href = dataUrl;
-                                        a.download = `compressed-image.jpg`; // Fallback to .jpg for simplicity
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        document.body.removeChild(a);
-                                        showNotification("Download started (browser fallback).", 3000);
-                                    }
-                                });
+                                        downloadFile(blob, `compressed-image.${extension}`, file.type);
+                                    });
+                                }, file.type, quality);
                             };
                             img.src = e.target.result;
                         };
@@ -558,20 +564,10 @@
                         cropCanvas.height = selection.h;
                         const cropCtx = cropCanvas.getContext('2d');
                         cropCtx.drawImage(img, selection.x, selection.y, selection.w, selection.h, 0, 0, selection.w, selection.h);
-                        const dataUrl = cropCanvas.toDataURL('image/png');
-
-                        if (window.Android && typeof window.Android.downloadFile === 'function') {
-                            window.Android.downloadFile(dataUrl, 'cropped-image.png');
-                            showNotification("Image cropped and download initiated via Android.", 3000);
-                        } else {
-                            const link = document.createElement('a');
-                            link.href = dataUrl;
-                            link.download = 'cropped-image.png';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            showNotification("Image cropped and download started (browser fallback).", 3000);
-                        }
+                        
+                        cropCanvas.toBlob(blob => {
+                            downloadFile(blob, 'cropped-image.png', 'image/png');
+                        }, 'image/png');
                     });
                 }
             }),
@@ -625,22 +621,7 @@
                             `;
 
                             document.getElementById('download-converted-video').addEventListener('click', () => {
-                                if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                    const reader = new FileReader();
-                                    reader.onloadend = function() {
-                                        window.Android.downloadFile(reader.result, 'converted-video.webm');
-                                        showNotification("Video download initiated via Android.", 3000);
-                                    };
-                                    reader.readAsDataURL(blob);
-                                } else {
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = 'converted-video.webm';
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    showNotification("Video download started (browser fallback).", 3000);
-                                }
+                                downloadFile(blob, 'converted-video.webm', 'video/webm');
                             });
                             startBtn.disabled = false;
                             startBtn.textContent = "Start Conversion";
@@ -662,7 +643,6 @@
                 `,
                 onMount: () => {
                     showNotification("This tool is a placeholder. Full implementation requires Web Audio API.", 4000);
-                    // Basic preview and button show/hide
                     const input = document.getElementById('audio-conv-input');
                     const preview = document.getElementById('audio-conv-preview');
                     const convertBtn = document.getElementById('audio-conv-btn');
@@ -677,7 +657,6 @@
                         preview.classList.remove('hidden');
                         convertBtn.classList.remove('hidden');
 
-                        // Enable recording from audio element for conversion
                         if (preview.captureStream) {
                             convertBtn.onclick = () => {
                                 if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -689,7 +668,7 @@
                                 convertBtn.textContent = "Converting...";
 
                                 const stream = preview.captureStream();
-                                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm; codecs=opus' }); // Using Opus codec for better quality
+                                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm; codecs=opus' });
 
                                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
@@ -701,29 +680,14 @@
                                         <button class="btn mt-1" id="download-converted-audio">Download Audio</button>
                                     `;
                                     document.getElementById('download-converted-audio').addEventListener('click', () => {
-                                        if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                            const reader = new FileReader();
-                                            reader.onloadend = function() {
-                                                window.Android.downloadFile(reader.result, 'converted-audio.webm');
-                                                showNotification("Audio download initiated via Android.", 3000);
-                                            };
-                                            reader.readAsDataURL(blob);
-                                        } else {
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = 'converted-audio.webm';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            document.body.removeChild(a);
-                                            showNotification("Audio download started (browser fallback).", 3000);
-                                        }
+                                        downloadFile(blob, 'converted-audio.webm', 'audio/webm');
                                     });
                                     convertBtn.disabled = false;
                                     convertBtn.textContent = "Convert";
                                     chunks = [];
                                 };
 
-                                preview.currentTime = 0; // Start from the beginning
+                                preview.currentTime = 0;
                                 preview.play();
                                 mediaRecorder.start();
 
@@ -763,13 +727,12 @@
                         if (e.target.files.length === 0) return;
                         const file = e.target.files[0];
 
-                        // Use Web Audio API for actual trimming
                         if (window.AudioContext || window.webkitAudioContext) {
                             audioContext = new (window.AudioContext || window.webkitAudioContext)();
                             const arrayBuffer = await file.arrayBuffer();
                             try {
                                 audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                                endInput.value = audioBuffer.duration.toFixed(2); // Set default end to full duration
+                                endInput.value = audioBuffer.duration.toFixed(2);
                                 trimBtn.disabled = false;
                                 showNotification(`Audio loaded. Duration: ${audioBuffer.duration.toFixed(2)} seconds.`, 3000);
                             } catch (error) {
@@ -803,7 +766,6 @@
                         const numberOfChannels = audioBuffer.numberOfChannels;
                         const sampleRate = audioBuffer.sampleRate;
                         const startOffset = startTime * sampleRate;
-                        const endOffset = endTime * sampleRate;
 
                         const trimmedBuffer = audioContext.createBuffer(numberOfChannels, duration * sampleRate, sampleRate);
 
@@ -815,14 +777,8 @@
                             }
                         }
 
-                        // Export trimmed audio (e.g., as WAV)
-                        // This part is complex and often requires a library or server-side processing for proper encoding (e.g., to MP3/AAC)
-                        // For simplicity, we'll offer a raw WAV or basic playback for this example.
-                        // For Android, we'd need to convert this ArrayBuffer to a Blob/DataURL and then pass it.
-
-                        // Placeholder for actual download (converting to WAV for demonstration)
-                        const exportWAV = (audioBuffer) => {
-                            const wav = audioBufferToWav(audioBuffer);
+                        const exportWAV = (buffer) => {
+                            const wav = audioBufferToWav(buffer);
                             const blob = new Blob([wav], { type: 'audio/wav' });
                             const blobUrl = URL.createObjectURL(blob);
 
@@ -833,33 +789,16 @@
                             `;
 
                             document.getElementById('download-trimmed-audio').addEventListener('click', () => {
-                                if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                    const reader = new FileReader();
-                                    reader.onloadend = function() {
-                                        window.Android.downloadFile(reader.result, 'trimmed-audio.wav');
-                                        showNotification("Trimmed audio download initiated via Android.", 3000);
-                                    };
-                                    reader.readAsDataURL(blob);
-                                } else {
-                                    const a = document.createElement('a');
-                                    a.href = blobUrl;
-                                    a.download = 'trimmed-audio.wav';
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    showNotification("Trimmed audio download started (browser fallback).", 3000);
-                                }
+                                downloadFile(blob, 'trimmed-audio.wav', 'audio/wav');
                             });
                             trimBtn.disabled = false;
                         };
                         exportWAV(trimmedBuffer);
                     });
 
-                    // Helper function to convert AudioBuffer to WAV ArrayBuffer
-                    // Source: https://github.com/vdsabev/AudioBufferToWav/blob/master/AudioBufferToWav.js (Simplified for this use case)
                     function audioBufferToWav(buffer) {
                         const numOfChan = buffer.numberOfChannels,
-                              length = buffer.length * numOfChan * 2 + 44, // + 44 for header
+                              length = buffer.length * numOfChan * 2 + 44,
                               bufferArray = new ArrayBuffer(length),
                               view = new DataView(bufferArray);
 
@@ -879,22 +818,19 @@
                             offset += 2;
                         };
 
-                        // RIFF header
                         writeString('RIFF');
-                        writeUint32(length - 8); // file length - 8
+                        writeUint32(length - 8);
                         writeString('WAVE');
-                        // FMT sub-chunk
                         writeString('fmt ');
-                        writeUint32(16); // subchunk1 size = 16
-                        writeUint16(1); // audio format (PCM = 1)
-                        writeUint16(numOfChan); // num of channels
-                        writeUint32(buffer.sampleRate); // sample rate
-                        writeUint32(buffer.sampleRate * numOfChan * 2); // byte rate (sample rate * num channels * bytes per sample)
-                        writeUint16(numOfChan * 2); // block align (num channels * bytes per sample)
-                        writeUint16(16); // bits per sample
-                        // data sub-chunk
+                        writeUint32(16);
+                        writeUint16(1);
+                        writeUint16(numOfChan);
+                        writeUint32(buffer.sampleRate);
+                        writeUint32(buffer.sampleRate * numOfChan * 2);
+                        writeUint16(numOfChan * 2);
+                        writeUint16(16);
                         writeString('data');
-                        writeUint32(length - offset); // data size
+                        writeUint32(length - offset);
 
                         for (let i = 0; i < buffer.length; i++) {
                             for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
@@ -994,7 +930,7 @@
 
                         if (unitSelect.value === 'metric') {
                             weight = parseFloat(document.getElementById('bmi-weight-kg').value);
-                            height = parseFloat(document.getElementById('bmi-height-cm').value) / 100; // Convert cm to meters
+                            height = parseFloat(document.getElementById('bmi-height-cm').value) / 100;
                         } else {
                             weight = parseFloat(document.getElementById('bmi-weight-lbs').value);
                             height = parseFloat(document.getElementById('bmi-height-in').value);
@@ -1009,7 +945,7 @@
                         if (unitSelect.value === 'metric') {
                             bmi = weight / (height * height);
                         } else {
-                            bmi = (weight / (height * height)) * 703; // Imperial BMI formula
+                            bmi = (weight / (height * height)) * 703;
                         }
 
                         let category = '';
@@ -1043,26 +979,10 @@
 
                         document.getElementById('download-qr-code').addEventListener('click', () => {
                             const svgUrl = `${qrUrl}&format=svg`;
-                            // Fetch the SVG data and then pass it to Android as Data URL
                             fetch(svgUrl)
                                 .then(response => response.blob())
                                 .then(blob => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = function() {
-                                        if (window.Android && typeof window.Android.downloadFile === 'function') {
-                                            window.Android.downloadFile(reader.result, 'qrcode.svg');
-                                            showNotification("QR code download initiated via Android.", 3000);
-                                        } else {
-                                            const a = document.createElement('a');
-                                            a.href = reader.result;
-                                            a.download = 'qrcode.svg';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            document.body.removeChild(a);
-                                            showNotification("QR code download started (browser fallback).", 3000);
-                                        }
-                                    };
-                                    reader.readAsDataURL(blob);
+                                    downloadFile(blob, 'qrcode.svg', 'image/svg+xml');
                                 })
                                 .catch(e => showNotification("Failed to download QR code.", 3000));
                         });
@@ -1217,7 +1137,7 @@
                     }
 
                     picker.addEventListener('input', () => updateValues(picker.value));
-                    updateValues(picker.value); // Initial load
+                    updateValues(picker.value);
 
                     function hexToRgb(hex) {
                         let r = 0, g = 0, b = 0;
@@ -1239,7 +1159,7 @@
                         let h, s, l = (max + min) / 2;
 
                         if (max == min) {
-                            h = s = 0; // achromatic
+                            h = s = 0;
                         } else {
                             let d = max - min;
                             s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
@@ -1268,7 +1188,7 @@
                     let voices = [];
 
                     function populateVoiceList() {
-                        voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name)); // Sort voices alphabetically
+                        voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name));
                         voiceSelect.innerHTML = voices.map((voice, i) =>
                             `<option value="${i}" ${voice.default ? 'selected' : ''}>${voice.name} (${voice.lang})</option>`
                         ).join('');
@@ -1277,15 +1197,12 @@
                         }
                     }
 
-                    // Attempt to populate voices immediately
                     populateVoiceList();
 
-                    // Listen for when voices are loaded/changed
                     if (synth.onvoiceschanged !== undefined) {
                         synth.onvoiceschanged = populateVoiceList;
                     } else {
-                        // Fallback for browsers that don't trigger onvoiceschanged immediately
-                        setTimeout(populateVoiceList, 500); // Try again after a short delay
+                        setTimeout(populateVoiceList, 500);
                     }
 
                     document.getElementById('tts-speak-btn').addEventListener('click', () => {
@@ -1296,7 +1213,6 @@
                         if (textInput.value.trim() !== '') {
                             const utterThis = new SpeechSynthesisUtterance(textInput.value);
                             utterThis.voice = voices[voiceSelect.value];
-                            // Optional: Set language explicitly if voice is not found
                             if (!utterThis.voice && voices.length > 0) {
                                 utterThis.voice = voices.find(v => v.lang.startsWith('en')) || voices[0];
                             }
@@ -1314,7 +1230,14 @@
                 }
             }),
             'speech-to-text': () => ({
-                content: `<div class="tool-controls"><button id="stt-start-btn" class="btn">Start Listening</button><button id="stt-stop-btn" class="btn btn-secondary">Stop Listening</button></div><div id="stt-result" class="result-box mt-1">Your transcribed text will appear here...</div>`,
+                content: `
+                    <div class="tool-controls">
+                        <button id="stt-start-btn" class="btn">Start Listening</button>
+                        <button id="stt-stop-btn" class="btn btn-secondary hidden">Stop Listening</button>
+                        <button id="stt-download-btn" class="btn btn-green hidden">Download Transcript</button>
+                    </div>
+                    <div id="stt-result" class="result-box mt-1">Your transcribed text will appear here...</div>
+                `,
                 onMount: () => {
                     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                     if (!SpeechRecognition) {
@@ -1322,20 +1245,29 @@
                         return;
                     }
                     const recognition = new SpeechRecognition();
-                    recognition.continuous = true; // Keep listening even if user pauses
-                    recognition.interimResults = true; // Show results while speaking
-                    recognition.lang = 'en-US'; // Set default language
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
 
                     const startBtn = document.getElementById('stt-start-btn');
                     const stopBtn = document.getElementById('stt-stop-btn');
+                    const downloadBtn = document.getElementById('stt-download-btn');
                     const resultBox = document.getElementById('stt-result');
                     let final_transcript = '';
+
+                    recognition.onstart = () => {
+                        startBtn.classList.add('hidden');
+                        stopBtn.classList.remove('hidden');
+                        downloadBtn.classList.add('hidden');
+                        resultBox.textContent = 'Listening...';
+                        showNotification("Listening for speech...", 3000);
+                    };
 
                     recognition.onresult = (event) => {
                         let interim_transcript = '';
                         for (let i = event.resultIndex; i < event.results.length; ++i) {
                             if (event.results[i].isFinal) {
-                                final_transcript += event.results[i][0].transcript;
+                                final_transcript += event.results[i][0].transcript + ' ';
                             } else {
                                 interim_transcript += event.results[i][0].transcript;
                             }
@@ -1345,28 +1277,35 @@
 
                     recognition.onerror = (event) => {
                         showNotification(`Speech recognition error: ${event.error}`, 5000);
-                        startBtn.disabled = false;
-                        stopBtn.disabled = true;
+                        startBtn.classList.remove('hidden');
+                        stopBtn.classList.add('hidden');
                     };
 
                     recognition.onend = () => {
                         showNotification("Speech recognition stopped.", 3000);
-                        startBtn.disabled = false;
-                        stopBtn.disabled = true;
+                        startBtn.classList.remove('hidden');
+                        stopBtn.classList.add('hidden');
+                        if (final_transcript.trim() !== '') {
+                            downloadBtn.classList.remove('hidden');
+                        }
                     };
 
                     startBtn.addEventListener('click', () => {
                         final_transcript = '';
-                        resultBox.textContent = 'Listening...';
                         recognition.start();
-                        startBtn.disabled = true;
-                        stopBtn.disabled = false;
-                        showNotification("Listening for speech...", 3000);
                     });
 
                     stopBtn.addEventListener('click', () => {
                         recognition.stop();
-                        showNotification("Stopped listening.", 2000);
+                    });
+
+                    downloadBtn.addEventListener('click', () => {
+                        if (final_transcript.trim() !== '') {
+                            const textBlob = new Blob([final_transcript], { type: 'text/plain' });
+                            downloadFile(textBlob, 'transcript.txt', 'text/plain');
+                        } else {
+                            showNotification("No transcript to download.", 3000);
+                        }
                     });
                 }
             }),
@@ -1389,7 +1328,7 @@
                     const units = {
                         length: { meter: 1, kilometer: 1000, centimeter: 0.01, mile: 1609.34, foot: 0.3048, inch: 0.0254 },
                         weight: { gram: 1, kilogram: 1000, pound: 453.592, ounce: 28.3495 },
-                        temperature: {} // Temperature handled separately due to non-linear conversion
+                        temperature: {}
                     };
 
                     const categorySelect = document.getElementById('unit-category');
@@ -1408,7 +1347,7 @@
                         }
                         fromSelect.innerHTML = options;
                         toSelect.innerHTML = options;
-                        convert(); // Convert immediately when units change
+                        convert();
                     }
 
                     function convert() {
@@ -1424,7 +1363,6 @@
                         let result;
 
                         if (category === 'temperature') {
-                            // Convert to Celsius first, then to target
                             let valCelsius;
                             if (fromUnit === 'celsius') valCelsius = val;
                             else if (fromUnit === 'fahrenheit') valCelsius = (val - 32) * 5/9;
@@ -1434,8 +1372,8 @@
                             else if (toUnit === 'fahrenheit') result = (valCelsius * 9/5) + 32;
                             else if (toUnit === 'kelvin') result = valCelsius + 273.15;
                         } else {
-                            const baseValue = val * units[category][fromUnit]; // Convert to base unit (e.g., meters, grams)
-                            result = baseValue / units[category][toUnit]; // Convert from base unit to target
+                            const baseValue = val * units[category][fromUnit];
+                            result = baseValue / units[category][toUnit];
                         }
                         resultBox.textContent = `${val} ${fromUnit.replace(/(\w)(\w*)/g, (g0,g1,g2) => g1.toUpperCase() + g2)} = ${result.toFixed(4)} ${toUnit.replace(/(\w)(\w*)/g, (g0,g1,g2) => g1.toUpperCase() + g2)}`;
                     }
@@ -1445,7 +1383,7 @@
                     fromSelect.addEventListener('change', convert);
                     toSelect.addEventListener('change', convert);
 
-                    populateUnits(); // Initial population
+                    populateUnits();
                 }
             }),
             'timer-stopwatch': () => ({
@@ -1494,7 +1432,7 @@
                             const now = Date.now();
                             elapsedTime = now - startTime;
                             display.textContent = formatTime(elapsedTime);
-                        } else { // Timer mode
+                        } else {
                             const remaining = timerDuration - (Date.now() - startTime);
                             if (remaining <= 0) {
                                 clearInterval(interval);
@@ -1520,7 +1458,7 @@
                     });
 
                     document.getElementById('ts-start-btn').addEventListener('click', () => {
-                        if (interval) return; // Prevent multiple starts
+                        if (interval) return;
 
                         if (mode === 'timer') {
                             const h = parseInt(h_in.value) || 0;
@@ -1531,13 +1469,12 @@
                                 showNotification("Please set a timer duration.", 3000);
                                 return;
                             }
-                            // Adjust startTime so that (Date.now() - startTime) will be 0 at the beginning
                             startTime = Date.now();
-                        } else { // Stopwatch
-                            startTime = Date.now() - elapsedTime; // Resume from last stop
+                        } else {
+                            startTime = Date.now() - elapsedTime;
                         }
 
-                        interval = setInterval(updateDisplay, 10); // Update every 10ms for smooth millisecond display
+                        interval = setInterval(updateDisplay, 10);
                         showNotification("Started!", 2000);
                     });
 
@@ -1554,7 +1491,7 @@
                         timerDuration = 0;
                         if (mode === 'stopwatch') {
                             display.textContent = '00:00:00.000';
-                        } else { // Timer
+                        } else {
                             display.textContent = '00:00:00.000';
                             h_in.value = '';
                             m_in.value = '';
