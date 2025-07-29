@@ -33,7 +33,7 @@ import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
-Generated code
+
 private WebView webView;
 private ValueCallback<Uri[]> filePathCallback;
 public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
