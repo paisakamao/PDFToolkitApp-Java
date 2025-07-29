@@ -1,4 +1,3 @@
-please update it with new code
 package com.pdf.toolkit;
 import android.content.Intent;
 import android.os.Bundle;
