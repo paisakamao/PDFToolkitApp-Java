@@ -124,25 +124,31 @@ public class AllFilesActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
-        if (dir == null || !dir.isDirectory()) return;
+private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
+    if (dir == null || !dir.isDirectory()) return;
 
-        File[] files = dir.listFiles();
-        if (files == null) return;
+    // Skip hidden/system/trash-like directories
+    String dirName = dir.getName().toLowerCase();
+    if (dirName.contains("trash") || dirName.contains("recycle") || dirName.contains("deleted") || dirName.contains(".bin")) {
+        return;
+    }
 
-        for (File file : files) {
-            if (file.isDirectory()) {
-                searchPDFFilesRecursively(file, fileList);
-            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                fileList.add(new FileItem(
-                        file.getName(),
-                        file.length(),
-                        file.lastModified(),
-                        file.getAbsolutePath()
-                ));
-            }
+    File[] files = dir.listFiles();
+    if (files == null) return;
+
+    for (File file : files) {
+        if (file.isDirectory()) {
+            searchPDFFilesRecursively(file, fileList);
+        } else if (file.getName().toLowerCase().endsWith(".pdf")) {
+            fileList.add(new FileItem(
+                    file.getName(),
+                    file.length(),
+                    file.lastModified(),
+                    file.getAbsolutePath()
+            ));
         }
     }
+}
 
     @Override
     public boolean onSupportNavigateUp() {
