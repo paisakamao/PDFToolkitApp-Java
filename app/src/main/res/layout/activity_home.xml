@@ -96,7 +96,7 @@
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <!-- CORRECT ICON MAPPING: Using the correct system @android:drawable/ic_menu_compass icon -->
-                <ImageView style="@style/HomeCardIconStyle" android:src="@android:drawable/ic_uni_tools" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
