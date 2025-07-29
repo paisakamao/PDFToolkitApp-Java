@@ -61,7 +61,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
             fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
 
             if (item.name.toLowerCase().endsWith(".pdf")) {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_gallery);
+                fileIcon.setImageResource(R.drawable.ic_pdflist);
             } else {
                 fileIcon.setImageResource(android.R.drawable.ic_menu_edit);
             }
