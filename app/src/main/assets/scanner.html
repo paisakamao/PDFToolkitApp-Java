@@ -261,21 +261,50 @@
             if (processing) requestAnimationFrame(processVideoFrame);
         };
         
-        const captureAndProcess = () => {
-            if (!detectedCorners) { alert('No document detected. Please try to get a clearer view.'); return; }
-            showLoader(true);
-            setTimeout(() => {
-                const cap = new cv.VideoCapture(videoFeed);
-                originalCapturedMat = new cv.Mat(videoFeed.videoHeight, videoFeed.videoWidth, cv.CV_8UC4);
-                cap.read(originalCapturedMat);
-                applyFilter('color'); // Apply default color filter to show preview
-                stopCamera();
-                previewModal.style.display = 'flex';
-                filterBtns.forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.filter-btn[data-filter="color"]').classList.add('active');
-                showLoader(false);
-            }, 100);
-        };
+// REPLACE IT WITH THIS NEW, SMARTER FUNCTION:
+const captureAndProcess = () => {
+    showLoader(true);
+    setTimeout(() => {
+        let captureCorners;
+        const videoWidth = videoFeed.videoWidth;
+        const videoHeight = videoFeed.videoHeight;
+
+        if (detectedCorners) {
+            // --- AUTO MODE ---
+            // If we have detected corners, use them.
+            console.log("Auto-detection successful. Using detected corners.");
+            captureCorners = detectedCorners;
+        } else {
+            // --- MANUAL MODE ---
+            // If auto-detect failed, define a manual capture area (center 80%).
+            // This ensures the capture button ALWAYS works.
+            console.log("Auto-detection failed. Capturing manually.");
+            const marginX = videoWidth * 0.10; // 10% margin on each side
+            const marginY = videoHeight * 0.10; // 10% margin on top/bottom
+            captureCorners = [
+                { x: marginX, y: marginY }, // Top-left
+                { x: videoWidth - marginX, y: marginY }, // Top-right
+                { x: videoWidth - marginX, y: videoHeight - marginY }, // Bottom-right
+                { x: marginX, y: videoHeight - marginY } // Bottom-left
+            ];
+        }
+
+        const cap = new cv.VideoCapture(videoFeed);
+        originalCapturedMat = new cv.Mat(videoHeight, videoWidth, cv.CV_8UC4);
+        cap.read(originalCapturedMat);
+
+        // We now pass the chosen corners (auto or manual) to the filter function.
+        // We need to keep them for when the user changes filters.
+        detectedCorners = captureCorners; 
+
+        applyFilter('color'); // Apply default color filter to show preview
+        stopCamera();
+        previewModal.style.display = 'flex';
+        filterBtns.forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.filter-btn[data-filter="color"]').classList.add('active');
+        showLoader(false);
+    }, 100);
+};
 
         const applyFilter = (filter) => {
             if (!originalCapturedMat || originalCapturedMat.isDeleted() || !detectedCorners) return;
