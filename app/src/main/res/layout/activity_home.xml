@@ -40,7 +40,7 @@
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_recent_files icon -->
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Recent Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -82,7 +82,7 @@
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <!-- CORRECT ICON MAPPING: Using your custom @drawable/ic_all_files icon -->
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
