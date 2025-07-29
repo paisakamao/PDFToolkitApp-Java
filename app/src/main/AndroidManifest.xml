@@ -45,6 +45,15 @@
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.NoActionBar" />
 
+        <!-- START: THIS IS THE NEW ACTIVITY DECLARATION -->
+        <!-- This is for the "Recent Files" screen. -->
+        <activity
+            android:name=".RecentFilesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+        <!-- END: THIS IS THE NEW ACTIVITY DECLARATION -->
+
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.pdf.toolkit.fileprovider"
