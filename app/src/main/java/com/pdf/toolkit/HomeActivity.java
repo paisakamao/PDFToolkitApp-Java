@@ -1,6 +1,5 @@
 package com.pdf.toolkit;
 
-
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +21,12 @@ public class HomeActivity extends AppCompatActivity {
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
 
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
-        scannerCard.setOnClickListener(v -> launchWebViewActivity("scanner.html"));
+
+        scannerCard.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, ScannerActivity.class);
+            startActivity(intent);
+        });
+        
         uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
         
         allFilesCard.setOnClickListener(v -> {
@@ -40,7 +44,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void launchWebViewActivity(String fileName) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-        intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
+        intent.putExtra("EXTRA_HTML_FILE", fileName);
         startActivity(intent);
     }
 }
