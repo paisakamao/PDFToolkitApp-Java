@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- THEME 1: FOR SCREENS WITHOUT A DEFAULT TITLE BAR -->
+    <!-- THEME 1: THIS THEME IS NOW UPDATED FOR EDGE-TO-EDGE DISPLAY -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <!-- The statusBarColor is now transparent to allow the app to draw behind it -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <!-- The navigationBarColor is now transparent -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- This tells the system to use dark icons/text on the status bar, good for light backgrounds -->
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- We keep your original windowBackground color -->
         <item name="android:windowBackground">@color/home_background</item>
-        <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
 
-    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR -->
+    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR (UNCHANGED) -->
     <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <!-- Title bar background -->
         <item name="colorPrimary">@color/home_background</item>
@@ -20,7 +28,7 @@
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 
-    <!-- STYLES FOR THE HOME SCREEN CARDS -->
+    <!-- STYLES FOR THE HOME SCREEN CARDS (UNCHANGED) -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
