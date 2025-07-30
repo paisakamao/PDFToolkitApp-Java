@@ -7,9 +7,6 @@ buildscript {
     dependencies {
         // Your current Android Gradle Plugin version
         classpath 'com.android.tools.build:gradle:8.2.1'
-        
-        // ADD THIS LINE. This is the helper plugin the build system needs.
-        classpath 'com.google.gms:google-services:4.4.1'
     }
 }
 
