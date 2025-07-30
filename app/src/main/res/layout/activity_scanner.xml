@@ -76,6 +76,21 @@
             tools:src="@tools:sample/backgrounds/scenic" />
     </androidx.cardview.widget.CardView>
 
+         <ImageButton
+    android:id="@+id/flash_button"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="48dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:padding="8dp"
+    android:scaleType="fitCenter"
+    app:srcCompat="@drawable/ic_flash_on"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:tint="@android:color/white" />
+           
+
     <!-- The page counter, unchanged but still important. -->
     <TextView
         android:id="@+id/page_count_text"
