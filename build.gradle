@@ -5,19 +5,19 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // This is the explicit, unambiguous classpath for the Android Gradle Plugin.
+        // Your current Android Gradle Plugin version
         classpath 'com.android.tools.build:gradle:8.2.1'
+        
+        // ADD THIS LINE. This is the helper plugin the build system needs.
+        classpath 'com.google.gms:google-services:4.4.1'
     }
 }
 
-// Defines the repositories for the app's own libraries (like appcompat)
+// This block is correct and remains unchanged.
 allprojects {
     repositories {
         google()
         mavenCentral()
-        // --- START: THIS IS THE CRITICAL FIX ---
-        // This tells Gradle to also look for libraries on JitPack.io, where the PDF viewer is hosted.
         maven { url 'https://jitpack.io' }
-        // --- END: THIS IS THE CRITICAL FIX ---
     }
 }
