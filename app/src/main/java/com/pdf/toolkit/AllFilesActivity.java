@@ -3,60 +3,59 @@ package com.pdf.toolkit;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
+import android.widget.RelativeLayout;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class AllFilesActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
-    private LinearLayout permissionView;
+    private RelativeLayout permissionView;
+    private FileListAdapter adapter;
+    private List<FileItem> fileList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        recyclerView = findViewById(R.id.recycler_view_files);
-        progressBar = findViewById(R.id.progress_bar);
+        recyclerView = findViewById(R.id.recycler_view_all_files);
+        progressBar = findViewById(R.id.progress_bar_all_files);
         permissionView = findViewById(R.id.permission_needed_view);
-        Button btnGrant = findViewById(R.id.btn_grant_permission);
+        View grantButton = findViewById(R.id.button_grant_permission);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        grantButton.setOnClickListener(v -> requestStoragePermission());
+    }
 
-        btnGrant.setOnClickListener(v -> requestStoragePermission());
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkAndLoadFiles();
+    }
 
+    private void checkAndLoadFiles() {
         if (hasStoragePermission()) {
-            loadPDFFiles();
+            permissionView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            loadFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
-        }
-
-        // ❌ REMOVE default system ActionBar title
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
+            recyclerView.setVisibility(View.GONE);
         }
     }
 
@@ -70,89 +69,66 @@ public class AllFilesActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(intent);
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.addCategory("android.intent.category.DEFAULT");
+                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                startActivity(intent);
+            } catch (Exception e) {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+            }
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+            // For older versions, this would be handled by a different request code logic
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (hasStoragePermission()) {
-            permissionView.setVisibility(View.GONE);
-            loadPDFFiles();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            loadPDFFiles();
-        } else {
-            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void loadPDFFiles() {
+    private void loadFiles() {
         progressBar.setVisibility(View.VISIBLE);
-        permissionView.setVisibility(View.GONE);
-
         new Thread(() -> {
-            List<FileItem> fileList = new ArrayList<>();
-            File root = Environment.getExternalStorageDirectory();
-            searchPDFFilesRecursively(root, fileList);
+            fileList.clear();
+            String[] projection = {
+                    MediaStore.Files.FileColumns.DISPLAY_NAME,
+                    MediaStore.Files.FileColumns.DATA,
+                    MediaStore.Files.FileColumns.SIZE,
+                    MediaStore.Files.FileColumns.DATE_MODIFIED
+            };
+            String selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ?";
+            String[] selectionArgs = new String[]{"application/pdf"};
+            Uri queryUri = MediaStore.Files.getContentUri("external");
 
-            // ✅ Sort by date DESC (newest files first)
-            Collections.sort(fileList, (a, b) -> Long.compare(b.date, a.date));
+            try (Cursor cursor = getContentResolver().query(queryUri, projection, selection, selectionArgs, null)) {
+                if (cursor != null) {
+                    int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                    int pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
+                    int sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
+                    int dateColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+
+                    while (cursor.moveToNext()) {
+                        String name = cursor.getString(nameColumn);
+                        String path = cursor.getString(pathColumn);
+                        long size = cursor.getLong(sizeColumn);
+                        long date = cursor.getLong(dateColumn) * 1000; // Convert to milliseconds
+                        fileList.add(new FileItem(name, path, size, date));
+                    }
+                }
+            }
+            
+            // Sort by date, newest first
+            Collections.sort(fileList, (f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
 
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                if (fileList.isEmpty()) {
-                    Toast.makeText(this, "No PDF files found", Toast.LENGTH_SHORT).show();
-                } else {
-                    FileListAdapter adapter = new FileListAdapter(fileList, item -> {
-                        Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
-                        intent.putExtra(PdfViewerActivity.EXTRA_FILE_NAME, item.path);
-                        startActivity(intent);
-                    });
+                if (adapter == null) {
+                    // THIS IS THE CORRECT WAY TO CREATE THE ADAPTER
+                    recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                    adapter = new FileListAdapter(this, fileList);
                     recyclerView.setAdapter(adapter);
+                } else {
+                    adapter.notifyDataSetChanged();
                 }
             });
         }).start();
-    }
-
-private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
-    if (dir == null || !dir.isDirectory()) return;
-
-    // Skip hidden/system/trash-like directories
-    String dirName = dir.getName().toLowerCase();
-    if (dirName.contains("trash") || dirName.contains("recycle") || dirName.contains("deleted") || dirName.contains(".bin")) {
-        return;
-    }
-
-    File[] files = dir.listFiles();
-    if (files == null) return;
-
-    for (File file : files) {
-        if (file.isDirectory()) {
-            searchPDFFilesRecursively(file, fileList);
-        } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-            fileList.add(new FileItem(
-                    file.getName(),
-                    file.length(),
-                    file.lastModified(),
-                    file.getAbsolutePath()
-            ));
-        }
-    }
-}
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
     }
 }
