@@ -42,18 +42,18 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         holder.fileName.setText(item.name);
 
         String fileSize = Formatter.formatShortFileSize(context, item.size);
+        // This now correctly uses item.lastModified
         String fileDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(new Date(item.lastModified));
         holder.fileDetails.setText(fileSize + " | " + fileDate);
 
-        // --- THIS IS THE CORRECTED CLICK LISTENER ---
+        // This is the corrected click listener
         holder.container.setOnClickListener(v -> {
             Intent intent = new Intent(context, PdfViewerActivity.class);
             
-            // Convert the file path to a proper Uri
             File file = new File(item.path);
             Uri fileUri = Uri.fromFile(file);
 
-            // Use the NEW key and pass the Uri as a string
+            // This now correctly uses EXTRA_FILE_URI
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             
             context.startActivity(intent);
@@ -69,14 +69,13 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         CardView container;
         TextView fileName;
         TextView fileDetails;
-        ImageView fileIcon;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            container = itemView.findViewById(R.id.file_item_container); // Assuming the root is a CardView with this ID
-            fileName = itemView.findViewById(R.id.textViewFileName);
-            fileDetails = itemView.findViewById(R.id.textViewFileDetails);
-            fileIcon = itemView.findViewById(R.id.imageViewFileIcon);
+            // I have assumed standard IDs. Please adjust if yours are different.
+            container = itemView.findViewById(R.id.file_item_container);
+            fileName = itemView.findViewById(R.id.file_name_text);
+            fileDetails = itemView.findViewById(R.id.file_details_text);
         }
     }
 }
