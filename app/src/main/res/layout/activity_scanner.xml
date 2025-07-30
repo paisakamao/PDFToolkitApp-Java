@@ -47,7 +47,7 @@
         android:layout_marginEnd="24dp"
         android:text="@string/done_button_text"
         android:visibility="invisible"
-        android:src="@drawable/ic_done"
+        app:icon="@drawable/ic_done"
         app:iconPadding="12dp"
         app:layout_constraintBottom_toBottomOf="@+id/capture_button"
         app:layout_constraintEnd_toEndOf="parent"
@@ -85,7 +85,7 @@
     android:background="?attr/selectableItemBackgroundBorderless"
     android:padding="8dp"
     android:scaleType="fitCenter"
-    android:src="@drawable/ic_flash_on"
+    app:icon="@drawable/ic_flash_on"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     app:tint="@android:color/white" />
