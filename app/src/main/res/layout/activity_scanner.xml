@@ -56,18 +56,20 @@
         tools:visibility="visible" />
 
     <!-- Thumbnail preview of the last captured image. -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/thumbnail_preview_card"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="24dp"
-        android:visibility="invisible"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:layout_constraintBottom_toBottomOf="@+id/capture_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/capture_button"
-        tools:visibility="visible">
+<!-- The "Create PDF" button, now an Extended FAB to show text and an icon. -->
+<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+    android:id="@+id/done_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="24dp"
+    android:text="@string/done_button_text"
+    android:visibility="invisible"
+    app:icon="@drawable/ic_done"
+    app:iconPadding="12dp"
+    app:layout_constraintBottom_toBottomOf="@+id/capture_button"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="@+id/capture_button"
+    tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/thumbnail_preview_image"
