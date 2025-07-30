@@ -4,10 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
     tools:context=".ScannerActivity">
 
-    <!-- The PreviewView takes up the whole screen to show the camera feed. -->
+    <!-- The PreviewView still takes up the whole screen. This is our base layer. -->
     <androidx.camera.view.PreviewView
         android:id="@+id/camera_preview"
         android:layout_width="0dp"
@@ -17,56 +16,73 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- A bottom bar with a background that matches your home screen cards for consistency. -->
-    <LinearLayout
-        android:id="@+id/bottom_bar"
+    <!-- A subtle dark gradient at the bottom to make buttons more visible over any background -->
+    <View
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/card_background"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center"
+        android:layout_height="180dp"
+        android:background="@drawable/gradient_scrim"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- This is a placeholder to help center the capture button. -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+    <!-- The main capture button, now a FloatingActionButton for better UX. -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/capture_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="@string/capture_button_alt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:tint="@android:color/white" />
 
-        <!-- The main button to take a picture. It uses your theme's primary color. -->
-        <ImageButton
-            android:id="@+id/capture_button"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/capture_button_alt"
-            android:scaleType="fitCenter"
-            android:src="@android:drawable/ic_menu_camera"
-            app:tint="?attr/colorPrimary" />
+    <!-- The "Create PDF" button, also a FAB. It's smaller. -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/done_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        app:backgroundTint="@color/design_default_color_secondary"
+        android:contentDescription="@string/create_pdf_button"
+        android:visibility="invisible"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="@+id/capture_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/capture_button"
+        app:srcCompat="@android:drawable/ic_menu_done"
+        app:tint="@android:color/white"
+        tools:visibility="visible" />
 
-        <!-- The "Create PDF" button. It will appear on the right side. -->
-        <Button
-            android:id="@+id/done_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:text="@string/create_pdf_button"
-            android:visibility="invisible"
-            tools:visibility="visible" />
+    <!-- Thumbnail preview of the last captured image. -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/thumbnail_preview_card"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="24dp"
+        android:visibility="invisible"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/capture_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/capture_button"
+        tools:visibility="visible">
 
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/thumbnail_preview_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            tools:src="@tools:sample/backgrounds/scenic" />
+    </androidx.cardview.widget.CardView>
 
-
-    <!-- Page counter overlay. It has a semi-transparent background to be readable on the camera feed. -->
+    <!-- The page counter, unchanged but still important. -->
     <TextView
         android:id="@+id/page_count_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="48dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_corner_bg"
         android:padding="8dp"
