@@ -7,7 +7,7 @@
     android:background="#1C1C1E"
     tools:context=".PreviewActivity">
 
-    <!-- ... (Top Toolbar and Main Image Preview are the same) ... -->
+    <!-- Top Toolbar -->
     <RelativeLayout
         android:id="@+id/top_toolbar"
         android:layout_width="match_parent"
@@ -29,6 +29,8 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="16dp"/>
     </RelativeLayout>
+
+    <!-- Main Image Preview -->
     <ImageView
         android:id="@+id/main_preview_image"
         android:layout_width="match_parent"
@@ -37,31 +39,35 @@
         android:layout_above="@id/bottom_toolbar"
         android:padding="16dp"/>
 
-    <!-- ... (Bottom Toolbar is the same) ... -->
+    <!-- Bottom Toolbar -->
     <LinearLayout
         android:id="@+id/bottom_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/thumbnails_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:orientation="horizontal"
             tools:listitem="@layout/item_thumbnail"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:gravity="center"
             android:orientation="horizontal">
+            <!-- THIS IS THE CORRECTED LINE WITH "&" -->
             <Button android:id="@+id/crop_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Crop & Rotate" android:textColor="@android:color/white"/>
+            
             <Button android:id="@+id/retake_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Retake" android:textColor="@android:color/white"/>
             <Button android:id="@+id/delete_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Delete" android:textColor="@android:color/white"/>
         </LinearLayout>
     </LinearLayout>
 
-    <!-- ADD THIS PROGRESS BAR. It will be shown while the PDF is saving. -->
+    <!-- The ProgressBar to show while saving -->
     <ProgressBar
         android:id="@+id/save_progress_bar"
         android:layout_width="wrap_content"
