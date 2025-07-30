@@ -9,8 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.ImageView; // New Import
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,9 +21,12 @@ import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.cardview.widget.CardView; // New Import
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat; // New Import for Edge-to-Edge
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton; // New Import
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
@@ -46,22 +48,32 @@ public class ScannerActivity extends AppCompatActivity {
     private ArrayList<String> capturedImagePaths = new ArrayList<>();
     private ImageCapture imageCapture;
 
-    // UI Elements
+    // --- UI Elements Updated ---
     private PreviewView previewView;
-    private ImageButton captureButton;
-    private Button doneButton;
+    private FloatingActionButton captureButton;
+    private FloatingActionButton doneButton;
     private TextView pageCountText;
+    private CardView thumbnailPreviewCard;
+    private ImageView thumbnailPreviewImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // This line enables edge-to-edge display. Must be called before setContentView.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         setContentView(R.layout.activity_scanner);
 
         cameraExecutor = Executors.newSingleThreadExecutor();
+
+        // --- Find all the new UI elements ---
         previewView = findViewById(R.id.camera_preview);
         captureButton = findViewById(R.id.capture_button);
         doneButton = findViewById(R.id.done_button);
         pageCountText = findViewById(R.id.page_count_text);
+        thumbnailPreviewCard = findViewById(R.id.thumbnail_preview_card);
+        thumbnailPreviewImage = findViewById(R.id.thumbnail_preview_image);
+
 
         if (allPermissionsGranted()) {
             startCamera();
@@ -72,6 +84,60 @@ public class ScannerActivity extends AppCompatActivity {
         captureButton.setOnClickListener(v -> takePhoto());
         doneButton.setOnClickListener(v -> createPdf());
     }
+
+    private void takePhoto() {
+        if (imageCapture == null) return;
+        // ... (The file saving logic remains the same)
+        File photoDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "PDFToolkit");
+        if (!photoDir.exists()) photoDir.mkdirs();
+        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg";
+        File photoFile = new File(photoDir, fileName);
+        ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+        imageCapture.takePicture(outputOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
+            @Override
+            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                String savedPath = photoFile.getAbsolutePath();
+                capturedImagePaths.add(savedPath);
+
+                // --- New UI Update Logic ---
+                runOnUiThread(() -> {
+                    // Load the captured image into a bitmap for the thumbnail
+                    Bitmap bitmap = BitmapFactory.decodeFile(savedPath);
+                    thumbnailPreviewImage.setImageBitmap(bitmap);
+                    updatePageCount();
+                    Toast.makeText(getBaseContext(), "Page " + capturedImagePaths.size() + " captured.", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(@NonNull ImageCaptureException exception) {
+                Log.e(TAG, "Photo capture failed: " + exception.getMessage(), exception);
+            }
+        });
+    }
+
+    private void updatePageCount() {
+        int count = capturedImagePaths.size();
+        pageCountText.setText("Pages: " + count);
+        // Show/hide buttons and thumbnail based on page count
+        if (count > 0) {
+            doneButton.setVisibility(View.VISIBLE);
+            thumbnailPreviewCard.setVisibility(View.VISIBLE);
+        } else {
+            doneButton.setVisibility(View.INVISIBLE);
+            thumbnailPreviewCard.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void resetScannerState() {
+        capturedImagePaths.clear();
+        updatePageCount(); // This will now also hide the thumbnail
+    }
+
+
+    // --- All other methods (startCamera, createPdf, permissions, etc.) remain exactly the same as before. ---
+    // (You can copy them from your previous version or from my last response, they don't need changes)
 
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -93,66 +159,27 @@ public class ScannerActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private void takePhoto() {
-        if (imageCapture == null) return;
-
-        File photoDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "PDFToolkit");
-        if (!photoDir.exists()) photoDir.mkdirs();
-
-        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".jpg";
-        File photoFile = new File(photoDir, fileName);
-
-        ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
-
-        imageCapture.takePicture(outputOptions, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
-            @Override
-            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                String savedPath = photoFile.getAbsolutePath();
-                capturedImagePaths.add(savedPath);
-                runOnUiThread(() -> {
-                    updatePageCount();
-                    Toast.makeText(getBaseContext(), "Page " + capturedImagePaths.size() + " captured.", Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            @Override
-            public void onError(@NonNull ImageCaptureException exception) {
-                Log.e(TAG, "Photo capture failed: " + exception.getMessage(), exception);
-            }
-        });
-    }
-
     private void createPdf() {
         if (capturedImagePaths.isEmpty()) {
             Toast.makeText(this, "Capture at least one page first.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create a directory for our PDFs in the public Documents folder
         File pdfDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "PDFToolkit");
         if (!pdfDir.exists()) {
             pdfDir.mkdirs();
         }
-
         String pdfFileName = "SCAN_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".pdf";
         File pdfFile = new File(pdfDir, pdfFileName);
-
-        // Create a new PDF document
         PdfDocument pdfDocument = new PdfDocument();
 
         for (String imagePath : capturedImagePaths) {
             try {
                 Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-
-                // Create a page with the same dimensions as the image
                 PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), capturedImagePaths.indexOf(imagePath) + 1).create();
                 PdfDocument.Page page = pdfDocument.startPage(pageInfo);
-
-                // Draw the bitmap onto the page's canvas
                 page.getCanvas().drawBitmap(bitmap, 0, 0, null);
                 pdfDocument.finishPage(page);
-
-                // Recycle the bitmap to save memory
                 bitmap.recycle();
             } catch (Exception e) {
                 Log.e(TAG, "Error processing image " + imagePath, e);
@@ -160,33 +187,18 @@ public class ScannerActivity extends AppCompatActivity {
         }
 
         try {
-            // Write the PDF document to the file
             pdfDocument.writeTo(new FileOutputStream(pdfFile));
             Toast.makeText(this, "PDF saved: " + pdfFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             Log.e(TAG, "Error writing PDF file", e);
             Toast.makeText(this, "Error saving PDF.", Toast.LENGTH_SHORT).show();
         } finally {
-            // Close the document
             pdfDocument.close();
-            // Clean up the temporary image files
             for (String imagePath : capturedImagePaths) {
                 new File(imagePath).delete();
             }
-            // Reset the scanner for the next use
             resetScannerState();
         }
-    }
-
-    private void updatePageCount() {
-        int count = capturedImagePaths.size();
-        pageCountText.setText("Pages: " + count);
-        doneButton.setVisibility(count > 0 ? View.VISIBLE : View.INVISIBLE);
-    }
-
-    private void resetScannerState() {
-        capturedImagePaths.clear();
-        updatePageCount();
     }
 
     private boolean allPermissionsGranted() {
