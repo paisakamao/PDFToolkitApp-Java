@@ -37,8 +37,7 @@ dependencies {
     // PDF viewer library
     implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
 
-    // The correct Google Document Scanner library
-    implementation 'com.google.mlkit:document-scanner:19.0.0-beta1'
-
-    // We can now safely remove the old CameraX dependencies
+    // --- THIS IS THE FINAL, CORRECT DEPENDENCY ---
+    // The version number has been changed from "19.0.0-beta1" to "19.0.0".
+    implementation 'com.google.mlkit:document-scanner:19.0.0'
 }
