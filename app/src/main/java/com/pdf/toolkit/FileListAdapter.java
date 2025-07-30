@@ -1,12 +1,18 @@
 package com.pdf.toolkit;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -14,70 +20,63 @@ import java.util.Locale;
 
 public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
 
-    private final List<FileItem> files;
-    private final OnFileClickListener listener;
+    private final Context context;
+    private final List<FileItem> fileList;
 
-    public interface OnFileClickListener {
-        void onFileClick(FileItem item);
-    }
-
-    public FileListAdapter(List<FileItem> files, OnFileClickListener listener) {
-        this.files = files;
-        this.listener = listener;
+    public FileListAdapter(Context context, List<FileItem> fileList) {
+        this.context = context;
+        this.fileList = fileList;
     }
 
     @NonNull
     @Override
     public FileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_file, parent, false);
         return new FileViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
-        FileItem file = files.get(position);
-        holder.bind(file, listener);
+        FileItem item = fileList.get(position);
+
+        holder.fileName.setText(item.name);
+
+        String fileSize = Formatter.formatShortFileSize(context, item.size);
+        String fileDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(new Date(item.lastModified));
+        holder.fileDetails.setText(fileSize + " | " + fileDate);
+
+        // --- THIS IS THE CORRECTED CLICK LISTENER ---
+        holder.container.setOnClickListener(v -> {
+            Intent intent = new Intent(context, PdfViewerActivity.class);
+            
+            // Convert the file path to a proper Uri
+            File file = new File(item.path);
+            Uri fileUri = Uri.fromFile(file);
+
+            // Use the NEW key and pass the Uri as a string
+            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
+            
+            context.startActivity(intent);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return files.size();
+        return fileList.size();
     }
 
     public static class FileViewHolder extends RecyclerView.ViewHolder {
-        ImageView fileIcon;
+        CardView container;
         TextView fileName;
         TextView fileDetails;
+        ImageView fileIcon;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            fileIcon = itemView.findViewById(R.id.icon_file_type);
-            fileName = itemView.findViewById(R.id.text_file_name);
-            fileDetails = itemView.findViewById(R.id.text_file_details);
-        }
-
-        public void bind(final FileItem item, final OnFileClickListener listener) {
-            fileName.setText(item.name);
-            fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
-
-            if (item.name.toLowerCase().endsWith(".pdf")) {
-                fileIcon.setImageResource(R.drawable.ic_pdflist);
-            } else {
-                fileIcon.setImageResource(android.R.drawable.ic_menu_edit);
-            }
-            
-            itemView.setOnClickListener(v -> listener.onFileClick(item));
-        }
-
-        private static String formatDate(long millis) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
-            return sdf.format(new Date(millis));
-        }
-
-        private static String formatFileSize(long size) {
-            if (size < 1024) return size + " B";
-            int z = (63 - Long.numberOfLeadingZeros(size)) / 10;
-            return String.format(Locale.US, "%.1f %sB", (double) size / (1L << (z * 10)), " KMGTPE".charAt(z));
+            container = itemView.findViewById(R.id.file_item_container); // Assuming the root is a CardView with this ID
+            fileName = itemView.findViewById(R.id.textViewFileName);
+            fileDetails = itemView.findViewById(R.id.textViewFileDetails);
+            fileIcon = itemView.findViewById(R.id.imageViewFileIcon);
         }
     }
 }
