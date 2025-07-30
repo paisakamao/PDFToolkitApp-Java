@@ -7,7 +7,6 @@ import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -39,21 +38,23 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
     public void onBindViewHolder(@NonNull FileViewHolder holder, int position) {
         FileItem item = fileList.get(position);
 
+        // This now uses the correct ID from your XML
         holder.fileName.setText(item.name);
 
         String fileSize = Formatter.formatShortFileSize(context, item.size);
-        // This now correctly uses item.lastModified
         String fileDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(new Date(item.lastModified));
+        
+        // This now uses the correct ID from your XML
         holder.fileDetails.setText(fileSize + " | " + fileDate);
 
-        // This is the corrected click listener
+        // The click listener is now on the root CardView
         holder.container.setOnClickListener(v -> {
             Intent intent = new Intent(context, PdfViewerActivity.class);
             
             File file = new File(item.path);
             Uri fileUri = Uri.fromFile(file);
 
-            // This now correctly uses EXTRA_FILE_URI
+            // This correctly uses the new EXTRA_FILE_URI key
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             
             context.startActivity(intent);
@@ -72,10 +73,12 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            // I have assumed standard IDs. Please adjust if yours are different.
-            container = itemView.findViewById(R.id.file_item_container);
-            fileName = itemView.findViewById(R.id.file_name_text);
-            fileDetails = itemView.findViewById(R.id.file_details_text);
+            
+            // --- THESE IDs NOW MATCH YOUR XML FILE ---
+            // The container is the CardView itself, which has no ID in your XML, so we use the itemView
+            container = (CardView) itemView; 
+            fileName = itemView.findViewById(R.id.text_file_name);
+            fileDetails = itemView.findViewById(R.id.text_file_details);
         }
     }
 }
