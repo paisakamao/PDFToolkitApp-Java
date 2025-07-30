@@ -26,7 +26,7 @@ public class AllFilesActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
-    private LinearLayout permissionView; // Changed from RelativeLayout to LinearLayout to match your XML
+    private LinearLayout permissionView;
     private FileListAdapter adapter;
     private List<FileItem> fileList = new ArrayList<>();
 
@@ -35,11 +35,10 @@ public class AllFilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        // --- THESE IDs NOW MATCH YOUR XML FILE ---
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
         permissionView = findViewById(R.id.permission_needed_view);
-        Button grantButton = findViewById(R.id.btn_grant_permission); // Corrected ID
+        Button grantButton = findViewById(R.id.btn_grant_permission);
 
         grantButton.setOnClickListener(v -> requestStoragePermission());
     }
@@ -65,7 +64,6 @@ public class AllFilesActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
-            // For older Android versions, you would also need to request READ_EXTERNAL_STORAGE
             return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
     }
@@ -82,8 +80,6 @@ public class AllFilesActivity extends AppCompatActivity {
                 intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                 startActivity(intent);
             }
-        } else {
-            // For older Android SDKs, you would use ActivityCompat.requestPermissions here.
         }
     }
 
@@ -97,7 +93,6 @@ public class AllFilesActivity extends AppCompatActivity {
                     MediaStore.Files.FileColumns.SIZE,
                     MediaStore.Files.FileColumns.DATE_MODIFIED
             };
-            // Search for PDF files
             String selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ?";
             String[] selectionArgs = new String[]{"application/pdf"};
             Uri queryUri = MediaStore.Files.getContentUri("external");
@@ -113,24 +108,21 @@ public class AllFilesActivity extends AppCompatActivity {
                         String name = cursor.getString(nameColumn);
                         String path = cursor.getString(pathColumn);
                         long size = cursor.getLong(sizeColumn);
-                        long date = cursor.getLong(dateColumn) * 1000; // Convert to milliseconds
+                        long date = cursor.getLong(dateColumn) * 1000;
                         fileList.add(new FileItem(name, path, size, date));
                     }
                 }
             }
             
-            // Sort by date, newest first
             Collections.sort(fileList, (f1, f2) -> Long.compare(f2.lastModified, f1.lastModified));
 
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                // Correctly create and set the adapter if it's the first time
                 if (adapter == null) {
                     recyclerView.setLayoutManager(new LinearLayoutManager(this));
                     adapter = new FileListAdapter(this, fileList);
                     recyclerView.setAdapter(adapter);
                 } else {
-                    // Just notify the adapter that the data has changed
                     adapter.notifyDataSetChanged();
                 }
             });
