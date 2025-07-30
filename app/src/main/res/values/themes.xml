@@ -1,41 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- THEME 1: THIS THEME IS NOW UPDATED FOR EDGE-TO-EDGE DISPLAY -->
+    <!-- THEME 1: This is the original theme for your WebView/Home screens -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- The statusBarColor is now transparent to allow the app to draw behind it -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-
-        <!-- The navigationBarColor is now transparent -->
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-
-        <!-- This tells the system to use dark icons/text on the status bar, good for light backgrounds -->
-        <item name="android:windowLightStatusBar">true</item>
-
-        <!-- We keep your original windowBackground color -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
+        <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
 
-    <!-- THEME 2: FOR SCREENS THAT NEED A TITLE BAR (UNCHANGED) -->
+    <!-- NEW THEME: The build is failing because it cannot find this style. Please ensure it exists. -->
+    <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
+    <!-- THEME 2: Your other theme, unchanged -->
     <style name="Theme.PDFToolkit.WithActionBar" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <!-- Title bar background -->
         <item name="colorPrimary">@color/home_background</item>
-        <!-- Status bar color -->
         <item name="colorPrimaryVariant">@color/home_background</item>
-        <!-- Title and icon color (in action bar) -->
         <item name="colorOnPrimary">@color/black</item>
         <item name="android:textColorPrimary">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
     </style>
 
-    <!-- STYLES FOR THE HOME SCREEN CARDS (UNCHANGED) -->
+    <!-- ... all your other HomeCard styles remain here ... -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_columnWeight">1</item>
         <item name="android:layout_margin">12dp</item>
     </style>
-
     <style name="HomeCardLayoutStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">120dp</item>
@@ -43,13 +39,11 @@
         <item name="android:gravity">center</item>
         <item name="android:padding">16dp</item>
     </style>
-
     <style name="HomeCardIconStyle">
         <item name="android:layout_width">48dp</item>
         <item name="android:layout_height">48dp</item>
         <item name="android:layout_marginBottom">8dp</item>
     </style>
-
     <style name="HomeCardTextStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
