@@ -45,7 +45,7 @@ Generated code
     <activity
         android:name=".ScannerActivity"
         android:exported="false"
-        android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+        android:theme="@style/Theme.PDFToolkit.Scanner" />
 
     <provider
         android:name="androidx.core.content.FileProvider"
