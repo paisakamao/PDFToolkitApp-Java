@@ -1,23 +1,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
+        // Standard repositories for build plugins.
         google()
         mavenCentral()
     }
     dependencies {
-        // Your current Android Gradle Plugin version
+        // The Android Gradle Plugin version you are using.
         classpath 'com.android.tools.build:gradle:8.2.1'
-        
-        // ADD THIS LINE. This is the required helper plugin for play-services libraries.
-        classpath 'com.google.gms:google-services:4.4.1'
     }
 }
 
-// This block is correct and remains unchanged.
+// This block configures repositories for all modules in the project.
 allprojects {
     repositories {
         google()
         mavenCentral()
+        // This is required for your third-party PDF Viewer library.
         maven { url 'https://jitpack.io' }
     }
 }
