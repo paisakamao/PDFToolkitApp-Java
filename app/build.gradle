@@ -1,6 +1,5 @@
-// APPLY THE NEW PLUGIN AT THE TOP
+// REMOVED: "apply plugin: 'com.google.gms.google-services'" is gone.
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace 'com.pdf.toolkit'
@@ -37,6 +36,7 @@ dependencies {
     // PDF viewer library
     implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
 
-    // --- THE CORRECT DEPENDENCY FROM THE OFFICIAL DOCUMENTATION YOU PROVIDED ---
+    // The official dependency from the Google release notes YOU found.
+    // This is the correct line.
     implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1'
 }
