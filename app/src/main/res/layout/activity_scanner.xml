@@ -85,7 +85,7 @@
     android:background="?attr/selectableItemBackgroundBorderless"
     android:padding="8dp"
     android:scaleType="fitCenter"
-    android:src="@android:drawable/ic_flash"
+    android:src="@android:drawable/ic_flash_on"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     app:tint="@android:color/white" />
