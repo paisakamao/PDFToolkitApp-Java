@@ -14,9 +14,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar; // Import ProgressBar
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,7 +37,8 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
 
     private ImageView mainPreviewImage;
     private RecyclerView thumbnailsRecyclerView;
-    private ProgressBar saveProgressBar; // The new progress bar
+    private ProgressBar saveProgressBar;
+    private Button doneButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,24 +47,20 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
 
         mainPreviewImage = findViewById(R.id.main_preview_image);
         thumbnailsRecyclerView = findViewById(R.id.thumbnails_recycler_view);
-        saveProgressBar = findViewById(R.id.save_progress_bar); // Find the new progress bar
-        Button doneButton = findViewById(R.id.done_button);
+        saveProgressBar = findViewById(R.id.save_progress_bar);
+        doneButton = findViewById(R.id.done_button);
         ImageButton closeButton = findViewById(R.id.close_button);
         
         ArrayList<String> uriStrings = getIntent().getStringArrayListExtra("scanned_pages");
         pageUris = new ArrayList<>();
-        if (uriStrings != null) {
-            for (String uriString : uriStrings) {
-                pageUris.add(Uri.parse(uriString));
-            }
-        }
+        if (uriStrings != null) { for (String uriString : uriStrings) { pageUris.add(Uri.parse(uriString)); } }
 
         if (!pageUris.isEmpty()) {
             setupThumbnails();
             displayPage(currentPageIndex);
         }
 
-        doneButton.setOnClickListener(v -> saveAsPdfAndFinish());
+        doneButton.setOnClickListener(v -> saveAsPdfAndShowDialog());
         closeButton.setOnClickListener(v -> finish());
     }
 
@@ -84,13 +82,15 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
         displayPage(position);
     }
     
-    private void saveAsPdfAndFinish() {
+    private void saveAsPdfAndShowDialog() {
         if (pageUris == null || pageUris.isEmpty()) return;
 
-        // Show the progress bar instead of the dialog
+        doneButton.setEnabled(false);
         saveProgressBar.setVisibility(View.VISIBLE);
 
         new Thread(() -> {
+            Uri finalPdfUri = null;
+            boolean success = false;
             try {
                 PdfDocument pdfDocument = new PdfDocument();
                 for (Uri uri : pageUris) {
@@ -115,29 +115,50 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                 if (pdfUri != null) {
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
                         pdfDocument.writeTo(outputStream);
+                        finalPdfUri = pdfUri; // Store the final URI
+                        success = true;
                     }
-                } else {
-                    throw new IOException("Failed to create new MediaStore entry.");
                 }
                 pdfDocument.close();
 
-                runOnUiThread(() -> {
-                    saveProgressBar.setVisibility(View.GONE); // Hide the progress bar
-                    Toast.makeText(this, "PDF saved to Downloads folder!", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(PreviewActivity.this, AllFilesActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                });
-
             } catch (Exception e) {
                 Log.e(TAG, "Error saving PDF", e);
-                runOnUiThread(() -> {
-                    saveProgressBar.setVisibility(View.GONE); // Hide the progress bar on error too
-                    Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
-                });
+                success = false;
             }
+
+            final boolean finalSuccess = success;
+            final Uri savedUri = finalPdfUri;
+
+            runOnUiThread(() -> {
+                saveProgressBar.setVisibility(View.GONE);
+                if (finalSuccess && savedUri != null) {
+                    showSuccessDialog(savedUri);
+                } else {
+                    Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
+                    doneButton.setEnabled(true);
+                }
+            });
         }).start();
+    }
+    
+    // --- NEW METHOD TO SHOW THE SUCCESS DIALOG ---
+    private void showSuccessDialog(Uri pdfUri) {
+        new AlertDialog.Builder(this)
+            .setTitle("Success")
+            .setMessage("PDF saved to your Downloads folder.")
+            .setCancelable(false)
+            .setPositiveButton("View File", (dialog, which) -> {
+                // This intent will now correctly launch your updated PDF viewer
+                Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
+                intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+                startActivity(intent);
+                finish(); // Close the preview after making a choice
+            })
+            .setNegativeButton("New Scan", (dialog, which) -> {
+                // Just close the preview, returning to the Home Screen
+                finish();
+            })
+            .show();
     }
 
     private Bitmap uriToResizedBitmap(Uri uri) {
