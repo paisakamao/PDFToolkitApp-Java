@@ -7,4 +7,5 @@
     <string name="capture_button_alt">Capture Button</string>
     <string name="page_count_placeholder">Pages: 0</string>
     <string name="create_pdf_button">Create PDF</string>
+    <string name="done_button_text">Done</string>
 </resources>
