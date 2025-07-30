@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1C1C1E"
-    tools:context=".PreviewActivity">
+    android:background="#1C1C1E">
 
     <!-- Top Toolbar -->
     <RelativeLayout
@@ -59,8 +58,8 @@
             android:layout_height="56dp"
             android:gravity="center"
             android:orientation="horizontal">
-            <!-- THIS IS THE CORRECTED LINE WITH "&" -->
-            <Button android:id="@+id/crop_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Crop & Rotate" android:textColor="@android:color/white"/>
+            <!-- THE TEXT HAS BEEN CHANGED TO REMOVE THE '&' CHARACTER ENTIRELY -->
+            <Button android:id="@+id/crop_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Crop" android:textColor="@android:color/white"/>
             
             <Button android:id="@+id/retake_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Retake" android:textColor="@android:color/white"/>
             <Button android:id="@+id/delete_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Delete" android:textColor="@android:color/white"/>
@@ -73,7 +72,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:visibility="gone"
-        tools:visibility="visible"/>
+        android:visibility="gone"/>
 
 </RelativeLayout>
