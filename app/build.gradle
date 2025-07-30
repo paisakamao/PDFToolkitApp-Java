@@ -1,5 +1,6 @@
-// REMOVED: "apply plugin: 'com.google.gms.google-services'" is no longer needed.
+// APPLY THE NEW PLUGIN AT THE TOP
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace 'com.pdf.toolkit'
@@ -36,12 +37,6 @@ dependencies {
     // PDF viewer library
     implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
 
-    // --- THE CORRECT BoM STRATEGY ---
-    // 1. Import the ML Kit Vision BoM (Bill of Materials). This manages versions for us.
-    // Use a known stable version.
-    implementation platform('com.google.mlkit:vision-bom:19.1.0')
-
-    // 2. Now declare the document scanner dependency WITHOUT a version number.
-    // Gradle will automatically use the version specified in the BoM.
-    implementation 'com.google.mlkit:document-scanner'
+    // --- THE CORRECT DEPENDENCY FROM THE OFFICIAL DOCUMENTATION YOU PROVIDED ---
+    implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1'
 }
