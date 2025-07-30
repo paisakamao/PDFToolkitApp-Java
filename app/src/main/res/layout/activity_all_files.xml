@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".AllFilesActivity">
 
-    <!-- Custom Black Title TextView at the Top -->
     <TextView
         android:id="@+id/textViewTitleAllFiles"
         android:layout_width="wrap_content"
@@ -20,7 +19,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- RecyclerView below the custom title -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="0dp"
@@ -28,10 +26,8 @@
         app:layout_constraintTop_toBottomOf="@id/textViewTitleAllFiles"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/ic_pdflist" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Center Progress Bar -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -42,7 +38,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Permission View (shown when permission is not granted) -->
     <LinearLayout
         android:id="@+id/permission_needed_view"
         android:layout_width="match_parent"
@@ -85,5 +80,4 @@
             android:layout_marginTop="24dp"
             android:text="Grant Permission" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
