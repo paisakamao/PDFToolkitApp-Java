@@ -1,128 +1,108 @@
-// Paste this complete, updated code into your ScannerActivity.java file
-
 package com.pdf.toolkit;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-// All other imports remain the same
-import android.annotation.SuppressLint;
-import android.util.Base64;
-import android.webkit.JavascriptInterface;
-import android.webkit.PermissionRequest;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Objects;
-import com.pdf.toolkit.R;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 
 public class ScannerActivity extends AppCompatActivity {
 
-    private WebView webView;
+    // A constant to identify our permission request
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
 
-    // This is the new launcher for the permission request
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    // Permission is granted. Continue and load the WebView.
-                    loadWebView();
-                } else {
-                    // Permission was denied. Show a message and close the activity.
-                    Toast.makeText(this, "Camera permission is required to use the scanner.", Toast.LENGTH_LONG).show();
-                    finish(); // Close ScannerActivity
-                }
-            });
+    // A list to hold the locations (URIs) of all captured images
+    private ArrayList<String> capturedImagePaths = new ArrayList<>();
+
+    // Variables for the camera and the thread pool
+    private ExecutorService cameraExecutor;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+
+    // UI Elements from our layout file
+    private PreviewView previewView;
+    private ImageButton captureButton;
+    private Button doneButton;
+    private TextView pageCountText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanner);
 
-        try {
-            Objects.requireNonNull(this.getSupportActionBar()).hide();
-        } catch (NullPointerException e) {
-            // No action needed
-        }
+        // Find the UI elements by their ID from the XML layout
+        previewView = findViewById(R.id.camera_preview);
+        captureButton = findViewById(R.id.capture_button);
+        doneButton = findViewById(R.id.done_button);
+        pageCountText = findViewById(R.id.page_count_text);
 
-        webView = findViewById(R.id.webView);
-        
-        // CHECK FOR PERMISSION BEFORE LOADING THE SCANNER
-        checkCameraPermission();
-    }
-
-    private void checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            // You have the permission, so load the scanner
-            loadWebView();
+        // Check if we already have camera permission
+        if (allPermissionsGranted()) {
+            // If yes, start the camera right away
+            startCamera();
         } else {
-            // You don't have the permission, so request it
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+            // If no, ask the user for permission
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.CAMERA},
+                    CAMERA_PERMISSION_REQUEST_CODE
+            );
         }
+
+        // We will add logic to the buttons in the next steps
+        captureButton.setOnClickListener(v -> takePhoto());
+        doneButton.setOnClickListener(v -> createPdf());
     }
 
-    private void loadWebView() {
-        setupWebView();
-        webView.loadUrl("file:///android_asset/scanner.html");
+    // This method checks if the CAMERA permission has been granted.
+    private boolean allPermissionsGranted() {
+        return ContextCompat.checkSelfPermission(
+                getBaseContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private void setupWebView() {
-        // This code remains the same as before
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
-
-        webView.addJavascriptInterface(new WebAppInterface(this), "Android");
-
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onPermissionRequest(PermissionRequest request) {
-                // We still need to grant the WebView's internal request
-                request.grant(request.getResources());
-            }
-        });
-    }
-
-    // The WebAppInterface and onBackPressed methods remain completely unchanged
-    public class WebAppInterface {
-        private final AppCompatActivity context;
-
-        WebAppInterface(AppCompatActivity c) { context = c; }
-
-        @JavascriptInterface
-        public void savePdf(String base64String, String fileName) {
-            context.runOnUiThread(() -> {
-                try {
-                    File file = new File(context.getExternalFilesDir(null), fileName);
-                    FileOutputStream outputStream = new FileOutputStream(file);
-                    String base64Pdf = base64String.substring(base64String.indexOf(",") + 1);
-                    byte[] pdfAsBytes = Base64.decode(base64Pdf, Base64.DEFAULT);
-
-                    outputStream.write(pdfAsBytes);
-                    outputStream.close();
-
-                    Toast.makeText(context, "PDF saved to: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(context, "Failed to save PDF", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-
+    // This method is called automatically after the user responds to the permission request dialog.
     @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (allPermissionsGranted()) {
+                // The user granted permission. Start the camera.
+                startCamera();
+            } else {
+                // The user denied permission. Show a message and close the scanner.
+                Toast.makeText(this, "Camera permission is required to use the scanner.", Toast.LENGTH_LONG).show();
+                finish(); // Go back to the previous screen
+            }
         }
+    }
+
+    // --- We will fill in these methods in the next steps ---
+
+    private void startCamera() {
+        // Code to set up and start the camera preview will go here.
+        Toast.makeText(this, "Camera Started (Placeholder)", Toast.LENGTH_SHORT).show();
+    }
+
+    private void takePhoto() {
+        // Code to capture an image will go here.
+        Toast.makeText(this, "Photo Taken (Placeholder)", Toast.LENGTH_SHORT).show();
+    }
+
+    private void createPdf() {
+        // Code to convert captured images to a PDF will go here.
+        Toast.makeText(this, "PDF Created (Placeholder)", Toast.LENGTH_SHORT).show();
     }
 }
