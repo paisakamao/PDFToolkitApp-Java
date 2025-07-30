@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The official name of your app -->
+    <string name="app_name">PDF Toolkit</string>
+
+    <!-- The strings required for the Scanner screen -->
+    <string name="capture_button_alt">Capture Button</string>
+    <string name="page_count_placeholder">Pages: 0</string>
+    <string name="create_pdf_button">Create PDF</string>
+</resources>
