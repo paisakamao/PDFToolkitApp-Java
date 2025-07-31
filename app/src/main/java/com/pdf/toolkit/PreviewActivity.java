@@ -3,7 +3,7 @@ package com.pdf.toolkit;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory; // The required import
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Build;
@@ -30,6 +30,7 @@ import java.util.Locale;
 
 public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapter.OnThumbnailListener {
     
+    // (All variables and methods are the same as before)
     private static final String TAG = "PreviewActivity";
     private ArrayList<Uri> pageUris;
     private int currentPageIndex = 0;
@@ -97,7 +98,6 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                 saveProgressBar.setVisibility(View.GONE);
                 cleanupCache();
                 if (finalSuccess && savedUri != null) {
-                    // This is the restored, working dialog
                     showSuccessDialog(savedUri);
                 } else {
                     Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
@@ -115,24 +115,23 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             .setPositiveButton("View File", (dialog, which) -> {
                 Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
-                // This flag is essential for the viewer to have permission to open the file
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
                 finish();
             })
-            .setNegativeButton("New Scan", (dialog, which) -> {
-                // This correctly finishes the activity, returning to the Home screen
-                finish();
-            })
+            .setNegativeButton("New Scan", (dialog, which) -> finish())
             .show();
     }
-    
-    // (All helper methods are the same and correct)
+
+    private void cleanupCache() { File imageDir = new File(getCacheDir(), "images"); if (imageDir.exists()) { File[] files = imageDir.listFiles(); if (files != null) { for (File file : files) { file.delete(); } } } }
     private void setupThumbnails() { thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)); ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this); thumbnailsRecyclerView.setAdapter(adapter); }
     private void displayPage(int index) { if (index >= 0 && index < pageUris.size()) { currentPageIndex = index; mainPreviewImage.setImageURI(pageUris.get(index)); } }
     @Override
     public void onThumbnailClick(int position) { displayPage(position); }
-    private void cleanupCache() { File imageDir = new File(getCacheDir(), "images"); if (imageDir.exists()) { File[] files = imageDir.listFiles(); if (files != null) { for (File file : files) { file.delete(); } } } }
     private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
-    private int calculateInSampleSize(Factory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
+    
+    // --- THIS IS THE CORRECTED LINE ---
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { 
+        final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; 
+    }
 }
