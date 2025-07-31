@@ -2,14 +2,14 @@ package com.pdf.toolkit;
 
 public class FileItem {
     public final String name;
-    public final String path;
     public final long size;
-    public final long lastModified;
+    public final long date; // Matches your existing "date" field name
+    public final String path;
 
-    public FileItem(String name, String path, long size, long lastModified) {
+    public FileItem(String name, long size, long date, String path) {
         this.name = name;
-        this.path = path;
         this.size = size;
-        this.lastModified = lastModified;
+        this.date = date;
+        this.path = path;
     }
 }
