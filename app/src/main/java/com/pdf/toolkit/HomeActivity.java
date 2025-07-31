@@ -6,15 +6,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -35,9 +38,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     GmsDocumentScanningResult scanningResult = GmsDocumentScanningResult.fromActivityResultIntent(result.getData());
                     if (scanningResult != null && scanningResult.getPages() != null) {
-                        // This now returns a list of simple file paths
                         ArrayList<String> safePaths = copyImagesToCache(scanningResult.getPages());
-                        
                         if (!safePaths.isEmpty()) {
                             Intent intent = new Intent(HomeActivity.this, PreviewActivity.class);
                             intent.putStringArrayListExtra("scanned_pages_paths", safePaths);
@@ -53,7 +54,6 @@ public class HomeActivity extends AppCompatActivity {
         setupOtherCards();
     }
 
-    // --- THIS METHOD NOW RETURNS FILE PATHS, NOT URIS ---
     private ArrayList<String> copyImagesToCache(java.util.List<GmsDocumentScanningResult.Page> pages) {
         ArrayList<String> safePaths = new ArrayList<>();
         File imageDir = new File(getCacheDir(), "images");
@@ -66,14 +66,13 @@ public class HomeActivity extends AppCompatActivity {
                 File tempFile = new File(imageDir, "scan_" + System.currentTimeMillis() + ".jpg");
                 try (InputStream inputStream = getContentResolver().openInputStream(page.getImageUri());
                      FileOutputStream outputStream = new FileOutputStream(tempFile)) {
-                    
+
                     byte[] buffer = new byte[1024];
                     int read;
                     while ((read = inputStream.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, read);
                     }
                 }
-                // We now add the direct path to the list
                 safePaths.add(tempFile.getAbsolutePath());
             } catch (Exception e) {
                 Log.e(TAG, "Failed to copy image to cache", e);
@@ -82,8 +81,49 @@ public class HomeActivity extends AppCompatActivity {
         return safePaths;
     }
 
-    // (The rest of your HomeActivity code remains the same)
-    private void startGoogleScanner() { GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder().setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL).setGalleryImportAllowed(false).setPageLimit(20).setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).build(); GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options); scanner.getStartScanIntent(this).addOnSuccessListener(intentSender -> { scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build()); }).addOnFailureListener(e -> { Toast.makeText(this, "Scanner not available.", Toast.LENGTH_SHORT).show(); }); }
-    private void setupOtherCards() { CardView pdfToolCard = findViewById(R.id.card_pdf_tool); CardView allFilesCard = findViewById(R.id.card_all_files); CardView fileManagerCard = findViewById(R.id.card_file_manager); CardView uniToolsCard = findViewById(R.id.card_uni_tools); pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html")); uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html")); allFilesCard.setOnClickListener(v -> { Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class); startActivity(intent); }); fileManagerCard.setOnClickListener(v -> { Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE); if (intent.resolveActivity(getPackageManager()) != null) { startActivity(intent); } }); }
-    private void launchWebViewActivity(String fileName) { Intent intent = new Intent(HomeActivity.this, MainActivity.class); intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName); startActivity(intent); }
+    private void startGoogleScanner() {
+        GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
+                .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+                .setGalleryImportAllowed(false)
+                .setPageLimit(20)
+                .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+                .build();
+
+        GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
+        scanner.getStartScanIntent(this)
+                .addOnSuccessListener(intentSender -> {
+                    scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build());
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Scanner not available.", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setupOtherCards() {
+        CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
+        CardView allFilesCard = findViewById(R.id.card_all_files);
+        CardView fileManagerCard = findViewById(R.id.card_file_manager);
+        CardView uniToolsCard = findViewById(R.id.card_uni_tools);
+
+        pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
+        uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
+
+        allFilesCard.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
+            startActivity(intent);
+        });
+
+        fileManagerCard.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void launchWebViewActivity(String fileName) {
+        Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+        intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
+        startActivity(intent);
+    }
 }
