@@ -1,9 +1,11 @@
 package com.pdf.toolkit;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.pdf.PdfDocument;
@@ -20,6 +22,8 @@ import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
@@ -32,6 +36,7 @@ import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 101;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
 
     @Override
@@ -52,17 +57,44 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         CardView scannerCard = findViewById(R.id.card_scanner);
-        scannerCard.setOnClickListener(v -> startGoogleScanner());
+        // --- FIX #1: PERMISSION HANDLING ---
+        // The click listener now checks for permission BEFORE starting the scanner.
+        scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
+        
         setupOtherCards();
+    }
+
+    private void checkAndRequestStoragePermission() {
+        // On modern Android, MediaStore works without this permission, but it's good practice for older versions.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                startGoogleScanner(); // Permission already granted
+            } else {
+                // Request permission
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            startGoogleScanner(); // No special permission needed for Android 10+ MediaStore
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startGoogleScanner(); // Permission was granted, now start scanner
+            } else {
+                Toast.makeText(this, "Storage permission is required to save scanned files.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void startGoogleScanner() {
         GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
             .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
-            .setGalleryImportAllowed(false)
-            .setPageLimit(20)
-            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
-            .build();
+            .setGalleryImportAllowed(false).setPageLimit(20)
+            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).build();
         GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
         scanner.getStartScanIntent(this)
             .addOnSuccessListener(intentSender -> scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build()))
@@ -94,13 +126,8 @@ public class HomeActivity extends AppCompatActivity {
                 String fileName = "SCAN_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".pdf";
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit");
-                }
-
-                // --- THIS IS THE CORRECTED, MODERN WAY TO SAVE TO DOWNLOADS ---
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit"); }
                 Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-
                 if (pdfUri != null) {
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
                         pdfDocument.writeTo(outputStream);
@@ -109,10 +136,7 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 }
                 pdfDocument.close();
-            } catch (Exception e) { 
-                Log.e(TAG, "Error saving PDF", e);
-                // success remains false
-            }
+            } catch (Exception e) { Log.e(TAG, "Error saving PDF", e); }
 
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
@@ -139,7 +163,12 @@ public class HomeActivity extends AppCompatActivity {
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
             })
-            .setNegativeButton("New Scan", (dialog, which) -> dialog.dismiss())
+            // --- FIX #2: "NEW SCAN" BUTTON LOGIC ---
+            // This now calls startGoogleScanner() again instead of closing.
+            .setNegativeButton("New Scan", (dialog, which) -> {
+                dialog.dismiss();
+                startGoogleScanner(); 
+            })
             .show();
     }
     
