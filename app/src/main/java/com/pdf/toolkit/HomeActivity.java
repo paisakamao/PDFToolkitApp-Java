@@ -45,7 +45,6 @@ public class HomeActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     GmsDocumentScanningResult scanningResult = GmsDocumentScanningResult.fromActivityResultIntent(result.getData());
                     if (scanningResult != null && scanningResult.getPages() != null && !scanningResult.getPages().isEmpty()) {
-                        // Immediately save the results as a PDF
                         saveAsPdfAndShowDialog(scanningResult.getPages());
                     }
                 }
@@ -95,8 +94,13 @@ public class HomeActivity extends AppCompatActivity {
                 String fileName = "SCAN_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".pdf";
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit"); }
-                Uri pdfUri = getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit");
+                }
+
+                // --- THIS IS THE CORRECTED, MODERN WAY TO SAVE TO DOWNLOADS ---
+                Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+
                 if (pdfUri != null) {
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
                         pdfDocument.writeTo(outputStream);
@@ -105,7 +109,10 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 }
                 pdfDocument.close();
-            } catch (Exception e) { Log.e(TAG, "Error saving PDF", e); }
+            } catch (Exception e) { 
+                Log.e(TAG, "Error saving PDF", e);
+                // success remains false
+            }
 
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
@@ -136,22 +143,9 @@ public class HomeActivity extends AppCompatActivity {
             .show();
     }
     
-    private Bitmap uriToResizedBitmap(Uri uri) {
-        try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputStream, null, options);
-            options.inSampleSize = calculateInSampleSize(options, 1024, 1024);
-            options.inJustDecodeBounds = false;
-            try (InputStream newInputStream = getContentResolver().openInputStream(uri)) {
-                return BitmapFactory.decodeStream(newInputStream, null, options);
-            }
-        } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; }
-    }
-    
+    // (Helper methods are correct and remain unchanged)
+    private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
-    
-    // (Your other card setup methods)
     private void setupOtherCards() { CardView pdfToolCard = findViewById(R.id.card_pdf_tool); CardView allFilesCard = findViewById(R.id.card_all_files); CardView fileManagerCard = findViewById(R.id.card_file_manager); CardView uniToolsCard = findViewById(R.id.card_uni_tools); pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html")); uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html")); allFilesCard.setOnClickListener(v -> { Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class); startActivity(intent); }); fileManagerCard.setOnClickListener(v -> { Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE); if (intent.resolveActivity(getPackageManager()) != null) { startActivity(intent); } }); }
     private void launchWebViewActivity(String fileName) { Intent intent = new Intent(HomeActivity.this, MainActivity.class); intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName); startActivity(intent); }
 }
