@@ -16,60 +16,52 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"> <!-- 1. Padding decreased -->
+        android:padding="16dp">
 
-        <!-- 2. Icon is on the left, opposite the text -->
         <ImageView
             android:id="@+id/icon_file_type"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="16dp"
             android:src="@drawable/ic_pdflist" />
-        
-        <!-- 5. Date and Time is on the far right -->
-        <TextView
-            android:id="@+id/text_file_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:textColor="@color/file_details_text"
-            android:textSize="12sp"
-            tools:text="Jul 31, 06:30 PM"/>
 
-        <!-- This container holds the name and size -->
-        <LinearLayout
+        <!-- Top Line: Filename -->
+        <TextView
+            android:id="@+id/text_file_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/text_file_date"
             android:layout_toEndOf="@id/icon_file_type"
-            android:layout_marginEnd="8dp"
-            android:orientation="vertical">
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="A Very Long Document Title That Spans The Line.pdf" />
 
-            <!-- 3. Filename is smaller, single line -->
-            <TextView
-                android:id="@+id/text_file_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/black"
-                android:textSize="14sp" 
-                android:textStyle="bold"
-                tools:text="A very very long file name that would normally wrap.pdf" />
+        <!-- Bottom Line: Date (aligned left) -->
+        <TextView
+            android:id="@+id/text_file_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_file_name"
+            android:layout_toEndOf="@id/icon_file_type"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/file_details_text"
+            android:textSize="12sp"
+            tools:text="Jul 30, 08:06 pm" />
 
-            <!-- 4. File size is below the filename -->
-            <TextView
-                android:id="@+id/text_file_size"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:textColor="@color/file_details_text"
-                android:textSize="12sp"
-                tools:text="1.5 MB" />
-        </LinearLayout>
+        <!-- Bottom Line: Size (aligned right) -->
+        <TextView
+            android:id="@+id/text_file_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/text_file_name"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/file_details_text"
+            android:textSize="12sp"
+            tools:text="1.2 MB" />
 
     </RelativeLayout>
 
