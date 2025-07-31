@@ -26,7 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import com.google.android.material.appbar.MaterialToolbar; // Import the Toolbar
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
@@ -47,11 +47,9 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // --- THIS CODE SETS UP THE NEW TOOLBAR ---
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("PDF Toolkit"); // You can set your app's name here
+        toolbar.setTitle("PDF Toolkit");
         setSupportActionBar(toolbar);
-        // --- END OF TOOLBAR SETUP ---
 
         scannerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartIntentSenderForResult(),
@@ -71,20 +69,18 @@ public class HomeActivity extends AppCompatActivity {
         setupOtherCards();
     }
 
-    // --- ALL OTHER METHODS IN HOMEACTIVITY REMAIN UNCHANGED ---
-    // I am including them here to provide the full, complete file.
     private void checkAndRequestStoragePermission() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                startGoogleScanner();
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
-            }
-        } else {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (Environment.isExternalStorageManager()) {
                 startGoogleScanner();
             } else {
                 requestStoragePermissionModern();
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                startGoogleScanner();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
             }
         }
     }
@@ -142,7 +138,10 @@ public class HomeActivity extends AppCompatActivity {
                         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), pages.indexOf(page) + 1).create();
                         PdfDocument.Page pdfPage = pdfDocument.startPage(pageInfo);
                         pdfPage.getCanvas().drawBitmap(bitmap, 0, 0, null);
-                        pdfPage.finishPage(pdfPage);
+                        
+                        // --- THIS IS THE CORRECTED LINE ---
+                        pdfDocument.finishPage(pdfPage);
+                        
                         bitmap.recycle();
                     }
                 }
