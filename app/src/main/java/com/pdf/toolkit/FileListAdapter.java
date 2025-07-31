@@ -1,5 +1,7 @@
 package com.pdf.toolkit;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -59,15 +62,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         public void bind(final FileItem item, final OnFileClickListener listener) {
             fileName.setText(item.name);
             fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
-
-            if (item.name.toLowerCase().endsWith(".pdf")) {
-                // This can be changed to your custom PDF icon
-                fileIcon.setImageResource(R.drawable.ic_pdflist); 
-            } else {
-                // A generic file icon
-                fileIcon.setImageResource(android.R.drawable.ic_menu_edit);
-            }
-            
+            fileIcon.setImageResource(R.drawable.ic_pdflist);
             itemView.setOnClickListener(v -> listener.onFileClick(item));
         }
 
