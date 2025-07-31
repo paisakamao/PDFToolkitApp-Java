@@ -7,27 +7,23 @@
     android:background="@color/home_background"
     tools:context=".AllFilesActivity">
 
-    <!-- This includes our new, standard toolbar at the top -->
+    <!-- THE ID IS NOW CORRECT -->
     <include
-        android:id="@+id/toolbar_all_files"
+        android:id="@+id/toolbar"
         layout="@layout/toolbar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- The old custom TextView title has been removed -->
-
-    <!-- The RecyclerView is now constrained to be BELOW the toolbar -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_all_files"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- The ProgressBar is centered in the parent -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -38,7 +34,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- ADDED: An "Empty State" view for better UX -->
     <TextView
         android:id="@+id/empty_view_text"
         android:layout_width="wrap_content"
@@ -46,12 +41,11 @@
         android:text="No PDF files found on your device."
         android:textSize="18sp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_all_files"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Your Permission View remains unchanged -->
     <LinearLayout
         android:id="@+id/permission_needed_view"
         android:layout_width="match_parent"
@@ -61,7 +55,6 @@
         android:orientation="vertical"
         android:padding="32dp"
         android:visibility="gone">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -69,7 +62,6 @@
             android:textColor="@color/black"
             android:textSize="22sp"
             android:textStyle="bold" />
-
         <TextView
             android:id="@+id/textViewAllFilesTitle"
             android:layout_width="wrap_content"
@@ -77,7 +69,6 @@
             android:text="All Files"
             android:textSize="18sp"
             android:textColor="@color/black" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -86,7 +77,6 @@
             android:text="To show all documents, this app needs special access to your device's storage."
             android:textColor="@color/file_details_text"
             android:textSize="16sp" />
-
         <Button
             android:id="@+id/btn_grant_permission"
             android:layout_width="wrap_content"
@@ -94,5 +84,4 @@
             android:layout_marginTop="24dp"
             android:text="Grant Permission" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
