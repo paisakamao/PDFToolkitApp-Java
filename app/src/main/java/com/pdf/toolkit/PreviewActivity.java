@@ -1,5 +1,6 @@
 package com.pdf.toolkit;
 
+// (Keep all your existing imports, including AlertDialog)
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,21 +17,20 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.io.File; // Needed for cleanup
 
 public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapter.OnThumbnailListener {
+    // This is the fully restored and corrected version
     private static final String TAG = "PreviewActivity";
     private ArrayList<Uri> pageUris;
     private int currentPageIndex = 0;
@@ -54,10 +54,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
         pageUris = new ArrayList<>();
         if (uriStrings != null) { for (String uriString : uriStrings) { pageUris.add(Uri.parse(uriString)); } }
 
-        if (!pageUris.isEmpty()) {
-            setupThumbnails();
-            displayPage(currentPageIndex);
-        }
+        if (!pageUris.isEmpty()) { setupThumbnails(); displayPage(currentPageIndex); }
 
         doneButton.setOnClickListener(v -> saveAsPdfAndShowDialog());
         closeButton.setOnClickListener(v -> finish());
@@ -70,7 +67,6 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
 
     private void saveAsPdfAndShowDialog() {
         if (pageUris == null || pageUris.isEmpty()) return;
-
         doneButton.setEnabled(false);
         saveProgressBar.setVisibility(View.VISIBLE);
 
@@ -89,36 +85,24 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                         bitmap.recycle();
                     }
                 }
-
                 ContentValues values = new ContentValues();
                 String fileName = "SCAN_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".pdf";
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit");
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit"); }
                 Uri pdfUri = getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);
                 if (pdfUri != null) {
-                    try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
-                        pdfDocument.writeTo(outputStream);
-                        finalPdfUri = pdfUri;
-                        success = true;
-                    }
+                    try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) { pdfDocument.writeTo(outputStream); finalPdfUri = pdfUri; success = true; }
                 }
                 pdfDocument.close();
-            } catch (Exception e) {
-                Log.e(TAG, "Error saving PDF", e);
-                success = false;
-            }
+            } catch (Exception e) { Log.e(TAG, "Error saving PDF", e); success = false; }
 
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
-
             runOnUiThread(() -> {
                 saveProgressBar.setVisibility(View.GONE);
+                cleanupCache(); // Clean up temporary images
                 if (finalSuccess && savedUri != null) {
-                    // After saving, clean up our cached images
-                    cleanupCache();
                     showSuccessDialog(savedUri);
                 } else {
                     Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
@@ -136,26 +120,15 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             .setPositiveButton("View File", (dialog, which) -> {
                 Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // Grant permission to the viewer
                 startActivity(intent);
                 finish();
             })
             .setNegativeButton("New Scan", (dialog, which) -> finish())
             .show();
     }
-
-    // --- NEW METHOD to delete the temporary images ---
-    private void cleanupCache() {
-        File imageDir = new File(getCacheDir(), "images");
-        if (imageDir.exists()) {
-            File[] files = imageDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    file.delete();
-                }
-            }
-        }
-    }
     
+    private void cleanupCache() { File imageDir = new File(getCacheDir(), "images"); if (imageDir.exists()) { File[] files = imageDir.listFiles(); if (files != null) { for (File file : files) { file.delete(); } } } }
     private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
 }
