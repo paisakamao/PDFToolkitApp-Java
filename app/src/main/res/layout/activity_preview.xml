@@ -7,7 +7,6 @@
     android:background="#1C1C1E"
     tools:context=".PreviewActivity">
 
-    <!-- Top Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_toolbar"
         android:layout_width="0dp"
@@ -16,7 +15,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
         <ImageButton
             android:id="@+id/close_button"
             android:layout_width="wrap_content"
@@ -25,7 +23,6 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@android:color/white"
             android:layout_gravity="start"/>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,7 +30,6 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:layout_gravity="center"/>
-
         <Button
             android:id="@+id/done_button"
             android:layout_width="wrap_content"
@@ -43,7 +39,6 @@
             android:layout_marginEnd="16dp"/>
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <!-- Main Image Preview - Stretches to fill available space -->
     <ImageView
         android:id="@+id/main_preview_image"
         android:layout_width="0dp"
@@ -55,7 +50,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:src="@tools:sample/backgrounds/scenic" />
 
-    <!-- Bottom Toolbar -->
     <LinearLayout
         android:id="@+id/bottom_toolbar"
         android:layout_width="0dp"
@@ -65,14 +59,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/thumbnails_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:orientation="horizontal"
             tools:listitem="@layout/item_thumbnail"/>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -83,7 +75,6 @@
             <Button android:id="@+id/delete_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Delete" android:textColor="@android:color/white"/>
         </LinearLayout>
     </LinearLayout>
-
     <ProgressBar
         android:id="@+id/save_progress_bar"
         android:layout_width="wrap_content"
