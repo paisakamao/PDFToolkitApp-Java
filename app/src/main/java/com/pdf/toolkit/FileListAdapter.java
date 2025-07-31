@@ -1,7 +1,9 @@
 package com.pdf.toolkit;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,31 +52,35 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
     public static class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
-        TextView fileDetails;
+        TextView fileDetails; // This will now be for the DATE ONLY
+        TextView fileSize;   // The new TextView for the file size
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
             fileIcon = itemView.findViewById(R.id.icon_file_type);
             fileName = itemView.findViewById(R.id.text_file_name);
             fileDetails = itemView.findViewById(R.id.text_file_details);
+            fileSize = itemView.findViewById(R.id.text_file_size); // Find the new TextView
         }
 
         public void bind(final FileItem item, final OnFileClickListener listener) {
             fileName.setText(item.name);
-            fileDetails.setText(String.format("%s - %s", formatFileSize(item.size), formatDate(item.date)));
+            
+            // Set the file size text on its own TextView
+            fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
+            
+            // Set the date text (formatted as you requested) on the other TextView
+            fileDetails.setText(formatDate(item.date));
+
             fileIcon.setImageResource(R.drawable.ic_pdflist);
+            
             itemView.setOnClickListener(v -> listener.onFileClick(item));
         }
 
+        // 4. Date formatted with time and no year
         private static String formatDate(long millis) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
             return sdf.format(new Date(millis));
-        }
-
-        private static String formatFileSize(long size) {
-            if (size < 1024) return size + " B";
-            int z = (63 - Long.numberOfLeadingZeros(size)) / 10;
-            return String.format(Locale.US, "%.1f %sB", (double) size / (1L << (z * 10)), " KMGTPE".charAt(z));
         }
     }
 }
