@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -40,21 +39,19 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         FileItem item = fileList.get(position);
 
         holder.fileName.setText(item.name);
-
         String fileSize = Formatter.formatShortFileSize(context, item.size);
         String fileDate = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(new Date(item.lastModified));
         holder.fileDetails.setText(fileSize + " | " + fileDate);
 
+        // --- FIX: Revert to a reliable method for opening existing files ---
         holder.container.setOnClickListener(v -> {
             Intent intent = new Intent(context, PdfViewerActivity.class);
             File file = new File(item.path);
 
-            // Use FileProvider for safe URI creation
-            Uri fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
-            
-            // Grant temporary read permission to the viewer
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            
+            // For existing files on storage, Uri.fromFile is direct and reliable.
+            Uri fileUri = Uri.fromFile(file);
+
+            // Use the correct key that the updated PdfViewerActivity expects.
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             context.startActivity(intent);
         });
@@ -72,7 +69,9 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            container = itemView.findViewById(R.id.file_item_container);
+            // The container is the root CardView, which has no ID.
+            container = (CardView) itemView;
+            // These IDs now match your item_file.xml exactly.
             fileName = itemView.findViewById(R.id.text_file_name);
             fileDetails = itemView.findViewById(R.id.text_file_details);
         }
