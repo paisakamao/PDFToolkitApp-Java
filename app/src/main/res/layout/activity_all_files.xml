@@ -4,30 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/home_background"
     tools:context=".AllFilesActivity">
 
-    <TextView
-        android:id="@+id/textViewTitleAllFiles"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:text="All Files"
-        android:textColor="@color/black"
-        android:textSize="28sp"
-        android:textStyle="bold"
+    <!-- This includes our new, standard toolbar at the top -->
+    <include
+        android:id="@+id/toolbar_all_files"
+        layout="@layout/toolbar"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- The old custom TextView title has been removed -->
+
+    <!-- The RecyclerView is now constrained to be BELOW the toolbar -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_files"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/textViewTitleAllFiles"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_all_files"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- The ProgressBar is centered in the parent -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -38,6 +38,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ADDED: An "Empty State" view for better UX -->
+    <TextView
+        android:id="@+id/empty_view_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No PDF files found on your device."
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_all_files"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Your Permission View remains unchanged -->
     <LinearLayout
         android:id="@+id/permission_needed_view"
         android:layout_width="match_parent"
@@ -80,4 +94,5 @@
             android:layout_marginTop="24dp"
             android:text="Grant Permission" />
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
