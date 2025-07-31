@@ -44,12 +44,10 @@ public class AllFilesActivity extends AppCompatActivity {
         toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
         
-        // --- THIS IS THE NEW, TARGETED CODE ---
-        // This sets the text size specifically for this toolbar instance.
-        // It uses a standard Android text appearance style for consistency.
-        toolbar.setTitleTextAppearance(this, R.style.TextAppearance_AppCompat_Medium);
-        // --- END OF NEW CODE ---
-
+        // --- THIS IS THE CORRECTED LINE ---
+        // It now uses the new style we created in themes.xml
+        toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Small);
+        
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -64,25 +62,12 @@ public class AllFilesActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         btnGrant.setOnClickListener(v -> requestStoragePermission());
     }
-
-    // (The rest of your AllFilesActivity.java file remains exactly the same and is correct)
+    
+    // (The rest of your AllFilesActivity.java file is correct and remains unchanged)
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
     @Override
-    public void onResume() {
-        super.onResume();
-        if (hasStoragePermission()) {
-            permissionView.setVisibility(View.GONE);
-            loadPDFFiles();
-        } else {
-            permissionView.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
-            emptyView.setVisibility(View.GONE);
-        }
-    }
+    public void onResume() { super.onResume(); if (hasStoragePermission()) { permissionView.setVisibility(View.GONE); loadPDFFiles(); } else { permissionView.setVisibility(View.VISIBLE); recyclerView.setVisibility(View.GONE); emptyView.setVisibility(View.GONE); } }
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
@@ -112,20 +97,7 @@ public class AllFilesActivity extends AppCompatActivity {
             });
         }).start();
     }
-    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
-        if (dir == null || !dir.isDirectory()) return;
-        String dirPath = dir.getAbsolutePath();
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; }
-        File[] files = dir.listFiles();
-        if (files == null) return;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                searchPDFFilesRecursively(file, fileList);
-            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
-            }
-        }
-    }
+    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { if (dir == null || !dir.isDirectory()) return; String dirPath = dir.getAbsolutePath(); if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; } File[] files = dir.listFiles(); if (files == null) return; for (File file : files) { if (file.isDirectory()) { searchPDFFilesRecursively(file, fileList); } else if (file.getName().toLowerCase().endsWith(".pdf")) { fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath())); } } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
     private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS); } }
     @Override
