@@ -34,6 +34,7 @@ public class PdfViewerActivity extends AppCompatActivity {
         if (uriString != null && !uriString.isEmpty()) {
             Uri fileUri = Uri.parse(uriString);
             
+            // --- FIX: This correctly sets the toolbar's title ---
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(getFileNameFromUri(fileUri));
             }
