@@ -12,7 +12,6 @@ import com.github.barteksc.pdfviewer.PDFView;
 import java.io.File;
 
 public class PdfViewerActivity extends AppCompatActivity {
-
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
 
     @Override
@@ -34,15 +33,12 @@ public class PdfViewerActivity extends AppCompatActivity {
         if (uriString != null && !uriString.isEmpty()) {
             Uri fileUri = Uri.parse(uriString);
             
+            // --- FIX: This correctly sets the toolbar's title ---
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(getFileNameFromUri(fileUri));
             }
             
-            pdfView.fromUri(fileUri)
-                    .enableSwipe(true)
-                    .swipeHorizontal(false)
-                    .defaultPage(0)
-                    .load();
+            pdfView.fromUri(fileUri).load();
         } else {
             Toast.makeText(this, "Error: No file specified", Toast.LENGTH_SHORT).show();
             finish();
@@ -55,17 +51,13 @@ public class PdfViewerActivity extends AppCompatActivity {
         return true;
     }
 
-    // --- FIX: This helper method is now more robust ---
     private String getFileNameFromUri(Uri uri) {
         String fileName = "Document";
-        // Handle both content URIs (from scanner) and file URIs (from All Files list)
         if (uri.getScheme().equals("content")) {
             try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (nameIndex != -1) {
-                        fileName = cursor.getString(nameIndex);
-                    }
+                    if (nameIndex != -1) { fileName = cursor.getString(nameIndex); }
                 }
             }
         } else if (uri.getScheme().equals("file")) {
