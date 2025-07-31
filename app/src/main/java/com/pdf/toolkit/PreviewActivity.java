@@ -1,6 +1,5 @@
 package com.pdf.toolkit;
 
-// (Keep all your existing imports, including AlertDialog)
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,16 +20,16 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.io.File; // Needed for cleanup
 
 public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapter.OnThumbnailListener {
-    // This is the fully restored and corrected version
+    
     private static final String TAG = "PreviewActivity";
     private ArrayList<Uri> pageUris;
     private int currentPageIndex = 0;
@@ -59,11 +58,6 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
         doneButton.setOnClickListener(v -> saveAsPdfAndShowDialog());
         closeButton.setOnClickListener(v -> finish());
     }
-
-    private void setupThumbnails() { thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)); ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this); thumbnailsRecyclerView.setAdapter(adapter); }
-    private void displayPage(int index) { if (index >= 0 && index < pageUris.size()) { currentPageIndex = index; mainPreviewImage.setImageURI(pageUris.get(index)); } }
-    @Override
-    public void onThumbnailClick(int position) { displayPage(position); }
 
     private void saveAsPdfAndShowDialog() {
         if (pageUris == null || pageUris.isEmpty()) return;
@@ -101,7 +95,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             final Uri savedUri = finalPdfUri;
             runOnUiThread(() -> {
                 saveProgressBar.setVisibility(View.GONE);
-                cleanupCache(); // Clean up temporary images
+                cleanupCache();
                 if (finalSuccess && savedUri != null) {
                     showSuccessDialog(savedUri);
                 } else {
@@ -120,14 +114,25 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             .setPositiveButton("View File", (dialog, which) -> {
                 Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // Grant permission to the viewer
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
                 finish();
             })
-            .setNegativeButton("New Scan", (dialog, which) -> finish())
+            .setNegativeButton("Go to All Files", (dialog, which) -> {
+                // This now correctly navigates to the All Files screen
+                Intent intent = new Intent(PreviewActivity.this, AllFilesActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            })
             .show();
     }
     
+    // (Helper methods remain the same)
+    private void setupThumbnails() { thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)); ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this); thumbnailsRecyclerView.setAdapter(adapter); }
+    private void displayPage(int index) { if (index >= 0 && index < pageUris.size()) { currentPageIndex = index; mainPreviewImage.setImageURI(pageUris.get(index)); } }
+    @Override
+    public void onThumbnailClick(int position) { displayPage(position); }
     private void cleanupCache() { File imageDir = new File(getCacheDir(), "images"); if (imageDir.exists()) { File[] files = imageDir.listFiles(); if (files != null) { for (File file : files) { file.delete(); } } } }
     private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
