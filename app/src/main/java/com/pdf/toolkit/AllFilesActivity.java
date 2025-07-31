@@ -12,15 +12,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView; // Import TextView
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar; // Import Toolbar
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,23 +33,40 @@ public class AllFilesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
+    private TextView emptyView; // The new "empty state" TextView
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
+        // --- THIS CODE SETS UP THE NEW TOOLBAR ---
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("All Files");
+        setSupportActionBar(toolbar);
+        // This adds the back arrow to the toolbar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        // --- END OF TOOLBAR SETUP ---
+
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
         permissionView = findViewById(R.id.permission_needed_view);
+        emptyView = findViewById(R.id.empty_view_text); // Find the new empty view
         Button btnGrant = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        btnGrant.setOnClickListener(v -> requestStoragePermission());
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
+        btnGrant.setOnClickListener(v -> requestStoragePermission());
+    }
+
+    // This method is required for the toolbar's back button to work
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     @Override
@@ -59,13 +77,15 @@ public class AllFilesActivity extends AppCompatActivity {
             loadPDFFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.GONE);
         }
     }
-
+    
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
-        permissionView.setVisibility(View.GONE);
-        recyclerView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE); // Hide list while loading
+        emptyView.setVisibility(View.GONE);
 
         new Thread(() -> {
             List<FileItem> fileList = new ArrayList<>();
@@ -76,37 +96,37 @@ public class AllFilesActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
+                
+                // --- THIS IS THE NEW LOGIC FOR THE EMPTY STATE ---
                 if (fileList.isEmpty()) {
-                    Toast.makeText(this, "No PDF files found", Toast.LENGTH_SHORT).show();
+                    recyclerView.setVisibility(View.GONE);
+                    emptyView.setVisibility(View.VISIBLE); // Show the "No files found" message
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyView.setVisibility(View.GONE);
+                    // This uses your original, working adapter and click listener logic
+                    FileListAdapter adapter = new FileListAdapter(fileList, item -> {
+                        Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
+                        File file = new File(item.path);
+                        Uri fileUri = Uri.fromFile(file);
+                        intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
+                        startActivity(intent);
+                    });
+                    recyclerView.setAdapter(adapter);
                 }
-                // This uses your original, working adapter and click listener
-                FileListAdapter adapter = new FileListAdapter(fileList, item -> {
-                    Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
-                    File file = new File(item.path);
-                    Uri fileUri = Uri.fromFile(file);
-                    intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
-                    startActivity(intent);
-                });
-                recyclerView.setAdapter(adapter);
             });
         }).start();
     }
 
-    // --- THIS IS THE CORRECTED METHOD WITH THE TRASH FILTER ---
+    // (The rest of your original, working code remains unchanged)
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
         if (dir == null || !dir.isDirectory()) return;
-
-        // Get the absolute path to check against trash folders
         String dirPath = dir.getAbsolutePath();
-
-        // Skip common Android trash/data folders to avoid showing deleted or system files
         if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) {
             return;
         }
-
         File[] files = dir.listFiles();
         if (files == null) return;
-
         for (File file : files) {
             if (file.isDirectory()) {
                 searchPDFFilesRecursively(file, fileList);
@@ -120,12 +140,8 @@ public class AllFilesActivity extends AppCompatActivity {
             }
         }
     }
-
-    // (The rest of your original, working code remains unchanged)
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
     private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS); } }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { super.onRequestPermissionsResult(requestCode, permissions, grantResults); if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { loadPDFFiles(); } else { Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show(); } }
-    @Override
-    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
 }
