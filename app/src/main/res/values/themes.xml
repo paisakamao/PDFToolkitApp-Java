@@ -18,26 +18,31 @@
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 
-    <!-- === NEW: A dedicated style for the large Home Screen title === -->
+    <!-- A dedicated style for the large Home Screen title -->
     <style name="ToolbarTitle_Large" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- === ALL HOMECARD STYLES ARE NOW CORRECTED AND BALANCED === -->
+    <!-- === THIS IS THE MISSING STYLE THAT CAUSED THE BUILD TO FAIL === -->
+    <style name="ToolbarTitle_Small" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- (Your HomeCardStyles are corrected and balanced) -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item> <!-- Changed to 0dp for better grid distribution -->
+        <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_rowWeight">1</item> <!-- Added row weight -->
+        <item name="android:layout_rowWeight">1</item>
         <item name="android:layout_margin">12dp</item>
     </style>
     <style name="HomeCardLayoutStyle">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item> <!-- Fills the card -->
+        <item name="android:layout_height">match_parent</item>
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
-        <item name="android:padding">12dp</item> <!-- Adjusted padding -->
+        <item name="android:padding">12dp</item>
     </style>
     <style name="HomeCardIconStyle">
         <item name="android:layout_width">64dp</item>
