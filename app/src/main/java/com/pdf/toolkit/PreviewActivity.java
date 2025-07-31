@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,11 +31,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapter.OnThumbnailListener {
-
     private static final String TAG = "PreviewActivity";
     private ArrayList<Uri> pageUris;
     private int currentPageIndex = 0;
-
     private ImageView mainPreviewImage;
     private RecyclerView thumbnailsRecyclerView;
     private ProgressBar saveProgressBar;
@@ -64,24 +63,11 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
         closeButton.setOnClickListener(v -> finish());
     }
 
-    private void setupThumbnails() {
-        thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this);
-        thumbnailsRecyclerView.setAdapter(adapter);
-    }
-
-    private void displayPage(int index) {
-        if (index >= 0 && index < pageUris.size()) {
-            currentPageIndex = index;
-            mainPreviewImage.setImageURI(pageUris.get(index));
-        }
-    }
-
+    private void setupThumbnails() { thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)); ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this); thumbnailsRecyclerView.setAdapter(adapter); }
+    private void displayPage(int index) { if (index >= 0 && index < pageUris.size()) { currentPageIndex = index; mainPreviewImage.setImageURI(pageUris.get(index)); } }
     @Override
-    public void onThumbnailClick(int position) {
-        displayPage(position);
-    }
-    
+    public void onThumbnailClick(int position) { displayPage(position); }
+
     private void saveAsPdfAndShowDialog() {
         if (pageUris == null || pageUris.isEmpty()) return;
 
@@ -115,12 +101,11 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                 if (pdfUri != null) {
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
                         pdfDocument.writeTo(outputStream);
-                        finalPdfUri = pdfUri; // Store the final URI
+                        finalPdfUri = pdfUri;
                         success = true;
                     }
                 }
                 pdfDocument.close();
-
             } catch (Exception e) {
                 Log.e(TAG, "Error saving PDF", e);
                 success = false;
@@ -132,6 +117,8 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             runOnUiThread(() -> {
                 saveProgressBar.setVisibility(View.GONE);
                 if (finalSuccess && savedUri != null) {
+                    // After saving, clean up our cached images
+                    cleanupCache();
                     showSuccessDialog(savedUri);
                 } else {
                     Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
@@ -140,54 +127,35 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             });
         }).start();
     }
-    
-    // --- NEW METHOD TO SHOW THE SUCCESS DIALOG ---
+
     private void showSuccessDialog(Uri pdfUri) {
         new AlertDialog.Builder(this)
             .setTitle("Success")
             .setMessage("PDF saved to your Downloads folder.")
             .setCancelable(false)
             .setPositiveButton("View File", (dialog, which) -> {
-                // This intent will now correctly launch your updated PDF viewer
                 Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
                 startActivity(intent);
-                finish(); // Close the preview after making a choice
-            })
-            .setNegativeButton("New Scan", (dialog, which) -> {
-                // Just close the preview, returning to the Home Screen
                 finish();
             })
+            .setNegativeButton("New Scan", (dialog, which) -> finish())
             .show();
     }
 
-    private Bitmap uriToResizedBitmap(Uri uri) {
-        try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(inputStream, null, options);
-            options.inSampleSize = calculateInSampleSize(options, 1024, 1024);
-            options.inJustDecodeBounds = false;
-            try (InputStream newInputStream = getContentResolver().openInputStream(uri)) {
-                return BitmapFactory.decodeStream(newInputStream, null, options);
+    // --- NEW METHOD to delete the temporary images ---
+    private void cleanupCache() {
+        File imageDir = new File(getCacheDir(), "images");
+        if (imageDir.exists()) {
+            File[] files = imageDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to load bitmap from URI", e);
-            return null;
         }
     }
     
-    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-        if (height > reqHeight || width > reqWidth) {
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
+    private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
 }
