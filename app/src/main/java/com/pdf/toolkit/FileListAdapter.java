@@ -1,7 +1,8 @@
 package com.pdf.toolkit;
 
-// (All necessary imports)
-import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import android.text.format.Formatter;
 
 public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
 
@@ -27,7 +28,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
 
     public interface OnFileClickListener {
         void onFileClick(FileItem item);
-        void onFileLongClick();
+        void onFileLongClick(FileItem item);
     }
 
     public FileListAdapter(List<FileItem> files, OnFileClickListener listener) {
@@ -54,53 +55,58 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         return files.size();
     }
 
-    // --- Selection Management ---
-    public boolean isMultiSelectMode() { return isMultiSelectMode; }
     public void setMultiSelectMode(boolean multiSelectMode) {
-        this.isMultiSelectMode = multiSelectMode;
-        if (!multiSelectMode) {
+        isMultiSelectMode = multiSelectMode;
+        if (!isMultiSelectMode) {
             selectedItems.clear();
         }
         notifyDataSetChanged();
     }
-    public void toggleSelection(int position) {
-        FileItem item = files.get(position);
+
+    public void toggleSelection(FileItem item) {
         if (selectedItems.contains(item)) {
             selectedItems.remove(item);
         } else {
             selectedItems.add(item);
         }
-        notifyItemChanged(position);
+        notifyItemChanged(files.indexOf(item));
     }
+
     public List<FileItem> getSelectedItems() { return new ArrayList<>(selectedItems); }
     public int getSelectedItemCount() { return selectedItems.size(); }
+    public void clearSelections() { selectedItems.clear(); notifyDataSetChanged(); }
 
     public class FileViewHolder extends RecyclerView.ViewHolder {
-        TextView fileName, fileSize, fileDate;
+        ImageView fileIcon;
+        TextView fileName;
+        TextView fileSize;
+        TextView fileDate;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
+            fileIcon = itemView.findViewById(R.id.icon_file_type);
             fileName = itemView.findViewById(R.id.text_file_name);
             fileSize = itemView.findViewById(R.id.text_file_size);
             fileDate = itemView.findViewById(R.id.text_file_date);
         }
 
         public void bind(final FileItem item) {
+            // This now correctly populates all three TextViews in their new positions
             fileName.setText(item.name);
             fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
-            fileDate.setText(new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(new Date(item.date)));
+            fileDate.setText(formatDate(item.date));
 
-            itemView.setOnClickListener(v -> {
-                if (isMultiSelectMode) {
-                    listener.onFileClick(item);
-                } else {
-                    listener.onFileClick(item);
-                }
-            });
+            fileIcon.setImageResource(R.drawable.ic_pdflist);
+            itemView.setOnClickListener(v -> listener.onFileClick(item));
             itemView.setOnLongClickListener(v -> {
-                listener.onFileLongClick();
+                listener.onFileLongClick(item);
                 return true;
             });
+        }
+
+        private String formatDate(long millis) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
+            return sdf.format(new Date(millis));
         }
     }
 }
