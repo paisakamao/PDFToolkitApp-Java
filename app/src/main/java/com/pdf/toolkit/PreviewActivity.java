@@ -16,7 +16,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull; // Ensure this is imported
+import androidx.appcompat.app.AlertDialog; // Ensure this is imported
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,7 +31,6 @@ import java.util.Locale;
 
 public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapter.OnThumbnailListener {
     
-    // (All variables and methods are the same as before, except showSuccessDialog)
     private static final String TAG = "PreviewActivity";
     private ArrayList<Uri> pageUris;
     private int currentPageIndex = 0;
@@ -69,6 +69,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
             Uri finalPdfUri = null;
             boolean success = false;
             try {
+                // All file operations happen here, on the background thread
                 PdfDocument pdfDocument = new PdfDocument();
                 for (Uri uri : pageUris) {
                     Bitmap bitmap = uriToResizedBitmap(uri);
@@ -90,13 +91,21 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) { pdfDocument.writeTo(outputStream); finalPdfUri = pdfUri; success = true; }
                 }
                 pdfDocument.close();
-            } catch (Exception e) { Log.e(TAG, "Error saving PDF", e); success = false; }
+                
+                // --- FIX: Clean up the cache on the background thread ---
+                cleanupCache();
+
+            } catch (Exception e) { 
+                Log.e(TAG, "Error during PDF creation", e);
+                success = false; 
+            }
 
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
+            
+            // Now, switch to the UI thread ONLY for UI operations
             runOnUiThread(() -> {
                 saveProgressBar.setVisibility(View.GONE);
-                cleanupCache();
                 if (finalSuccess && savedUri != null) {
                     showSuccessDialog(savedUri);
                 } else {
@@ -107,30 +116,43 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
         }).start();
     }
 
-    // --- THIS IS THE CORRECTED DIALOG METHOD ---
-    private void showSuccessDialog(Uri pdfUri) {
+    private void showSuccessDialog(@NonNull Uri pdfUri) {
         new AlertDialog.Builder(this)
             .setTitle("Success")
             .setMessage("PDF saved to your Downloads folder.")
             .setCancelable(false)
             .setPositiveButton("View File", (dialog, which) -> {
+                dialog.dismiss();
                 Intent intent = new Intent(PreviewActivity.this, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
-                finish(); // Now we finish *after* starting the new activity
+                finish();
             })
             .setNegativeButton("New Scan", (dialog, which) -> {
-                finish(); // This is correct, as it just closes the screen
+                dialog.dismiss();
+                finish();
             })
             .show();
     }
     
+    private void cleanupCache() {
+        File imageDir = new File(getCacheDir(), "images");
+        if (imageDir.exists()) {
+            File[] files = imageDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    // (All other helper methods are the same and correct)
     private void setupThumbnails() { thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)); ThumbnailAdapter adapter = new ThumbnailAdapter(this, pageUris, this); thumbnailsRecyclerView.setAdapter(adapter); }
     private void displayPage(int index) { if (index >= 0 && index < pageUris.size()) { currentPageIndex = index; mainPreviewImage.setImageURI(pageUris.get(index)); } }
     @Override
     public void onThumbnailClick(int position) { displayPage(position); }
-    private void cleanupCache() { File imageDir = new File(getCacheDir(), "images"); if (imageDir.exists()) { File[] files = imageDir.listFiles(); if (files != null) { for (File file : files) { file.delete(); } } } }
     private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
 }
