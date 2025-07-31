@@ -51,21 +51,22 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
     public static class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
-        TextView fileSize;
-        TextView fileDate; // The new TextView for the date
+        TextView fileDetails; // This will be the DATE
+        TextView fileSize;   // This will be the SIZE
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
             fileIcon = itemView.findViewById(R.id.icon_file_type);
             fileName = itemView.findViewById(R.id.text_file_name);
+            fileDetails = itemView.findViewById(R.id.text_file_details);
             fileSize = itemView.findViewById(R.id.text_file_size);
-            fileDate = itemView.findViewById(R.id.text_file_date); // Find the new TextView
         }
 
         public void bind(final FileItem item, final OnFileClickListener listener) {
+            // This now correctly populates all three TextViews in their new positions
             fileName.setText(item.name);
+            fileDetails.setText(formatDate(item.date));
             fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
-            fileDate.setText(formatDate(item.date));
 
             fileIcon.setImageResource(R.drawable.ic_pdflist);
             itemView.setOnClickListener(v -> listener.onFileClick(item));
