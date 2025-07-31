@@ -6,19 +6,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.FileProvider;
-
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -39,14 +35,12 @@ public class HomeActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     GmsDocumentScanningResult scanningResult = GmsDocumentScanningResult.fromActivityResultIntent(result.getData());
                     if (scanningResult != null && scanningResult.getPages() != null) {
-                        // Copy the images to our app's private cache
-                        ArrayList<String> safeUris = copyImagesToCache(scanningResult.getPages());
+                        // This now returns a list of simple file paths
+                        ArrayList<String> safePaths = copyImagesToCache(scanningResult.getPages());
                         
-                        if (!safeUris.isEmpty()) {
+                        if (!safePaths.isEmpty()) {
                             Intent intent = new Intent(HomeActivity.this, PreviewActivity.class);
-                            intent.putStringArrayListExtra("scanned_pages", safeUris);
-                            // This is no longer needed because the URIs are our own
-                            // intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            intent.putStringArrayListExtra("scanned_pages_paths", safePaths);
                             startActivity(intent);
                         }
                     }
@@ -59,9 +53,9 @@ public class HomeActivity extends AppCompatActivity {
         setupOtherCards();
     }
 
-    // --- NEW METHOD TO COPY IMAGES TO A SAFE LOCATION ---
+    // --- THIS METHOD NOW RETURNS FILE PATHS, NOT URIS ---
     private ArrayList<String> copyImagesToCache(java.util.List<GmsDocumentScanningResult.Page> pages) {
-        ArrayList<String> safeUris = new ArrayList<>();
+        ArrayList<String> safePaths = new ArrayList<>();
         File imageDir = new File(getCacheDir(), "images");
         if (!imageDir.exists()) {
             imageDir.mkdirs();
@@ -79,14 +73,13 @@ public class HomeActivity extends AppCompatActivity {
                         outputStream.write(buffer, 0, read);
                     }
                 }
-                // Create a secure URI using our FileProvider
-                Uri safeUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", tempFile);
-                safeUris.add(safeUri.toString());
+                // We now add the direct path to the list
+                safePaths.add(tempFile.getAbsolutePath());
             } catch (Exception e) {
                 Log.e(TAG, "Failed to copy image to cache", e);
             }
         }
-        return safeUris;
+        return safePaths;
     }
 
     // (The rest of your HomeActivity code remains the same)
