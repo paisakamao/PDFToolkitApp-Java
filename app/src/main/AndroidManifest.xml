@@ -35,7 +35,7 @@ Generated code
     <activity
         android:name=".AllFilesActivity"
         android:exported="false"
-        android:theme="@style/Theme.PDFToolkit.WithActionBar" />
+        android:theme="@style/Theme.PDFToolkit.NoActionBar" />
 
     <activity
         android:name=".PdfViewerActivity"
