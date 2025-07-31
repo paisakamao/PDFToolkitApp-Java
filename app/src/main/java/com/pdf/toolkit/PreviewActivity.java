@@ -154,7 +154,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
 
     private void setupThumbnails() {
         thumbnailsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        ThumbnailAdapter adapter = new ThumbnailAdapter(this, convertPathsToUris(pagePaths), this);
+        ThumbnailAdapter adapter = new ThumbnailAdapter(pagePaths, this);
         thumbnailsRecyclerView.setAdapter(adapter);
     }
 
