@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -44,8 +43,7 @@ public class AllFilesActivity extends AppCompatActivity {
         toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
         
-        // --- THIS IS THE CORRECTED LINE ---
-        // It now uses the new style we created in themes.xml
+        // This line will now work because R.style.ToolbarTitle_Small exists
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Small);
         
         if (getSupportActionBar() != null) {
@@ -63,7 +61,6 @@ public class AllFilesActivity extends AppCompatActivity {
         btnGrant.setOnClickListener(v -> requestStoragePermission());
     }
     
-    // (The rest of your AllFilesActivity.java file is correct and remains unchanged)
     @Override
     public boolean onSupportNavigateUp() { onBackPressed(); return true; }
     @Override
