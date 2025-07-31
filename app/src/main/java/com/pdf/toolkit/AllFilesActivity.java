@@ -12,12 +12,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView; // Import TextView
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar; // Import Toolbar
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,42 +33,44 @@ public class AllFilesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
-    private TextView emptyView; // The new "empty state" TextView
+    private TextView emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        // --- THIS CODE SETS UP THE NEW TOOLBAR ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
-        // This adds the back arrow to the toolbar
+        
+        // --- THIS IS THE NEW, TARGETED CODE ---
+        // This sets the text size specifically for this toolbar instance.
+        // It uses a standard Android text appearance style for consistency.
+        toolbar.setTitleTextAppearance(this, R.style.TextAppearance_AppCompat_Medium);
+        // --- END OF NEW CODE ---
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        // --- END OF TOOLBAR SETUP ---
 
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
         permissionView = findViewById(R.id.permission_needed_view);
-        emptyView = findViewById(R.id.empty_view_text); // Find the new empty view
+        emptyView = findViewById(R.id.empty_view_text);
         Button btnGrant = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         btnGrant.setOnClickListener(v -> requestStoragePermission());
     }
 
-    // This method is required for the toolbar's back button to work
+    // (The rest of your AllFilesActivity.java file remains exactly the same and is correct)
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
     }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -81,30 +83,23 @@ public class AllFilesActivity extends AppCompatActivity {
             emptyView.setVisibility(View.GONE);
         }
     }
-    
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE); // Hide list while loading
+        recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
         new Thread(() -> {
             List<FileItem> fileList = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileList);
-
             Collections.sort(fileList, (a, b) -> Long.compare(b.date, a.date));
-
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                
-                // --- THIS IS THE NEW LOGIC FOR THE EMPTY STATE ---
                 if (fileList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
-                    emptyView.setVisibility(View.VISIBLE); // Show the "No files found" message
+                    emptyView.setVisibility(View.VISIBLE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-                    // This uses your original, working adapter and click listener logic
                     FileListAdapter adapter = new FileListAdapter(fileList, item -> {
                         Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
                         File file = new File(item.path);
@@ -117,26 +112,17 @@ public class AllFilesActivity extends AppCompatActivity {
             });
         }).start();
     }
-
-    // (The rest of your original, working code remains unchanged)
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
         if (dir == null || !dir.isDirectory()) return;
         String dirPath = dir.getAbsolutePath();
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) {
-            return;
-        }
+        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; }
         File[] files = dir.listFiles();
         if (files == null) return;
         for (File file : files) {
             if (file.isDirectory()) {
                 searchPDFFilesRecursively(file, fileList);
             } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                fileList.add(new FileItem(
-                        file.getName(),
-                        file.length(),
-                        file.lastModified(),
-                        file.getAbsolutePath()
-                ));
+                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
             }
         }
     }
