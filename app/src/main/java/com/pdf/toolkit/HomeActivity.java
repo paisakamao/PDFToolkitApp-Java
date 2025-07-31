@@ -12,7 +12,9 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -36,7 +38,7 @@ import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
-    private static final int STORAGE_PERMISSION_REQUEST_CODE = 101;
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 1001; // For older Android
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
 
     @Override
@@ -57,44 +59,67 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         CardView scannerCard = findViewById(R.id.card_scanner);
-        // --- FIX #1: PERMISSION HANDLING ---
-        // The click listener now checks for permission BEFORE starting the scanner.
-        scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
+        // The click listener now correctly checks for permission before starting.
+        scannerCard.setOnClickListener(v -> {
+            if (hasStoragePermission()) {
+                startGoogleScanner();
+            } else {
+                requestStoragePermission();
+            }
+        });
         
         setupOtherCards();
     }
 
-    private void checkAndRequestStoragePermission() {
-        // On modern Android, MediaStore works without this permission, but it's good practice for older versions.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                startGoogleScanner(); // Permission already granted
-            } else {
-                // Request permission
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
-            }
+    // --- PERMISSION LOGIC COPIED FROM YOUR WORKING AllFilesActivity ---
+    private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Android 11 and above, check for "All Files Access"
+            return Environment.isExternalStorageManager();
         } else {
-            startGoogleScanner(); // No special permission needed for Android 10+ MediaStore
+            // For older versions, check for the legacy permission
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
     }
 
+    private void requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Android 11+, send the user to the system settings screen
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.addCategory("android.intent.category.DEFAULT");
+                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
+                startActivity(intent);
+                Toast.makeText(this, "Please grant permission to save files", Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+                Toast.makeText(this, "Please grant permission to save files", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // For older versions, show the pop-up dialog
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    // This handles the result from the pop-up dialog on older Android versions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startGoogleScanner(); // Permission was granted, now start scanner
+                startGoogleScanner();
             } else {
                 Toast.makeText(this, "Storage permission is required to save scanned files.", Toast.LENGTH_LONG).show();
             }
         }
     }
-
+    
     private void startGoogleScanner() {
         GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
-            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
-            .setGalleryImportAllowed(false).setPageLimit(20)
-            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).build();
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL).setGalleryImportAllowed(false)
+            .setPageLimit(20).setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).build();
         GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
         scanner.getStartScanIntent(this)
             .addOnSuccessListener(intentSender -> scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build()))
@@ -106,7 +131,6 @@ public class HomeActivity extends AppCompatActivity {
         progressDialog.setMessage("Creating PDF...");
         progressDialog.setCancelable(false);
         progressDialog.show();
-
         new Thread(() -> {
             Uri finalPdfUri = null;
             boolean success = false;
@@ -130,14 +154,11 @@ public class HomeActivity extends AppCompatActivity {
                 Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (pdfUri != null) {
                     try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
-                        pdfDocument.writeTo(outputStream);
-                        finalPdfUri = pdfUri;
-                        success = true;
+                        pdfDocument.writeTo(outputStream); finalPdfUri = pdfUri; success = true;
                     }
                 }
                 pdfDocument.close();
             } catch (Exception e) { Log.e(TAG, "Error saving PDF", e); }
-
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
             runOnUiThread(() -> {
@@ -152,9 +173,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void showSuccessDialog(@NonNull Uri pdfUri) {
-        new AlertDialog.Builder(this)
-            .setTitle("Success")
-            .setMessage("PDF saved to your Downloads folder.")
+        new AlertDialog.Builder(this).setTitle("Success").setMessage("PDF saved to your Downloads folder.")
             .setCancelable(false)
             .setPositiveButton("View File", (dialog, which) -> {
                 dialog.dismiss();
@@ -163,13 +182,10 @@ public class HomeActivity extends AppCompatActivity {
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
             })
-            // --- FIX #2: "NEW SCAN" BUTTON LOGIC ---
-            // This now calls startGoogleScanner() again instead of closing.
             .setNegativeButton("New Scan", (dialog, which) -> {
                 dialog.dismiss();
                 startGoogleScanner(); 
-            })
-            .show();
+            }).show();
     }
     
     // (Helper methods are correct and remain unchanged)
