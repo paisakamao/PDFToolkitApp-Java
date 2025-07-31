@@ -40,7 +40,6 @@ public class AllFilesActivity extends AppCompatActivity {
         permissionView = findViewById(R.id.permission_needed_view);
         Button grantButton = findViewById(R.id.btn_grant_permission);
 
-        // Setup RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FileListAdapter(this, fileList);
         recyclerView.setAdapter(adapter);
@@ -58,7 +57,7 @@ public class AllFilesActivity extends AppCompatActivity {
         if (hasStoragePermission()) {
             permissionView.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            loadPdfFiles(); // This will now be called every time you enter the screen
+            loadPdfFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -70,10 +69,9 @@ public class AllFilesActivity extends AppCompatActivity {
         new Thread(() -> {
             List<FileItem> freshFileList = new ArrayList<>();
             
-            // --- THIS IS THE CORRECTED QUERY ---
-            String[] projection = { MediaStore.Files.FileColumns.DISPLAY_name, MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED };
+            // --- THIS IS THE CORRECTED LINE WITH THE TYPO FIXED ---
+            String[] projection = { MediaStore.Files.FileColumns.DISPLAY_NAME, MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DATE_MODIFIED };
             
-            // This selection finds PDFs and filters out trashed files on modern Android
             String selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ? AND " + MediaStore.MediaColumns.IS_TRASHED + " = 0";
             String[] selectionArgs = new String[]{"application/pdf"};
             Uri queryUri = MediaStore.Files.getContentUri("external");
@@ -95,9 +93,9 @@ public class AllFilesActivity extends AppCompatActivity {
             
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                fileList.clear(); // Clear the old list
-                fileList.addAll(freshFileList); // Add the fresh list
-                adapter.notifyDataSetChanged(); // This correctly forces the UI to refresh
+                fileList.clear();
+                fileList.addAll(freshFileList);
+                adapter.notifyDataSetChanged();
             });
         }).start();
     }
