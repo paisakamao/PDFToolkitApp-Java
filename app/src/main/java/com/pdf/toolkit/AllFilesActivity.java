@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,16 +44,8 @@ public class AllFilesActivity extends AppCompatActivity {
         Button btnGrant = findViewById(R.id.btn_grant_permission);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
-        if (hasStoragePermission()) {
-            loadPDFFiles();
-        } else {
-            permissionView.setVisibility(View.VISIBLE);
-        }
-        
-        // This correctly removes the default title bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
@@ -61,13 +54,14 @@ public class AllFilesActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        // This is the key to ensure the list refreshes every time
         if (hasStoragePermission()) {
             permissionView.setVisibility(View.GONE);
             loadPDFFiles();
+        } else {
+            permissionView.setVisibility(View.VISIBLE);
         }
     }
-    
+
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         permissionView.setVisibility(View.GONE);
@@ -78,7 +72,6 @@ public class AllFilesActivity extends AppCompatActivity {
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileList);
 
-            // Sort by date DESC (newest files first)
             Collections.sort(fileList, (a, b) -> Long.compare(b.date, a.date));
 
             runOnUiThread(() -> {
@@ -86,14 +79,11 @@ public class AllFilesActivity extends AppCompatActivity {
                 if (fileList.isEmpty()) {
                     Toast.makeText(this, "No PDF files found", Toast.LENGTH_SHORT).show();
                 }
-                
-                // --- FIX #1: This now uses your original, working click listener logic ---
+                // This uses your original, working adapter and click listener
                 FileListAdapter adapter = new FileListAdapter(fileList, item -> {
                     Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
                     File file = new File(item.path);
                     Uri fileUri = Uri.fromFile(file);
-                    
-                    // --- FIX #2: This uses the NEW key that the updated viewer expects ---
                     intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
                     startActivity(intent);
                 });
@@ -102,11 +92,21 @@ public class AllFilesActivity extends AppCompatActivity {
         }).start();
     }
 
-    // (The rest of your original, working methods remain unchanged)
+    // --- THIS IS THE CORRECTED METHOD WITH THE TRASH FILTER ---
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
         if (dir == null || !dir.isDirectory()) return;
+
+        // Get the absolute path to check against trash folders
+        String dirPath = dir.getAbsolutePath();
+
+        // Skip common Android trash/data folders to avoid showing deleted or system files
+        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) {
+            return;
+        }
+
         File[] files = dir.listFiles();
         if (files == null) return;
+
         for (File file : files) {
             if (file.isDirectory()) {
                 searchPDFFilesRecursively(file, fileList);
@@ -120,34 +120,12 @@ public class AllFilesActivity extends AppCompatActivity {
             }
         }
     }
-    private boolean hasStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        }
-    }
-    private void requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(intent);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
-        }
-    }
+
+    // (The rest of your original, working code remains unchanged)
+    private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
+    private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS); } }
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults); // Call superclass method
-        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            loadPDFFiles();
-        } else {
-            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-        }
-    }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { super.onRequestPermissionsResult(requestCode, permissions, grantResults); if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { loadPDFFiles(); } else { Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show(); } }
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
 }
