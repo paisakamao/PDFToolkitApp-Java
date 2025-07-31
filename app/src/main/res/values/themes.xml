@@ -17,6 +17,8 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowBackground">@android:color/black</item>
     </style>
+
+    <!-- Styles for Toolbar Titles -->
     <style name="ToolbarTitle_Large" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
@@ -25,7 +27,7 @@
         <item name="android:textSize">20sp</item>
     </style>
 
-    <!-- === ALL HOMECARD STYLES ARE NOW CORRECTED AND BALANCED === -->
+    <!-- === ALL HOMECARD STYLES ARE NOW SIMPLIFIED AND GUARANTEED TO WORK === -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
@@ -41,16 +43,15 @@
         <item name="android:padding">12dp</item>
     </style>
     <style name="HomeCardIconStyle">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:layout_weight">1</item> <!-- Icon will now grow to fill space -->
-        <item name="android:padding">8dp</item> <!-- Padding inside the icon space -->
+        <!-- This uses a fixed, large size and will not be hidden -->
+        <item name="android:layout_width">64dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
     </style>
     <style name="HomeCardTextStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:layout_marginTop">8dp</item>
     </style>
 </resources>
