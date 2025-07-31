@@ -7,17 +7,14 @@
     android:background="@color/home_background"
     tools:context=".HomeActivity">
 
-    <!-- This 'include' tag adds our new, standard toolbar to the top of the screen -->
+    <!-- THE ID IS NOW CORRECT -->
     <include
-        android:id="@+id/toolbar_home"
+        android:id="@+id/toolbar"
         layout="@layout/toolbar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
     
-    <!-- The old TextView title has been removed -->
-
-    <!-- The GridLayout is now constrained to be BELOW the toolbar -->
     <GridLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -25,12 +22,12 @@
         android:columnCount="2"
         android:rowCount="3"
         android:useDefaultMargins="true"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_home"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Card 1: File Manager Button -->
+        <!-- All your CardViews remain unchanged -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_file_manager"
             style="@style/HomeCardStyle"
@@ -42,8 +39,6 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Recent Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Card 2: PDF Tool Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
             style="@style/HomeCardStyle"
@@ -55,8 +50,6 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Card 3: Scanner Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
             style="@style/HomeCardStyle"
@@ -68,8 +61,6 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Card 4: All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
             style="@style/HomeCardStyle"
@@ -81,8 +72,6 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Card 5: Uni Tools Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
             style="@style/HomeCardStyle"
@@ -95,5 +84,4 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </GridLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
