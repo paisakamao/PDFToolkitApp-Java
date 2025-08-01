@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- (Your App Themes remain unchanged and are correct) -->
+    <!-- (Your App Themes remain unchanged) -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
@@ -25,32 +25,32 @@
         <item name="android:textSize">20sp</item>
     </style>
 
-    <!-- === THESE ARE THE FINAL, STABLE, AND CORRECT STYLES FOR THE HOME SCREEN === -->
+    <!-- === ALL HOMECARD STYLES ARE NOW CORRECTED WITH LAYOUT_WEIGHT === -->
     <style name="HomeCardStyle">
-        <!-- This tells the card to take up its column space but not stretch vertically -->
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_height">0dp</item>
         <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
         <item name="android:layout_margin">12dp</item>
     </style>
     <style name="HomeCardLayoutStyle">
-        <!-- This gives the card a generous, fixed height that will be uniform for all cards -->
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">160dp</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:gravity">center</item>
-        <item name="android:padding">8dp</item> <!-- Minimal padding to give content space -->
+        <item name="android:gravity">center_horizontal</item> <!-- Center horizontally -->
+        <item name="android:padding">8dp</item> <!-- Reduced padding as you suggested -->
     </style>
     <style name="HomeCardIconStyle">
-        <!-- This uses a large, fixed size for a prominent icon -->
-        <item name="android:layout_width">80dp</item>
-        <item name="android:layout_height">80dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
+        <!-- THIS IS THE KEY CHANGE. The icon will now grow to fill the available space. -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
     </style>
     <style name="HomeCardTextStyle">
         <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_height">wrap_content</-item>
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
+        <item name="android:layout_marginTop">8dp</item>
     </style>
 </resources>
