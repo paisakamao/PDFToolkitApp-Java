@@ -49,7 +49,6 @@ public class HomeActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF Toolkit");
-        // --- FIX: This explicitly sets the large title style ---
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
@@ -67,10 +66,27 @@ public class HomeActivity extends AppCompatActivity {
 
         CardView scannerCard = findViewById(R.id.card_scanner);
         scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
+        
         setupOtherCards();
     }
+    
+    // --- THIS METHOD IS NOW CORRECTED ---
+    private void setupOtherCards() {
+        CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
+        CardView allFilesCard = findViewById(R.id.card_all_files);
+        // The line for "card_file_manager" has been REMOVED
+        CardView uniToolsCard = findViewById(R.id.card_uni_tools);
 
-    // --- All other methods are the final, stable versions ---
+        pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
+        uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
+        allFilesCard.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
+            startActivity(intent);
+        });
+        // The listener for "card_file_manager" has been REMOVED
+    }
+
+    // --- All other methods are correct and do not need to be changed ---
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
@@ -183,6 +199,5 @@ public class HomeActivity extends AppCompatActivity {
     }
     private Bitmap uriToResizedBitmap(Uri uri) { try (InputStream inputStream = getContentResolver().openInputStream(uri)) { BitmapFactory.Options options = new BitmapFactory.Options(); options.inJustDecodeBounds = true; BitmapFactory.decodeStream(inputStream, null, options); options.inSampleSize = calculateInSampleSize(options, 1024, 1024); options.inJustDecodeBounds = false; try (InputStream newInputStream = getContentResolver().openInputStream(uri)) { return BitmapFactory.decodeStream(newInputStream, null, options); } } catch (Exception e) { Log.e(TAG, "Failed to load bitmap from URI", e); return null; } }
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) { final int height = options.outHeight; final int width = options.outWidth; int inSampleSize = 1; if (height > reqHeight || width > reqWidth) { final int halfHeight = height / 2; final int halfWidth = width / 2; while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) { inSampleSize *= 2; } } return inSampleSize; }
-    private void setupOtherCards() { CardView pdfToolCard = findViewById(R.id.card_pdf_tool); CardView allFilesCard = findViewById(R.id.card_all_files); CardView fileManagerCard = findViewById(R.id.card_file_manager); CardView uniToolsCard = findViewById(R.id.card_uni_tools); pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html")); uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html")); allFilesCard.setOnClickListener(v -> { Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class); startActivity(intent); }); fileManagerCard.setOnClickListener(v -> { Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE); if (intent.resolveActivity(getPackageManager()) != null) { startActivity(intent); } }); }
     private void launchWebViewActivity(String fileName) { Intent intent = new Intent(HomeActivity.this, MainActivity.class); intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName); startActivity(intent); }
 }
