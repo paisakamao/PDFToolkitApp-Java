@@ -7,14 +7,13 @@
     android:background="@color/home_background"
     tools:context=".HomeActivity">
 
-    <!-- THE ID IS NOW CORRECT -->
     <include
         android:id="@+id/toolbar"
         layout="@layout/toolbar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    
+
     <GridLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -27,29 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- All your CardViews remain unchanged -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_file_manager"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Recent Files" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_pdf_tool"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        <!-- Card 1: Scanner Button (Moved to the top) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
             style="@style/HomeCardStyle"
@@ -61,6 +38,21 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- Card 2: PDF Tool Button -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_pdf_tool"
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        
+        <!-- Card 3: All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
             style="@style/HomeCardStyle"
@@ -72,6 +64,8 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <!-- Card 4: Uni Tools Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
             style="@style/HomeCardStyle"
@@ -83,5 +77,9 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+        
+        <!-- The "Recent Files" card has been completely removed -->
+
     </GridLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
