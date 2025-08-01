@@ -64,17 +64,18 @@ public class HomeActivity extends AppCompatActivity {
             }
         );
 
+        // This correctly finds the scanner card
         CardView scannerCard = findViewById(R.id.card_scanner);
         scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
         
+        // This sets up the rest of the cards
         setupOtherCards();
     }
     
-    // --- THIS METHOD IS NOW CORRECTED ---
+    // This method is now in sync with the XML layout
     private void setupOtherCards() {
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView allFilesCard = findViewById(R.id.card_all_files);
-        // The line for "card_file_manager" has been REMOVED
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
 
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
@@ -83,10 +84,9 @@ public class HomeActivity extends AppCompatActivity {
             Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
             startActivity(intent);
         });
-        // The listener for "card_file_manager" has been REMOVED
     }
 
-    // --- All other methods are correct and do not need to be changed ---
+    // --- All other methods are the final, stable versions ---
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
