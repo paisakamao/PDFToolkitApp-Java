@@ -14,68 +14,72 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- This GridLayout no longer stretches and will contain the 4 cards -->
-    <GridLayout
+    <!-- This GridLayout now holds the 4 cards and the ad container -->
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:columnCount="2"
+        android:layout_height="0dp"
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Card 1: Scanner Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_scanner"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        <GridLayout
+            android:id="@+id/grid_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:columnCount="2"
+            android:rowCount="2"
+            android:useDefaultMargins="true">
 
-        <!-- Card 2: PDF Tool Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_pdf_tool"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-        
-        <!-- Card 3: All Files Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_all_files"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
-                <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            <!-- Card 1: Scanner -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_scanner"
+                style="@style/HomeCardStyle">
+                <LinearLayout style="@style/HomeCardLayoutStyle">
+                    <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
+                    <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-        <!-- Card 4: Uni Tools Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_uni_tools"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            <!-- Card 2: Pdf Tool -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_pdf_tool"
+                style="@style/HomeCardStyle">
+                <LinearLayout style="@style/HomeCardLayoutStyle">
+                    <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
+                    <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-    </GridLayout>
+            <!-- Card 3: Uni Tools -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_uni_tools"
+                style="@style/HomeCardStyle">
+                <LinearLayout style="@style/HomeCardLayoutStyle">
+                    <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
+                    <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Card 4: All Files -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_all_files"
+                style="@style/HomeCardStyle">
+                <LinearLayout style="@style/HomeCardLayoutStyle">
+                    <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
+                    <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </GridLayout>
+
+        <FrameLayout
+            android:id="@+id/ad_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
