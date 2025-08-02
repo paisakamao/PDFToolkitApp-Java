@@ -16,6 +16,9 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -27,6 +30,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.ads.AdLoader;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
@@ -36,11 +47,14 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1001;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
+    private FirebaseRemoteConfig remoteConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +65,9 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitle("PDF Toolkit");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
+
+        // --- Initialize AdMob ---
+        MobileAds.initialize(this, initializationStatus -> {});
 
         scannerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartIntentSenderForResult(),
@@ -64,18 +81,20 @@ public class HomeActivity extends AppCompatActivity {
             }
         );
 
-        CardView scannerCard = findViewById(R.id.card_scanner);
-        scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
+        // --- Setup Listeners ---
+        setupCardListeners();
         
-        setupOtherCards();
+        // --- Setup and Fetch Remote Config for Ads ---
+        setupRemoteConfigAndLoadAd();
     }
     
-    // This method is now correct and only finds the 4 existing cards
-    private void setupOtherCards() {
+    private void setupCardListeners() {
+        CardView scannerCard = findViewById(R.id.card_scanner);
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView allFilesCard = findViewById(R.id.card_all_files);
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
-
+        
+        scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
         uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
         allFilesCard.setOnClickListener(v -> {
@@ -84,6 +103,57 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    private void setupRemoteConfigAndLoadAd() {
+        remoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+            .setMinimumFetchIntervalInSeconds(3600) // Fetch new values every hour
+            .build();
+        remoteConfig.setConfigSettingsAsync(configSettings);
+
+        // Set default values in code (safer than XML for this case)
+        Map<String, Object> defaultConfigMap = new HashMap<>();
+        defaultConfigMap.put("admob_native_ad_enabled", false);
+        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110"); // Test ID
+        remoteConfig.setDefaultsAsync(defaultConfigMap);
+
+        remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                loadAdFromConfig();
+            }
+        });
+    }
+
+    private void loadAdFromConfig() {
+        boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
+        if (isAdEnabled) {
+            String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
+            if (adUnitId.isEmpty()) { return; }
+
+            AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
+            builder.forNativeAd(nativeAd -> {
+                if (isDestroyed()) {
+                    nativeAd.destroy();
+                    return;
+                }
+                FrameLayout adContainer = findViewById(R.id.ad_container);
+                NativeAdView adView = (NativeAdView) getLayoutInflater().inflate(R.layout.native_ad_layout, null);
+                populateNativeAdView(nativeAd, adView);
+                adContainer.removeAllViews();
+                adContainer.addView(adView);
+            });
+            AdLoader adLoader = builder.build();
+            adLoader.loadAd(new AdRequest.Builder().build());
+        }
+    }
+
+    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
+        adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+        adView.setNativeAd(nativeAd);
+    }
+    
     // --- All other methods are the final, stable versions ---
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
