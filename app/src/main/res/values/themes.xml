@@ -42,8 +42,8 @@
     </style>
     <style name="HomeCardIconStyle">
         <!-- This uses a large, fixed size for a prominent icon -->
-        <item name="android:layout_width">80dp</item>
-        <item name="android:layout_height">80dp</item>
+        <item name="android:layout_width">120dp</item>
+        <item name="android:layout_height">120dp</item>
         <item name="android:layout_marginBottom">12dp</item>
     </style>
     <style name="HomeCardTextStyle">
