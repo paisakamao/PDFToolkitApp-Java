@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- (Your App Themes) -->
+
+    <!-- (Your App Themes remain unchanged and are correct) -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
@@ -24,7 +25,7 @@
         <item name="android:textSize">20sp</item>
     </style>
 
-    <!-- === THESE ARE THE FINAL, CORRECT STYLES FOR YOUR HOME SCREEN === -->
+    <!-- === THESE ARE THE FINAL, CORRECT STYLES THAT MATCH YOUR "OLD" SCREENSHOT === -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
@@ -40,6 +41,7 @@
         <item name="android:padding">8dp</item>
     </style>
     <style name="HomeCardIconStyle">
+        <!-- This tells the icon to grow and fill all available vertical space -->
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_weight">1</item>
