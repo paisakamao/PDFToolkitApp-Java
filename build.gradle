@@ -8,10 +8,14 @@ buildscript {
     dependencies {
         // The Android Gradle Plugin version you are using.
         classpath 'com.android.tools.build:gradle:8.2.1'
+        
+        // --- THIS IS THE REQUIRED LINE ---
+        // This adds the "helper" plugin that Firebase needs to work.
+        classpath 'com.google.gms:google-services:4.4.2' // Using a recent, stable version
     }
 }
 
-// This block configures repositories for all modules in the project.
+// This block is correct and remains unchanged.
 allprojects {
     repositories {
         google()
