@@ -13,19 +13,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    
+
+    <!-- This GridLayout no longer stretches and will contain the 4 cards -->
     <GridLayout
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:columnCount="2"
-        android:rowCount="3"
-        android:useDefaultMargins="true"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
 
         <!-- Card 1: Scanner Button -->
         <androidx.cardview.widget.CardView
@@ -39,7 +36,7 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-        
+
         <!-- Card 2: PDF Tool Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
@@ -52,21 +49,8 @@
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
- 
-        <!-- Card 3: Uni Tools Button -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/card_uni_tools"
-            style="@style/HomeCardStyle"
-            app:cardBackgroundColor="@color/card_background"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-            <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Card 4: All Files Button -->
+        
+        <!-- Card 3: All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
             style="@style/HomeCardStyle"
@@ -79,17 +63,19 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Card 5: Recent Files (RESTORED) -->   
-      /*  <androidx.cardview.widget.CardView
-            android:id="@+id/card_file_manager"
+        <!-- Card 4: Uni Tools Button -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_uni_tools"
             style="@style/HomeCardStyle"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Recent Files" />
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>*/
+        </androidx.cardview.widget.CardView>
+
     </GridLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
