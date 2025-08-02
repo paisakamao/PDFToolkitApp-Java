@@ -1,26 +1,16 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        // Standard repositories for build plugins.
         google()
         mavenCentral()
     }
     dependencies {
-        // The Android Gradle Plugin version you are using.
         classpath 'com.android.tools.build:gradle:8.2.1'
-        
-        // --- THIS IS THE REQUIRED LINE ---
-        // This adds the "helper" plugin that Firebase needs to work.
-        classpath 'com.google.gms:google-services:4.4.2' // Using a recent, stable version
     }
 }
-
-// This block is correct and remains unchanged.
 allprojects {
     repositories {
         google()
         mavenCentral()
-        // This is required for your third-party PDF Viewer library.
         maven { url 'https://jitpack.io' }
     }
 }
