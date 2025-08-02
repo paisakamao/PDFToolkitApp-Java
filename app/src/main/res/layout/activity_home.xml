@@ -16,20 +16,22 @@
     
     <GridLayout
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:columnCount="2"
         android:rowCount="3"
         android:useDefaultMargins="true"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Card 1: Scanner Button -->
+        <!-- Card 1: Scanner Button (Re-ordered to match your original file) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_scanner"
-            style="@style/HomeCardStyle">
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
@@ -39,17 +41,23 @@
         <!-- Card 2: PDF Tool Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_pdf_tool"
-            style="@style/HomeCardStyle">
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
+ 
         <!-- Card 3: Uni Tools Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_uni_tools"
-            style="@style/HomeCardStyle">
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
                 <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
@@ -59,38 +67,26 @@
         <!-- Card 4: All Files Button -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_all_files"
-            style="@style/HomeCardStyle">
+            style="@style/HomeCardStyle"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
                 <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
                 <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Card 5: THIS IS NOW THE AD CONTAINER -->
+        <!-- Card 5: Recent Files (RESTORED) -->   
         <androidx.cardview.widget.CardView
-            android:id="@+id/ad_card_container"
+            android:id="@+id/card_file_manager"
             style="@style/HomeCardStyle"
-            android:layout_columnSpan="2"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-                
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginTop="8dp"
-                    android:text="Ad"
-                    android:textSize="12sp"/>
-                
-                <FrameLayout
-                    android:id="@+id/ad_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+            <LinearLayout style="@style/HomeCardLayoutStyle">
+                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_recent_files" />
+                <TextView style="@style/HomeCardTextStyle" android:text="Recent Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
         
