@@ -34,9 +34,11 @@ public class PdfViewerActivity extends AppCompatActivity {
         if (uriString != null && !uriString.isEmpty()) {
             Uri fileUri = Uri.parse(uriString);
             
-            // --- FIX: This correctly sets the toolbar's title ---
+            // --- THIS IS THE FINAL, CORRECTED LOGIC ---
+            // It correctly gets the filename and sets it as the toolbar's title.
+            String fileName = getFileNameFromUri(fileUri);
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(getFileNameFromUri(fileUri));
+                getSupportActionBar().setTitle(fileName);
             }
             
             pdfView.fromUri(fileUri)
@@ -56,10 +58,13 @@ public class PdfViewerActivity extends AppCompatActivity {
         return true;
     }
 
+    // This is the robust helper method that handles both types of URIs
     private String getFileNameFromUri(Uri uri) {
         String fileName = "Document";
         String scheme = uri.getScheme();
+
         if (scheme != null && scheme.equals("content")) {
+            // This handles URIs from the MediaStore (like from the scanner)
             try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -69,6 +74,7 @@ public class PdfViewerActivity extends AppCompatActivity {
                 }
             }
         } else if (scheme != null && scheme.equals("file")) {
+            // This handles URIs from the All Files list (legacy file paths)
             fileName = new File(uri.getPath()).getName();
         }
         return fileName;
