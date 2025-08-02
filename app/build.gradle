@@ -1,10 +1,11 @@
-// REMOVED: "apply plugin: 'com.google.gms.google-services'" is gone.
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
 
 android {
     namespace 'com.pdf.toolkit'
     compileSdk 34
-
     defaultConfig {
         applicationId "com.pdf.toolkit"
         minSdk 24
@@ -12,14 +13,12 @@ android {
         versionCode 1
         versionName "1.0"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -27,16 +26,17 @@ android {
 }
 
 dependencies {
+    // Your existing, working dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.11.0'
-
-    // PDF viewer library
     implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
+    implementation 'com.google.mlkit:document-scanner:19.0.0'
 
-    // The official dependency from the Google release notes YOU found.
-    // This is the correct line.
-    implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1'
+    // --- NEW DEPENDENCIES FOR FIREBASE AND ADMOB ---
+    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+    implementation 'com.google.firebase:firebase-config-ktx'
+    implementation 'com.google.android.gms:play-services-ads:23.1.0'
 }
