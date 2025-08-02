@@ -25,32 +25,30 @@
         <item name="android:textSize">20sp</item>
     </style>
 
-    <!-- === THESE ARE THE ORIGINAL, WORKING STYLES FOR YOUR 5-CARD LAYOUT === -->
+    <!-- === THESE STYLES ARE NOW CORRECTED TO PREVENT STRETCHING === -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_height">wrap_content</item> <!-- No longer stretches -->
         <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_rowWeight">1</item>
         <item name="android:layout_margin">12dp</item>
     </style>
     <style name="HomeCardLayoutStyle">
+        <!-- This gives a fixed, uniform height to all cards -->
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_height">160dp</item>
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
         <item name="android:padding">8dp</item>
     </style>
     <style name="HomeCardIconStyle">
-        <!-- This tells the icon to grow and fill all available vertical space -->
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:layout_width">80dp</item>
+        <item name="android:layout_height">80dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
     </style>
     <style name="HomeCardTextStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:layout_marginTop">8dp</item>
     </style>
 </resources>
