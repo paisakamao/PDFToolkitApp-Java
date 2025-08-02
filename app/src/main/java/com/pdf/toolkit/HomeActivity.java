@@ -66,7 +66,7 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
-        // --- Initialize AdMob ---
+        // Initialize AdMob
         MobileAds.initialize(this, initializationStatus -> {});
 
         scannerLauncher = registerForActivityResult(
@@ -81,10 +81,10 @@ public class HomeActivity extends AppCompatActivity {
             }
         );
 
-        // --- Setup Listeners ---
+        // Setup Listeners for the 4 cards
         setupCardListeners();
         
-        // --- Setup and Fetch Remote Config for Ads ---
+        // Setup and Fetch Remote Config for Ads
         setupRemoteConfigAndLoadAd();
     }
     
@@ -94,6 +94,8 @@ public class HomeActivity extends AppCompatActivity {
         CardView allFilesCard = findViewById(R.id.card_all_files);
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
         
+        // The listener for the "Recent Files" card has been removed.
+
         scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
         uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
@@ -106,28 +108,35 @@ public class HomeActivity extends AppCompatActivity {
     private void setupRemoteConfigAndLoadAd() {
         remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(3600) // Fetch new values every hour
+            .setMinimumFetchIntervalInSeconds(3600)
             .build();
         remoteConfig.setConfigSettingsAsync(configSettings);
 
-        // Set default values in code (safer than XML for this case)
         Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("admob_native_ad_enabled", false);
-        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110"); // Test ID
+        defaultConfigMap.put("admob_native_ad_enabled", true);
+        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
         remoteConfig.setDefaultsAsync(defaultConfigMap);
 
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
+                Toast.makeText(HomeActivity.this, "Remote Config Fetched", Toast.LENGTH_SHORT).show();
                 loadAdFromConfig();
+            } else {
+                Toast.makeText(HomeActivity.this, "Remote Config Fetch Failed", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void loadAdFromConfig() {
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
+        Toast.makeText(this, "Ad Enabled: " + isAdEnabled, Toast.LENGTH_SHORT).show();
+        
         if (isAdEnabled) {
             String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
-            if (adUnitId.isEmpty()) { return; }
+            if (adUnitId.isEmpty()) {
+                Log.e(TAG, "Ad Unit ID from Firebase is empty.");
+                return;
+            }
 
             AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
             builder.forNativeAd(nativeAd -> {
@@ -149,12 +158,16 @@ public class HomeActivity extends AppCompatActivity {
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-        ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+        if (nativeAd.getHeadline() != null) {
+            ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        }
+        if (nativeAd.getCallToAction() != null) {
+            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+        }
         adView.setNativeAd(nativeAd);
     }
     
-    // --- All other methods are the final, stable versions ---
+    // --- All other methods are the final, stable versions from your working file ---
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
     private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { try { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.addCategory("android.intent.category.DEFAULT"); intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName()))); startActivity(intent); } catch (Exception e) { Intent intent = new Intent(); intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION); startActivity(intent); } } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE); } }
