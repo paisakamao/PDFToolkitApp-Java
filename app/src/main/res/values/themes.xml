@@ -28,14 +28,14 @@
     <!-- === THESE ARE THE FINAL, CORRECT STYLES THAT MATCH YOUR "OLD" SCREENSHOT === -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_rowWeight">1</item>
         <item name="android:layout_margin">12dp</item>
     </style>
     <style name="HomeCardLayoutStyle">
+        <!-- This gives a fixed, uniform height that matches the old layout's proportions -->
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_height">170dp</item>
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
         <item name="android:padding">8dp</item>
