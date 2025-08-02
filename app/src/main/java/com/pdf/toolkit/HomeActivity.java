@@ -63,46 +63,29 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         );
-        
-        // This now correctly finds the scanner card in its original position
+
         CardView scannerCard = findViewById(R.id.card_scanner);
         scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
         
-        // This sets up all the other cards, including the restored "Recent Files"
         setupOtherCards();
     }
     
+    // This method is now correct and only finds the 4 existing cards
     private void setupOtherCards() {
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView allFilesCard = findViewById(R.id.card_all_files);
-        CardView fileManagerCard = findViewById(R.id.card_file_manager); // It is now safe to find this
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
 
         pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html"));
         uniToolsCard.setOnClickListener(v -> launchWebViewActivity("unitools.html"));
-        
         allFilesCard.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
             startActivity(intent);
         });
-        
-        // The listener for the restored "Recent Files" card
-        fileManagerCard.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
-            }
-        });
     }
 
-    // (The rest of your HomeActivity.java file is correct and does not need to be changed)
-    private void checkAndRequestStoragePermission() {
-        if (hasStoragePermission()) {
-            startGoogleScanner();
-        } else {
-            requestStoragePermission();
-        }
-    }
+    // --- All other methods are the final, stable versions ---
+    private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
     private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { try { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.addCategory("android.intent.category.DEFAULT"); intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName()))); startActivity(intent); } catch (Exception e) { Intent intent = new Intent(); intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION); startActivity(intent); } } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE); } }
     @Override
