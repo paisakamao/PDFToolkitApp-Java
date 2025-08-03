@@ -14,7 +14,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Grid with 4 original cards -->
     <GridLayout
         android:id="@+id/card_grid"
         android:layout_width="0dp"
@@ -34,8 +33,12 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Scanner" />
+                <ImageView
+                    style="@style/HomeCardIconStyle"
+                    android:src="@drawable/ic_scan_file" />
+                <TextView
+                    style="@style/HomeCardTextStyle"
+                    android:text="Scanner" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -46,8 +49,12 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" />
+                <ImageView
+                    style="@style/HomeCardIconStyle"
+                    android:src="@drawable/ic_pdf_tools" />
+                <TextView
+                    style="@style/HomeCardTextStyle"
+                    android:text="Pdf Tool" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -58,8 +65,12 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" />
-                <TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" />
+                <ImageView
+                    style="@style/HomeCardIconStyle"
+                    android:src="@drawable/ic_uni_tools" />
+                <TextView
+                    style="@style/HomeCardTextStyle"
+                    android:text="Uni Tools" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -70,50 +81,53 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
             <LinearLayout style="@style/HomeCardLayoutStyle">
-                <ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" />
-                <TextView style="@style/HomeCardTextStyle" android:text="All Files" />
+                <ImageView
+                    style="@style/HomeCardIconStyle"
+                    android:src="@drawable/ic_all_files" />
+                <TextView
+                    style="@style/HomeCardTextStyle"
+                    android:text="All Files" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </GridLayout>
 
-  <!-- Full-width Ad Card with heading -->
-<androidx.cardview.widget.CardView
-    android:id="@+id/card_ad"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
-    android:layout_marginTop="16dp"
-    app:layout_constraintTop_toBottomOf="@id/card_grid"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:cardBackgroundColor="@color/card_background"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="8dp">
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_ad"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/card_grid"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardBackgroundColor="@color/card_background"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp">
 
-        <TextView
-            android:id="@+id/ad_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ad"
-            android:textStyle="bold"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            android:layout_marginBottom="4dp"/>
-
-        <FrameLayout
-            android:id="@+id/ad_container"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"  <!-- Ensures some height before loading -->
-            android:background="@color/white"
-            android:clipToPadding="false"/>
-    </LinearLayout>
-</androidx.cardview.widget.CardView>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/ad_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ad"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <FrameLayout
+                android:id="@+id/ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:background="@color/white"
+                android:clipToPadding="false" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
