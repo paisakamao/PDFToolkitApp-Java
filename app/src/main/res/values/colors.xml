@@ -9,11 +9,9 @@
     <!-- The colors for your new theme -->
     <color name="home_background">#FCFCF8</color>
     <color name="card_background">#E1F5FE</color>
-    
-    <!-- START: THIS IS THE MISSING LINE THAT CAUSED THE BUILD TO FAIL -->
     <color name="soft_gray">#F0F0F0</color>
-    <!-- Add this new color for the file details text -->
     <color name="file_details_text">#555555</color>
-    <!-- END: THIS IS THE MISSING LINE -->
-    
+
+    <!-- ✅ Add this missing color -->
+    <color name="purple_500">#6200EE</color>
 </resources>
