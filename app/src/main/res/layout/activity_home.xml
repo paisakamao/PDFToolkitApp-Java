@@ -78,17 +78,16 @@
 
     <!-- Native Ad injected directly and styled like card -->
     <FrameLayout
-        android:id="@+id/ad_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp"
-        app:layout_constraintTop_toBottomOf="@id/card_grid"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:clipToPadding="false"
-        android:clipChildren="false" />
-
+    android:id="@+id/ad_container"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="12dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    app:layout_constraintTop_toBottomOf="@id/card_grid"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:clipToPadding="false"
+    android:clipChildren="false" />
 </androidx.constraintlayout.widget.ConstraintLayout>
