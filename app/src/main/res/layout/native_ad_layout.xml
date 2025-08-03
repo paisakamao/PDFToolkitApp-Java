@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/native_ad_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/rounded_card_background"
-    android:padding="12dp">
+    android:padding="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,17 +14,18 @@
             android:id="@+id/ad_headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textColor="#000"
+            android:textStyle="bold"
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/ad_call_to_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="#03DAC5"
+            android:text="Install"
+            android:backgroundTint="@color/teal_700"
             android:textColor="#FFFFFF"
-            android:text="Install" />
+            android:layout_marginTop="8dp"
+            android:layout_gravity="start"/>
     </LinearLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>
