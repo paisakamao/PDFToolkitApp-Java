@@ -3,14 +3,14 @@ package com.pdf.toolkit;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import com.github.barteksc.pdfviewer.PDFView;
-
-
-
 
 public class PdfViewerActivity extends AppCompatActivity {
 
@@ -18,7 +18,6 @@ public class PdfViewerActivity extends AppCompatActivity {
 
     private PDFView pdfView;
     private Uri pdfUri;
-    private boolean nightMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,27 +27,19 @@ public class PdfViewerActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         pdfView = findViewById(R.id.pdfView);
 
-        // Get PDF Uri
-        pdfUri = getIntent().getParcelableExtra("pdfUri");
-        if (pdfUri != null) {
-            loadPdf(false);
-        }
-    }
+        // Correct extra key usage
+        pdfUri = getIntent().getParcelableExtra(EXTRA_FILE_URI);
 
-    private void loadPdf(boolean nightModeEnabled) {
-        pdfView.fromUri(pdfUri)
-            .enableSwipe(true)
-            .swipeHorizontal(false)
-            .enableDoubletap(true)
-            .defaultPage(0)
-            .enableAnnotationRendering(true)
-            .scrollHandle(new com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle(this))
-            .spacing(10)
-            .nightMode(nightModeEnabled)
-            .load();
+        if (pdfUri != null) {
+            Log.d("PdfViewerActivity", "Received URI: " + pdfUri.toString());
+            loadPdf(false);
+        } else {
+            Log.e("PdfViewerActivity", "PDF URI is null! Make sure you passed the intent extra correctly.");
+        }
     }
 
     @Override
@@ -61,27 +52,22 @@ public class PdfViewerActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == android.R.id.home) {
-            onBackPressed();
-            return true;
-        } else if (id == R.id.action_share) {
-            sharePdf();
-            return true;
-        } else if (id == R.id.action_toggle_night_mode) {
-            nightMode = !nightMode;
-            loadPdf(nightMode);
+        if (id == R.id.action_night_mode) {
+            loadPdf(true);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void sharePdf() {
+    private void loadPdf(boolean nightMode) {
         if (pdfUri != null) {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("application/pdf");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-            startActivity(Intent.createChooser(shareIntent, "Share PDF via"));
+            pdfView.fromUri(pdfUri)
+                    .enableSwipe(true)
+                    .swipeHorizontal(false)
+                    .enableDoubletap(true)
+                    .nightMode(nightMode)
+                    .load();
         }
     }
 }
