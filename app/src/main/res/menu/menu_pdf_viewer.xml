@@ -2,15 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- 3. Share button -->
     <item
         android:id="@+id/action_share"
         android:title="Share"
         android:icon="@android:drawable/ic_menu_share"
         app:showAsAction="ifRoom"/>
 
+    <!-- 7. Go to Page button -->
     <item
-        android:id="@+id/action_toggle_night_mode"
-        android:title="Toggle Night Mode"
-        android:icon="@android:drawable/ic_menu_view"
+        android:id="@+id/action_go_to_page"
+        android:title="Go to Page"
+        android:icon="@android:drawable/ic_menu_directions"
         app:showAsAction="ifRoom"/>
+    
+    <!-- 1. Night Mode toggle has been REMOVED -->
 </menu>
