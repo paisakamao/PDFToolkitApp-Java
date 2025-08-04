@@ -43,14 +43,14 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private FileListAdapter adapter;
     private List<FileItem> fileList = new ArrayList<>();
     private ActionMode actionMode;
+    private Toolbar toolbar; // Keep a reference to the toolbar
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        // --- Toolbar Setup ---
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Small);
@@ -59,7 +59,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        // --- View Finding ---
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
         permissionView = findViewById(R.id.permission_needed_view);
@@ -67,9 +66,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         Button btnGrant = findViewById(R.id.btn_grant_permission);
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
-        // --- RecyclerView Setup ---
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // The adapter is initialized here with the empty list and 'this' as the listener
         adapter = new FileListAdapter(fileList, this);
         recyclerView.setAdapter(adapter);
     }
@@ -85,15 +82,11 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
     
-    // --- NEW: Implementation of the click listeners from the adapter ---
-
     @Override
     public void onFileClick(FileItem item) {
         if (actionMode != null) {
-            // If in action mode, a click toggles selection
             toggleSelection(item);
         } else {
-            // If not in action mode, a click opens the file
             Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
             File file = new File(item.path);
             Uri fileUri = Uri.fromFile(file);
@@ -105,7 +98,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     @Override
     public void onFileLongClick(FileItem item) {
         if (actionMode == null) {
-            actionMode = startActionMode(actionModeCallback);
+            // --- THIS IS THE CORRECTED LINE ---
+            // This starts the action mode ON the toolbar, preventing the double bar issue.
+            actionMode = toolbar.startActionMode(actionModeCallback);
         }
         toggleSelection(item);
     }
@@ -113,14 +108,13 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private void toggleSelection(FileItem item) {
         adapter.toggleSelection(item);
         int count = adapter.getSelectedItemCount();
-        if (count == 0) {
+        if (count == 0 && actionMode != null) {
             actionMode.finish();
-        } else {
+        } else if (actionMode != null) {
             actionMode.setTitle(count + " selected");
         }
     }
 
-    // --- NEW: The logic for the contextual action mode (the new toolbar) ---
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -155,20 +149,17 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     };
 
-    // --- NEW: Methods to handle the delete and share actions ---
-
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
             .setTitle("Delete Files")
             .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
             .setPositiveButton("Delete", (dialog, which) -> {
-                List<FileItem> selectedItems = adapter.getSelectedItems();
-                for (FileItem item : selectedItems) {
+                for (FileItem item : adapter.getSelectedItems()) {
                     new File(item.path).delete();
                 }
-                Toast.makeText(this, selectedItems.size() + " files deleted", Toast.LENGTH_SHORT).show();
-                actionMode.finish(); // This will trigger onDestroyActionMode
-                loadPDFFiles(); // Refresh the list from storage
+                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                actionMode.finish();
+                loadPDFFiles();
             })
             .setNegativeButton(android.R.string.cancel, null)
             .show();
@@ -181,13 +172,14 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File file = new File(item.path);
             uris.add(FileProvider.getUriForFile(this, authority, file));
         }
+        if (uris.isEmpty()) return;
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (uris.size() > 1) {
             intent.setAction(Intent.ACTION_SEND_MULTIPLE);
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
             intent.setType("application/pdf");
-        } else if (!uris.isEmpty()) {
+        } else {
             intent.setAction(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
             intent.setType("application/pdf");
@@ -195,9 +187,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
         actionMode.finish();
     }
-
-    // --- YOUR ORIGINAL, WORKING CODE (RESTORED AND INTEGRATED) ---
-
+    
+    // (The rest of your original, working code is correct)
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
@@ -211,7 +202,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 progressBar.setVisibility(View.GONE);
                 fileList.clear();
                 fileList.addAll(freshFileList);
-                adapter.notifyDataSetChanged(); // Just notify the existing adapter
+                adapter.notifyDataSetChanged();
                 if (fileList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
                     emptyView.setVisibility(View.VISIBLE);
@@ -222,48 +213,11 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             });
         }).start();
     }
-    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
-        if (dir == null || !dir.isDirectory()) return;
-        String dirPath = dir.getAbsolutePath();
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; }
-        File[] files = dir.listFiles();
-        if (files == null) return;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                searchPDFFilesRecursively(file, fileList);
-            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
-            }
-        }
-    }
-    private boolean hasStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        }
-    }
-    private void requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(intent);
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
-        }
-    }
+    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { if (dir == null || !dir.isDirectory()) return; String dirPath = dir.getAbsolutePath(); if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; } File[] files = dir.listFiles(); if (files == null) return; for (File file : files) { if (file.isDirectory()) { searchPDFFilesRecursively(file, fileList); } else if (file.getName().toLowerCase().endsWith(".pdf")) { fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath())); } } }
+    private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
+    private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS); } }
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            loadPDFFiles();
-        } else {
-            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-        }
-    }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { super.onRequestPermissionsResult(requestCode, permissions, grantResults); if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { loadPDFFiles(); } else { Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show(); } }
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
 }
