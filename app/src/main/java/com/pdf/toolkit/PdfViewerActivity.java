@@ -2,7 +2,6 @@ package com.pdf.toolkit;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -19,6 +18,8 @@ import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import java.io.File;
+
+// Note: The 'android.graphics.Color' import is no longer needed.
 
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
@@ -67,11 +68,16 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                     .scrollHandle(new CustomScrollHandle(this))
                     .pageSnap(false)
                     .autoSpacing(false)
-                    .pageColor(Color.TRANSPARENT)
+
+                    // MODIFIED: This is the new, compatible fix for making page breaks visible.
+                    // It makes the pages dark, so they contrast with the light gray background.
+                    .nightMode(true)
+
                     .load();
         }
     }
 
+    // ... The rest of the file is exactly the same and correct.
     @Override
     public void loadComplete(int nbPages) {
         this.totalPages = nbPages;
