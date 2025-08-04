@@ -7,6 +7,4 @@
     android:background="@color/home_background"
     app:titleTextColor="@color/black"
     app:elevation="4dp"
-
-    <!-- THIS IS THE FIX for the invisible arrow on a light background -->
     app:theme="@style/ThemeOverlay.MaterialComponents.ActionBar" />
