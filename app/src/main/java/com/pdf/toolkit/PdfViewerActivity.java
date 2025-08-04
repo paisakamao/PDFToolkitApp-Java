@@ -1,27 +1,19 @@
 package com.pdf.toolkit;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
 import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
-
-import java.io.File;
 
 public class PdfViewerActivity extends AppCompatActivity {
 
-    public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
-
-    private TextView pageIndicator;  // 🔹 Add this
     private PDFView pdfView;
+    private Uri pdfUri;
+    private boolean nightMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,67 +22,61 @@ public class PdfViewerActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         pdfView = findViewById(R.id.pdfView);
-        pageIndicator = findViewById(R.id.pageIndicator); // 🔹 Reference the new TextView
 
-        Intent intent = getIntent();
-        String uriString = intent.getStringExtra(EXTRA_FILE_URI);
-
-        if (uriString != null && !uriString.isEmpty()) {
-            Uri fileUri = Uri.parse(uriString);
-
-            String fileName = getFileNameFromUri(fileUri);
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(fileName);
-            }
-
-            pdfView.fromUri(fileUri)
-                .enableSwipe(true)
-                .swipeHorizontal(false)
-                .defaultPage(0)
-                .enableDoubletap(true)
-                .onPageChange(new OnPageChangeListener() {
-                    @Override
-                    public void onPageChanged(int page, int pageCount) {
-                        // 🔹 Update page indicator
-                        pageIndicator.setText("Page " + (page + 1) + " / " + pageCount);
-                    }
-                })
-                .load();
-
-        } else {
-            Toast.makeText(this, "Error: No file specified", Toast.LENGTH_SHORT).show();
-            finish();
+        // Get PDF Uri
+        pdfUri = getIntent().getParcelableExtra("pdfUri");
+        if (pdfUri != null) {
+            loadPdf(false);
         }
+    }
+
+    private void loadPdf(boolean nightModeEnabled) {
+        pdfView.fromUri(pdfUri)
+            .enableSwipe(true)
+            .swipeHorizontal(false)
+            .enableDoubletap(true)
+            .defaultPage(0)
+            .enableAnnotationRendering(true)
+            .scrollHandle(new com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle(this))
+            .spacing(10)
+            .nightMode(nightModeEnabled)
+            .load();
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu);
         return true;
     }
 
-    private String getFileNameFromUri(Uri uri) {
-        String fileName = "Document";
-        String scheme = uri.getScheme();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-        if ("content".equals(scheme)) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (nameIndex != -1) {
-                        fileName = cursor.getString(nameIndex);
-                    }
-                }
-            }
-        } else if ("file".equals(scheme)) {
-            fileName = new File(uri.getPath()).getName();
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (id == R.id.action_share) {
+            sharePdf();
+            return true;
+        } else if (id == R.id.action_toggle_night_mode) {
+            nightMode = !nightMode;
+            loadPdf(nightMode);
+            return true;
         }
-        return fileName;
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void sharePdf() {
+        if (pdfUri != null) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/pdf");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
+            startActivity(Intent.createChooser(shareIntent, "Share PDF via"));
+        }
     }
 }
