@@ -5,17 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".PdfViewerActivity">
 
-    <!-- Your themed toolbar -->
     <include
         layout="@layout/toolbar" />
 
-    <!--
-    THIS IS THE FIX FOR SPACING and BACKGROUND COLOR:
-    We wrap the PDFView in a FrameLayout.
-    - We apply the gray background and the padding to this WRAPPER.
-    - This forces the PDFView to be drawn inside this padded box, making
-      the gray background and the space visible on all sides.
-    -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
