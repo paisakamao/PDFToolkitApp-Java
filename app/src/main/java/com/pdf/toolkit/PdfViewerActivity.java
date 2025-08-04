@@ -2,6 +2,7 @@ package com.pdf.toolkit;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color; // Import is needed for the fix
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -18,8 +19,6 @@ import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import java.io.File;
-
-// Note: The 'android.graphics.Color' import is no longer needed.
 
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
@@ -41,6 +40,10 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         }
 
         pdfView = findViewById(R.id.pdfView);
+
+        // THIS IS THE NEW, CORRECT FIX FOR BACKGROUND AND PAGE BREAKS
+        // It makes the PDFView itself transparent, so the gray FrameLayout behind it shows through.
+        pdfView.setBackgroundColor(Color.TRANSPARENT);
 
         Intent intent = getIntent();
         String uriString = intent.getStringExtra(EXTRA_FILE_URI);
@@ -64,20 +67,16 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                     .enableSwipe(true)
                     .swipeHorizontal(false)
                     .onLoad(this)
-                    .spacing(12)
+                    .spacing(12) // This spacing will now be visible
                     .scrollHandle(new CustomScrollHandle(this))
                     .pageSnap(false)
                     .autoSpacing(false)
-
-                    // MODIFIED: This is the new, compatible fix for making page breaks visible.
-                    // It makes the pages dark, so they contrast with the light gray background.
-                    .nightMode(true)
-
+                    // REMOVED: .nightMode(true) and the non-working .pageColor()
                     .load();
         }
     }
 
-    // ... The rest of the file is exactly the same and correct.
+    // ... The rest of your file is correct and unchanged ...
     @Override
     public void loadComplete(int nbPages) {
         this.totalPages = nbPages;
