@@ -4,4 +4,10 @@
         android:icon="@drawable/ic_share"
         android:title="Share"
         android:showAsAction="ifRoom"/>
+
+    <item
+    android:id="@+id/action_fullscreen"
+    android:icon="@drawable/ic_fullscreen"
+    android:title="Fullscreen"
+    android:showAsAction="ifRoom"/>
 </menu>
