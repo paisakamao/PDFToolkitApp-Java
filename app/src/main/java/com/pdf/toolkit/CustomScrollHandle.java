@@ -3,13 +3,11 @@ package com.pdf.toolkit;
 import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 
-// This is the final, corrected version that matches your library's interface.
 public class CustomScrollHandle implements ScrollHandle {
 
     private TextView textView;
@@ -92,7 +90,4 @@ public class CustomScrollHandle implements ScrollHandle {
     public void hideDelayed() {
         handler.postDelayed(hidePageScrollerRunnable, 1000);
     }
-
-    // The onTouchEvent method is intentionally removed as it is not supported
-    // by your library's ScrollHandle interface, which caused the build to fail.
 }
