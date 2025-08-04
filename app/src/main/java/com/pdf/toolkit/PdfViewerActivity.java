@@ -1,8 +1,8 @@
 package com.pdf.toolkit;
 
-// MODIFIED: All necessary imports are now included.
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -64,10 +64,10 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                     .swipeHorizontal(false)
                     .onLoad(this)
                     .spacing(12)
-                    // We use our new, corrected custom indicator
                     .scrollHandle(new CustomScrollHandle(this))
                     .pageSnap(false)
                     .autoSpacing(false)
+                    .pageColor(Color.TRANSPARENT)
                     .load();
         }
     }
