@@ -26,11 +26,14 @@ jobs:
     - name: Grant execute permission for Gradle wrapper
       run: chmod +x ./gradlew
 
-    - name: Clean and Build with Gradle
-      # --- THIS IS THE CRITICAL FIX ---
-      # This command is more explicit. It forces a clean of the project
-      # before attempting to build. This will solve the caching issue.
-      run: ./gradlew clean build assembleDebug
+    - name: Force Clean Build Cache
+      # --- THIS IS THE MOST IMPORTANT FIX ---
+      # This command manually and forcefully deletes all cached build files.
+      run: rm -rf $HOME/.gradle/caches/ && rm -rf $HOME/.gradle/daemon/
+
+    - name: Build with Gradle
+      # The 'clean' command is kept as a secondary safety measure.
+      run: ./gradlew clean assembleDebug
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
