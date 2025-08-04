@@ -3,20 +3,21 @@ package com.pdf.toolkit;
 import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 
-// MODIFIED: This class now correctly implements the ScrollHandle interface
-// without the extra methods that caused the build to fail.
+// MODIFIED: This version now correctly handles touch events for dragging.
 public class CustomScrollHandle implements ScrollHandle {
 
     private TextView textView;
     private Context context;
     protected PDFView pdfView;
+    private float currentPos;
     private Handler handler = new Handler();
-    private Runnable hidePageScrollerRunnable = () -> hide();
+    private Runnable hidePageScrollerRunnable = this::hide;
 
     public CustomScrollHandle(Context context) {
         this.context = context;
@@ -26,7 +27,6 @@ public class CustomScrollHandle implements ScrollHandle {
     public void setupLayout(PDFView pdfView) {
         this.pdfView = pdfView;
         LayoutInflater inflater = LayoutInflater.from(context);
-        // Use our custom layout
         textView = (TextView) inflater.inflate(com.pdf.toolkit.R.layout.custom_scroll_handle, pdfView, false);
         textView.setVisibility(View.INVISIBLE);
         pdfView.addView(textView);
@@ -46,28 +46,23 @@ public class CustomScrollHandle implements ScrollHandle {
         } else {
             handler.removeCallbacks(hidePageScrollerRunnable);
         }
-
         if (pdfView != null) {
-            // Calculate the Y position for the handle
-            float pdfViewHeight = pdfView.getHeight();
-            float handleHeight = textView.getHeight();
-            if (handleHeight <= 0) { // If not measured yet, use a default
-                handleHeight = 40 * context.getResources().getDisplayMetrics().density; // 40dp approx
-            }
-
-            float y = (pdfViewHeight * position) - (handleHeight / 2);
-
-            // Clamp the value to stay within the bounds of the PDFView
-            y = Math.max(0, y);
-            y = Math.min(pdfViewHeight - handleHeight, y);
-
-            // Position the handle on the right side of the screen
-            float x = pdfView.getWidth() - textView.getWidth() - 16; // 16px margin from right edge
-
-            textView.setX(x);
-            textView.setY(y);
-            textView.invalidate();
+            setPosition((pdfView.getHeight() * position) - (textView.getHeight() / 2f));
         }
+    }
+
+    private void setPosition(float y) {
+        if (Float.isInfinite(y) || Float.isNaN(y)) {
+            return;
+        }
+        float pdfViewHeight = pdfView.getHeight();
+        y = Math.max(0, y);
+        y = Math.min(pdfViewHeight - textView.getHeight(), y);
+        float x = pdfView.getWidth() - textView.getWidth() - 16;
+        textView.setX(x);
+        textView.setY(y);
+        textView.invalidate();
+        this.currentPos = y;
     }
 
     @Override
@@ -98,5 +93,43 @@ public class CustomScrollHandle implements ScrollHandle {
     @Override
     public void hideDelayed() {
         handler.postDelayed(hidePageScrollerRunnable, 1000);
+    }
+
+    // THIS METHOD IS NEW AGAIN - IT MAKES THE HANDLE DRAGGABLE
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!shown()) {
+            return false;
+        }
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                pdfView.stopFling();
+                handler.removeCallbacks(hidePageScrollerRunnable);
+
+                // Check if the touch is inside the handle's area
+                if (event.getY() >= textView.getY() && event.getY() <= textView.getY() + textView.getHeight() &&
+                        event.getX() >= textView.getX() && event.getX() <= textView.getX() + textView.getWidth()) {
+                    float relativeY = event.getY() - currentPos;
+                    pdfView.setPositionOffset(relativeY / pdfView.getHeight(), false);
+                    return true;
+                }
+                return false;
+
+            case MotionEvent.ACTION_MOVE:
+                float relativeYMove = event.getY() - currentPos;
+                pdfView.setPositionOffset(relativeYMove / pdfView.getHeight(), false);
+                return true;
+
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+                hideDelayed();
+                pdfView.performPageSnap();
+                return true;
+        }
+
+        return false;
     }
 }
