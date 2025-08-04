@@ -21,6 +21,7 @@ import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import java.io.File;
+import java.util.Locale; // --- THIS IS THE MISSING IMPORT THAT CAUSED THE CRASH ---
 
 public class PdfViewerActivity extends AppCompatActivity implements OnPageChangeListener {
 
@@ -38,7 +39,6 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            // 5. This makes the back arrow visible
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
@@ -67,7 +67,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
                 .swipeHorizontal(false)
                 .enableDoubletap(true)
                 .defaultPage(0)
-                .onPageChange(this) // Set the listener for page count
+                .onPageChange(this)
                 .scrollHandle(new DefaultScrollHandle(this))
                 .load();
         }
@@ -86,11 +86,9 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
             onBackPressed();
             return true;
         } else if (id == R.id.action_share) {
-            // 3. This now correctly shares the file
             sharePdf();
             return true;
         } else if (id == R.id.action_go_to_page) {
-            // 7. This shows the "Go to Page" dialog
             showGoToPageDialog();
             return true;
         }
@@ -101,7 +99,6 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
         if (pdfUri != null) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/pdf");
-            // Use FileProvider for secure sharing from cache if needed
             if (pdfUri.getScheme().equals("file")) {
                 File file = new File(pdfUri.getPath());
                 Uri shareUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
@@ -127,7 +124,6 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
             if (!pageNumStr.isEmpty()) {
                 try {
                     int pageNum = Integer.parseInt(pageNumStr);
-                    // The library uses 0-based index
                     pdfView.jumpTo(pageNum - 1, true);
                 } catch (NumberFormatException e) {
                     Toast.makeText(this, "Invalid page number", Toast.LENGTH_SHORT).show();
@@ -140,7 +136,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
     
     @Override
     public void onPageChanged(int page, int pageCount) {
-        // 4. Update the custom page count TextView
+        // This line will now work because 'Locale' is imported
         pageCountText.setText(String.format(Locale.getDefault(), "%d / %d", page + 1, pageCount));
     }
 
