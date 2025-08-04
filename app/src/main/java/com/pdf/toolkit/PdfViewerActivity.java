@@ -19,7 +19,6 @@ import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import java.io.File;
-import java.util.Locale;
 
 public class PdfViewerActivity extends AppCompatActivity {
 
@@ -64,12 +63,12 @@ public class PdfViewerActivity extends AppCompatActivity {
                 .enableDoubletap(true)
                 .defaultPage(0)
                 .enableAnnotationRendering(true)
-                // --- THESE ARE THE NEW, CORRECTED SETTINGS ---
-                .scrollHandle(new DefaultScrollHandle(this)) // 4. This is the scroll handle from the reference
-                .pageSnap(true) // 3. This enables page snapping
-                .autoSpacing(true) // This automatically handles spacing between pages
-                .pageFling(true) // Allows flinging between snapped pages
-                .spacing(5) // 5. Decrease spacing between pages
+                // --- THESE ARE THE CRITICAL FIXES THAT MATCH YOUR REFERENCE ---
+                .pageSnap(true) // 3. This enables the page break/snapping effect.
+                .autoSpacing(true) // This automatically handles spacing.
+                .pageFling(true) // This allows smooth flinging between snapped pages.
+                .spacing(10) // 5. This adds a small space between pages.
+                .scrollHandle(new DefaultScrollHandle(this)) // 4. This adds the professional scrollbar.
                 .load();
         }
     }
