@@ -155,6 +155,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        // THIS IS THE FIX:
+        // This tells the NativeAdView to clip its children to its own outline,
+        // which is defined by your rounded background drawable.
+        adView.setClipToOutline(true);
+
+        // --- The rest of your method remains the same ---
         TextView headlineView = adView.findViewById(R.id.ad_headline);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
 
