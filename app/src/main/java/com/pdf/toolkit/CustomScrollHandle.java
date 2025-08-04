@@ -9,12 +9,12 @@ import android.widget.TextView;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 
+// This is the final, corrected version that matches your library's interface.
 public class CustomScrollHandle implements ScrollHandle {
 
     private TextView textView;
     private Context context;
     protected PDFView pdfView;
-    private float currentPos;
     private Handler handler = new Handler();
     private Runnable hidePageScrollerRunnable = this::hide;
 
@@ -61,7 +61,6 @@ public class CustomScrollHandle implements ScrollHandle {
         textView.setX(x);
         textView.setY(y);
         textView.invalidate();
-        this.currentPos = y;
     }
 
     @Override
@@ -94,38 +93,6 @@ public class CustomScrollHandle implements ScrollHandle {
         handler.postDelayed(hidePageScrollerRunnable, 1000);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (!shown()) {
-            return false;
-        }
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-                pdfView.stopFling();
-                handler.removeCallbacks(hidePageScrollerRunnable);
-                if (event.getY() >= textView.getY() && event.getY() <= textView.getY() + textView.getHeight() &&
-                        event.getX() >= textView.getX() && event.getX() <= textView.getX() + textView.getWidth()) {
-                    float relativeY = event.getY() - currentPos;
-                    pdfView.setPositionOffset(relativeY / pdfView.getHeight(), false);
-                    return true;
-                }
-                return false;
-
-            case MotionEvent.ACTION_MOVE:
-                float relativeYMove = event.getY() - currentPos;
-                pdfView.setPositionOffset(relativeYMove / pdfView.getHeight(), false);
-                return true;
-
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-                hideDelayed();
-                pdfView.performPageSnap();
-                return true;
-        }
-
-        return false;
-    }
+    // The onTouchEvent method is intentionally removed as it is not supported
+    // by your library's ScrollHandle interface, which caused the build to fail.
 }
