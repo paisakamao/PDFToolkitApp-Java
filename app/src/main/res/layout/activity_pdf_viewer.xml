@@ -6,35 +6,21 @@
     android:background="@color/soft_gray"
     tools:context=".PdfViewerActivity">
 
+    <!-- This includes your toolbar. The ID "toolbar" is inside this layout. -->
     <include
-        android:id="@+id/toolbar"
         layout="@layout/toolbar" />
 
-    <!-- The PDFView now fills the entire space below the toolbar -->
+    <!--
+    MODIFIED:
+    1. It is now positioned below the toolbar using the correct ID from within the include.
+    2. Padding is added for space on all sides.
+    3. The custom TextView indicator has been removed.
+    -->
     <com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/pdfView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
-
-    <!--
-    MODIFIED: The page indicator is now in the bottom-right corner.
-    - layout_alignParentBottom and layout_alignParentRight position it.
-    - layout_margin gives it space from the screen edges.
-    - It now has the custom background.
-    -->
-    <TextView
-        android:id="@+id/pageIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="24dp"
-        android:padding="12dp"
-        android:background="@drawable/page_indicator_bg"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        android:elevation="4dp"
-        tools:text="1 / 10" />
+        android:layout_below="@id/toolbar"
+        android:padding="8dp"/>
 
 </RelativeLayout>
