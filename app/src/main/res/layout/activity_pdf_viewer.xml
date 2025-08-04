@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res/auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/soft_gray"
     tools:context=".PdfViewerActivity">
 
-    <!-- This is your standard toolbar -->
     <include
         android:id="@+id/toolbar"
         layout="@layout/toolbar" />
 
-    <!--
-        This is the PDFView with all your requested changes.
-        1. The CardView wrapper has been REMOVED.
-        2. The parent background is now soft_gray.
-        3. Padding has been reduced to a very small amount.
-    -->
+    <!-- The PDFView is now the only element besides the toolbar -->
     <com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/pdfView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar"
-        android:padding="4dp" />
-
-    <!-- The custom TextView for the page count has been REMOVED -->
+        android:layout_below="@id/toolbar" />
 
 </RelativeLayout>
