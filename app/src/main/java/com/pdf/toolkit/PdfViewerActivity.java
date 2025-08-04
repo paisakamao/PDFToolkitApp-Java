@@ -20,6 +20,7 @@ import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import java.io.File;
 
+// This is the final, clean version.
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
@@ -36,13 +37,10 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-            // =================================================================
-            // THIS IS THE FINAL FIX
-            // We are now using our new, hard-coded black arrow.
+            
+            // MODIFIED: We simply set your ORIGINAL icon.
             // All other Java tinting code has been removed.
-            // =================================================================
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_black);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
         }
 
         pdfView = findViewById(R.id.pdfView);
@@ -85,9 +83,9 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
     public boolean onCreateOptionsMenu(Menu menu) { getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu); return true; }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
         int id = item.getItemId();
-        if (id == android.R.id.home) { onBackPressed(); return true;
-        } else if (id == R.id.action_share) { sharePdf(); return true;
+        if (id == R.id.action_share) { sharePdf(); return true;
         } else if (id == R.id.action_go_to_page) { showGoToPageDialog(); return true; }
         return super.onOptionsItemSelected(item);
     }
