@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- This is the bubble color -->
+    <solid android:color="#333333" />
+
+    <!-- This makes it fully rounded -->
+    <corners android:radius="100dp" />
+
+</shape>
