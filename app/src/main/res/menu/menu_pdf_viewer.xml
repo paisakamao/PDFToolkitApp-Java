@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/action_share"
-        android:icon="@android:drawable/ic_menu_share"
         android:title="Share"
+        android:icon="@android:drawable/ic_menu_share"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_toggle_night_mode"
-        android:icon="@android:drawable/ic_menu_view"
         android:title="Toggle Night Mode"
+        android:icon="@android:drawable/ic_menu_view"
         app:showAsAction="ifRoom"/>
 </menu>
