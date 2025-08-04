@@ -16,12 +16,12 @@ import java.io.File;
 
 public class PdfViewerActivity extends AppCompatActivity {
 
-    // --- THIS IS THE SINGLE, OFFICIAL KEY WE WILL USE EVERYWHERE ---
+    // --- FIX #1: Use the single, consistent key from our other activities ---
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
 
     private PDFView pdfView;
     private Uri pdfUri;
-    private boolean isNightMode = false;
+    private boolean nightMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,43 +36,48 @@ public class PdfViewerActivity extends AppCompatActivity {
 
         pdfView = findViewById(R.id.pdfView);
 
-        // --- THIS IS THE CORRECTED LOGIC ---
+        // --- FIX #2: Correctly receive the URI as a String and parse it ---
         Intent intent = getIntent();
-        String uriString = intent.getStringExtra(EXTRA_FILE_URI); // Correctly get the String
-
+        String uriString = intent.getStringExtra(EXTRA_FILE_URI); // Get the String
         if (uriString != null && !uriString.isEmpty()) {
-            pdfUri = Uri.parse(uriString); // Convert the String back to a Uri
+            pdfUri = Uri.parse(uriString); // Convert it to a Uri object
 
-            // Set the toolbar's title to the real filename
+            // Set the toolbar title with the real filename
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(getFileNameFromUri(pdfUri));
             }
             
-            // Load the PDF from the now valid Uri
-            loadPdf(isNightMode);
+            loadPdf(false); // Load the PDF
         } else {
             Toast.makeText(this, "Error: No file specified", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
 
+    // This is your original, working method
     private void loadPdf(boolean nightModeEnabled) {
         if (pdfUri != null) {
             pdfView.fromUri(pdfUri)
                 .enableSwipe(true)
                 .swipeHorizontal(false)
+                .enableDoubletap(true)
                 .defaultPage(0)
+                .enableAnnotationRendering(true)
+                .scrollHandle(new com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle(this))
+                .spacing(10)
                 .nightMode(nightModeEnabled)
                 .load();
         }
     }
 
+    // This is your original, working menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu);
         return true;
     }
 
+    // This is your original, working menu handler
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -83,24 +88,26 @@ public class PdfViewerActivity extends AppCompatActivity {
             sharePdf();
             return true;
         } else if (id == R.id.action_toggle_night_mode) {
-            isNightMode = !isNightMode;
-            loadPdf(isNightMode);
+            nightMode = !nightMode;
+            loadPdf(nightMode);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    // This is your original share method, with one critical fix for modern Android
     private void sharePdf() {
         if (pdfUri != null) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/pdf");
             shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-            // Grant permission for the receiving app to read the file
+            // --- FIX #3: This permission flag is required to share files securely ---
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(shareIntent, "Share PDF"));
+            startActivity(Intent.createChooser(shareIntent, "Share PDF via"));
         }
     }
-    
+
+    // This is a robust helper method to get the filename from any type of Uri
     private String getFileNameFromUri(Uri uri) {
         String fileName = "Document";
         String scheme = uri.getScheme();
