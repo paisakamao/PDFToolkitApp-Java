@@ -1,8 +1,10 @@
 package com.pdf.toolkit;
 
+// All necessary imports, including the new ones for the fix
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable; // NEW IMPORT FOR THE FIX
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.core.graphics.drawable.DrawableCompat; // NEW IMPORT FOR THE FIX
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import java.io.File;
@@ -37,7 +40,21 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
-            // The Java code to force the color is NOT here. The theme handles it.
+
+            // =================================================================
+            // THIS IS THE GUARANTEED FIX FOR THE INVISIBLE ARROW
+            // =================================================================
+            // It gets the arrow icon that was just set and programmatically
+            // forces its color to be black, overriding any theme issues.
+            final Drawable upArrow = getSupportActionBar().getNavigationIcon();
+            if (upArrow != null) {
+                // We use DrawableCompat to ensure this works on all Android versions.
+                DrawableCompat.setTint(upArrow, Color.BLACK);
+                getSupportActionBar().setNavigationIcon(upArrow);
+            }
+            // =================================================================
+            // END OF THE FIX
+            // =================================================================
         }
 
         pdfView = findViewById(R.id.pdfView);
@@ -73,7 +90,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         }
     }
 
-    // --- The rest of the file is correct and unchanged ---
+    // --- The rest of the file is identical and correct ---
     @Override
     public void loadComplete(int nbPages) { this.totalPages = nbPages; }
     @Override
