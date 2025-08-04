@@ -45,7 +45,7 @@
         android:name=".PdfViewerActivity"
         android:exported="false"
         android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-        
+            
     <activity
         android:name=".ScannerActivity"
         android:exported="false"
