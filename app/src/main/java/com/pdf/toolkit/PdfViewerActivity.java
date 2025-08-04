@@ -1,8 +1,9 @@
 package com.pdf.toolkit;
 
+// Imports are now cleaned up. Drawable and DrawableCompat are no longer needed.
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color; // Import is needed for the fix
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -37,12 +38,12 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+            // The Java code to force the color has been removed.
+            // The theme now correctly handles making the arrow visible.
         }
 
         pdfView = findViewById(R.id.pdfView);
-
-        // THIS IS THE NEW, CORRECT FIX FOR BACKGROUND AND PAGE BREAKS
-        // It makes the PDFView itself transparent, so the gray FrameLayout behind it shows through.
+        // This line is still crucial for page breaks and must remain.
         pdfView.setBackgroundColor(Color.TRANSPARENT);
 
         Intent intent = getIntent();
@@ -67,16 +68,15 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                     .enableSwipe(true)
                     .swipeHorizontal(false)
                     .onLoad(this)
-                    .spacing(12) // This spacing will now be visible
+                    .spacing(12)
                     .scrollHandle(new CustomScrollHandle(this))
                     .pageSnap(false)
                     .autoSpacing(false)
-                    // REMOVED: .nightMode(true) and the non-working .pageColor()
                     .load();
         }
     }
 
-    // ... The rest of your file is correct and unchanged ...
+    // --- The rest of the file is correct and unchanged ---
     @Override
     public void loadComplete(int nbPages) {
         this.totalPages = nbPages;
