@@ -9,7 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.github.barteksc.pdfviewer.PDFView;
 
+
+
+
 public class PdfViewerActivity extends AppCompatActivity {
+
+    public static final String EXTRA_FILE_URI = "extra_file_uri";
 
     private PDFView pdfView;
     private Uri pdfUri;
