@@ -7,10 +7,25 @@
         <item name="android:windowBackground">@color/home_background</item>
         <item name="android:navigationBarColor">@color/soft_gray</item>
     </style>
+
+    <!--
+    ===================================================================
+    THIS IS THE UPDATED STYLE
+    ===================================================================
+    -->
     <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
+
+        <item name="colorControlNormal">@android:color/black</item>
     </style>
+    <!--
+    ===================================================================
+    END OF THE UPDATED BLOCK
+    ===================================================================
+    -->
+
+
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
