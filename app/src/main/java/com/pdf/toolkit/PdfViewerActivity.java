@@ -1,6 +1,5 @@
 package com.pdf.toolkit;
 
-// Imports are now cleaned up. Drawable and DrawableCompat are no longer needed.
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -38,12 +37,10 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
-            // The Java code to force the color has been removed.
-            // The theme now correctly handles making the arrow visible.
+            // The Java code to force the color is NOT here. The theme handles it.
         }
 
         pdfView = findViewById(R.id.pdfView);
-        // This line is still crucial for page breaks and must remain.
         pdfView.setBackgroundColor(Color.TRANSPARENT);
 
         Intent intent = getIntent();
@@ -78,91 +75,18 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
 
     // --- The rest of the file is correct and unchanged ---
     @Override
-    public void loadComplete(int nbPages) {
-        this.totalPages = nbPages;
-    }
-
+    public void loadComplete(int nbPages) { this.totalPages = nbPages; }
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu);
-        return true;
-    }
-
+    public boolean onCreateOptionsMenu(Menu menu) { getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu); return true; }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            onBackPressed();
-            return true;
-        } else if (id == R.id.action_share) {
-            sharePdf();
-            return true;
-        } else if (id == R.id.action_go_to_page) {
-            showGoToPageDialog();
-            return true;
-        }
+        if (id == android.R.id.home) { onBackPressed(); return true;
+        } else if (id == R.id.action_share) { sharePdf(); return true;
+        } else if (id == R.id.action_go_to_page) { showGoToPageDialog(); return true; }
         return super.onOptionsItemSelected(item);
     }
-
-    private void sharePdf() {
-        if (pdfUri != null) {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("application/pdf");
-            if ("file".equals(pdfUri.getScheme())) {
-                File file = new File(pdfUri.getPath());
-                Uri shareUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri);
-            } else {
-                shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-            }
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(shareIntent, "Share PDF"));
-        }
-    }
-
-    private void showGoToPageDialog() {
-        if (totalPages == 0) {
-            Toast.makeText(this, "Document not fully loaded yet.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Go to Page");
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        input.setHint("Enter page (1 - " + totalPages + ")");
-        builder.setView(input);
-        builder.setPositiveButton("Go", (dialog, which) -> {
-            String pageNumStr = input.getText().toString();
-            if (!pageNumStr.isEmpty()) {
-                try {
-                    int pageNum = Integer.parseInt(pageNumStr);
-                    if (pageNum >= 1 && pageNum <= totalPages) {
-                        pdfView.jumpTo(pageNum - 1, true);
-                    } else {
-                        Toast.makeText(this, "Page number is out of range.", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (NumberFormatException e) {
-                    Toast.makeText(this, "Invalid page number.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
-    }
-
-    private String getFileNameFromUri(Uri uri) {
-        String fileName = "Document";
-        String scheme = uri.getScheme();
-        if (scheme != null && scheme.equals("content")) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (nameIndex != -1) { fileName = cursor.getString(nameIndex); }
-                }
-            }
-        } else if (scheme != null && scheme.equals("file")) {
-            fileName = new File(uri.getPath()).getName();
-        }
-        return fileName;
-    }
+    private void sharePdf() { if (pdfUri != null) { Intent shareIntent = new Intent(Intent.ACTION_SEND); shareIntent.setType("application/pdf"); if ("file".equals(pdfUri.getScheme())) { File file = new File(pdfUri.getPath()); Uri shareUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file); shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri); } else { shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri); } shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); startActivity(Intent.createChooser(shareIntent, "Share PDF")); } }
+    private void showGoToPageDialog() { if (totalPages == 0) { Toast.makeText(this, "Document not fully loaded yet.", Toast.LENGTH_SHORT).show(); return; } AlertDialog.Builder builder = new AlertDialog.Builder(this); builder.setTitle("Go to Page"); final EditText input = new EditText(this); input.setInputType(InputType.TYPE_CLASS_NUMBER); input.setHint("Enter page (1 - " + totalPages + ")"); builder.setView(input); builder.setPositiveButton("Go", (dialog, which) -> { String pageNumStr = input.getText().toString(); if (!pageNumStr.isEmpty()) { try { int pageNum = Integer.parseInt(pageNumStr); if (pageNum >= 1 && pageNum <= totalPages) { pdfView.jumpTo(pageNum - 1, true); } else { Toast.makeText(this, "Page number is out of range.", Toast.LENGTH_SHORT).show(); } } catch (NumberFormatException e) { Toast.makeText(this, "Invalid page number.", Toast.LENGTH_SHORT).show(); } } }); builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel()); builder.show(); }
+    private String getFileNameFromUri(Uri uri) { String fileName = "Document"; String scheme = uri.getScheme(); if (scheme != null && scheme.equals("content")) { try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) { if (cursor != null && cursor.moveToFirst()) { int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME); if (nameIndex != -1) { fileName = cursor.getString(nameIndex); } } } } else if (scheme != null && scheme.equals("file")) { fileName = new File(uri.getPath()).getName(); } return fileName; }
 }
