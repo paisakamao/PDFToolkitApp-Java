@@ -1,29 +1,15 @@
 package com.pdf.toolkit;
 
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.OpenableColumns;
-import android.text.InputType;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.Toast;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+// ... other imports
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
-import java.io.File;
+// No longer need DefaultScrollHandle, we have our own!
 
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
+    // ... (Your other variables: EXTRA_FILE_URI, pdfView, pdfUri, totalPages)
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
-
     private PDFView pdfView;
     private Uri pdfUri;
     private int totalPages = 0;
@@ -42,6 +28,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
 
         pdfView = findViewById(R.id.pdfView);
 
+        // ... (Your Intent handling logic remains the same)
         Intent intent = getIntent();
         String uriString = intent.getStringExtra(EXTRA_FILE_URI);
 
@@ -63,14 +50,25 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                 .defaultPage(0)
                 .enableSwipe(true)
                 .swipeHorizontal(false)
-                .spacing(10) // This creates the visible page break
                 .onLoad(this)
-                .scrollHandle(new DefaultScrollHandle(this)) // This enables the floating indicator
+
+                // This creates the visible space between pages.
+                // It will now be visible because the FrameLayout has a background color.
+                .spacing(12)
+
+                // USE OUR NEW CUSTOM INDICATOR
+                .scrollHandle(new CustomScrollHandle(this))
+
+                // Ensure these are false to not interfere with manual spacing
                 .pageSnap(false)
                 .autoSpacing(false)
                 .load();
         }
     }
+
+    // ... (The rest of your PdfViewerActivity.java file remains exactly the same)
+    // loadComplete, onCreateOptionsMenu, onOptionsItemSelected, sharePdf, showGoToPageDialog, getFileNameFromUri
+    // are all still correct and needed.
 
     @Override
     public void loadComplete(int nbPages) {
@@ -98,7 +96,8 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         }
         return super.onOptionsItemSelected(item);
     }
-
+    
+    // ... paste your other methods (sharePdf, etc.) here
     private void sharePdf() {
         if (pdfUri != null) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
