@@ -52,7 +52,7 @@ public class PdfViewerActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_night_mode) {
+        if (id == R.id.action_toggle_night_mode) {
             loadPdf(true);
             return true;
         }
