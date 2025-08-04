@@ -7,4 +7,6 @@
     android:background="@color/home_background"
     app:titleTextColor="@color/black"
     app:elevation="4dp"
+
+    <!-- THIS IS THE FIX: It forces dark icons (like the back arrow) on the light toolbar. -->
     app:theme="@style/ThemeOverlay.MaterialComponents.ActionBar" />
