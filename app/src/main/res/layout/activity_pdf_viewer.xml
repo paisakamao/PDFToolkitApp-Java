@@ -11,7 +11,7 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar" />
 
-    <!-- 6. CardView for 3D look and rounded corners -->
+    <!-- CardView for 3D look and rounded corners -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -21,7 +21,6 @@
         app:cardUseCompatPadding="true"
         android:layout_margin="8dp">
 
-        <!-- 2. PDFView with added padding -->
         <com.github.barteksc.pdfviewer.PDFView
             android:id="@+id/pdfView"
             android:layout_width="match_parent"
@@ -29,7 +28,7 @@
             android:padding="10dp"/>
     </androidx.cardview.widget.CardView>
 
-    <!-- 4. Custom Page Count TextView -->
+    <!-- This now correctly uses YOUR existing background drawable -->
     <TextView
         android:id="@+id/page_count_text"
         android:layout_width="wrap_content"
@@ -37,7 +36,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="32dp"
-        android:background="@drawable/page_count_background"
+        android:background="@drawable/page_indicator_bg"
         android:elevation="12dp"
         android:paddingStart="16dp"
         android:paddingTop="8dp"
