@@ -10,7 +10,6 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -18,18 +17,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import java.io.File;
-import java.util.Locale; // --- THIS IS THE MISSING IMPORT THAT CAUSED THE CRASH ---
+import java.util.Locale;
 
-public class PdfViewerActivity extends AppCompatActivity implements OnPageChangeListener {
+public class PdfViewerActivity extends AppCompatActivity {
 
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
 
     private PDFView pdfView;
     private Uri pdfUri;
-    private TextView pageCountText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +40,6 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
         }
 
         pdfView = findViewById(R.id.pdfView);
-        pageCountText = findViewById(R.id.page_count_text);
 
         Intent intent = getIntent();
         String uriString = intent.getStringExtra(EXTRA_FILE_URI);
@@ -67,12 +63,18 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
                 .swipeHorizontal(false)
                 .enableDoubletap(true)
                 .defaultPage(0)
-                .onPageChange(this)
-                .scrollHandle(new DefaultScrollHandle(this))
+                .enableAnnotationRendering(true)
+                // --- THESE ARE THE NEW, CORRECTED SETTINGS ---
+                .scrollHandle(new DefaultScrollHandle(this)) // 4. This is the scroll handle from the reference
+                .pageSnap(true) // 3. This enables page snapping
+                .autoSpacing(true) // This automatically handles spacing between pages
+                .pageFling(true) // Allows flinging between snapped pages
+                .spacing(5) // 5. Decrease spacing between pages
                 .load();
         }
     }
 
+    // --- All your other methods are correct and do not need to be changed ---
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_pdf_viewer, menu);
@@ -99,7 +101,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
         if (pdfUri != null) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/pdf");
-            if (pdfUri.getScheme().equals("file")) {
+            if ("file".equals(pdfUri.getScheme())) {
                 File file = new File(pdfUri.getPath());
                 Uri shareUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, shareUri);
@@ -134,12 +136,6 @@ public class PdfViewerActivity extends AppCompatActivity implements OnPageChange
         builder.show();
     }
     
-    @Override
-    public void onPageChanged(int page, int pageCount) {
-        // This line will now work because 'Locale' is imported
-        pageCountText.setText(String.format(Locale.getDefault(), "%d / %d", page + 1, pageCount));
-    }
-
     private String getFileNameFromUri(Uri uri) {
         String fileName = "Document";
         String scheme = uri.getScheme();
