@@ -1,10 +1,11 @@
 package com.pdf.toolkit;
 
-// All necessary imports, including the new ones for the fix
+// All necessary imports, including the new ones for this final fix
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable; // NEW IMPORT FOR THE FIX
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -17,8 +18,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat; // NEW, IMPORTANT IMPORT
 import androidx.core.content.FileProvider;
-import androidx.core.graphics.drawable.DrawableCompat; // NEW IMPORT FOR THE FIX
+import androidx.core.graphics.drawable.DrawableCompat;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import java.io.File;
@@ -39,18 +41,20 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
 
             // =================================================================
-            // THIS IS THE GUARANTEED FIX FOR THE INVISIBLE ARROW
+            // THIS IS THE FINAL, COMPATIBLE, GUARANTEED FIX
             // =================================================================
-            // It gets the arrow icon that was just set and programmatically
-            // forces its color to be black, overriding any theme issues.
-            final Drawable upArrow = getSupportActionBar().getNavigationIcon();
+            // This approach works on all library versions because it doesn't use
+            // the missing getNavigationIcon() method.
+
+            // 1. Load our original drawable resource.
+            final Drawable upArrow = ContextCompat.getDrawable(this, R.drawable.ic_arrow_back);
             if (upArrow != null) {
-                // We use DrawableCompat to ensure this works on all Android versions.
+                // 2. Tint it to be black.
                 DrawableCompat.setTint(upArrow, Color.BLACK);
-                getSupportActionBar().setNavigationIcon(upArrow);
+                // 3. Set the newly tinted drawable as the home indicator.
+                getSupportActionBar().setHomeAsUpIndicator(upArrow);
             }
             // =================================================================
             // END OF THE FIX
