@@ -3,24 +3,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/soft_gray"
     tools:context=".PdfViewerActivity">
 
-    <!-- This includes your toolbar. The ID "toolbar" is inside this layout. -->
+    <!-- Your themed toolbar -->
     <include
         layout="@layout/toolbar" />
 
     <!--
-    MODIFIED:
-    1. It is now positioned below the toolbar using the correct ID from within the include.
-    2. Padding is added for space on all sides.
-    3. The custom TextView indicator has been removed.
+    THIS IS THE FIX FOR SPACING and BACKGROUND COLOR:
+    We wrap the PDFView in a FrameLayout.
+    - We apply the gray background and the padding to this WRAPPER.
+    - This forces the PDFView to be drawn inside this padded box, making
+      the gray background and the space visible on all sides.
     -->
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdfView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
-        android:padding="8dp"/>
+        android:background="@color/soft_gray"
+        android:padding="8dp">
+
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
 
 </RelativeLayout>
