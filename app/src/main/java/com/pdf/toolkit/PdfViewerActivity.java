@@ -17,24 +17,22 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle; // Import the default handle
+import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import java.io.File;
 
-// MODIFIED: We only need OnLoadCompleteListener for the "Go to Page" dialog
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
     public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
 
     private PDFView pdfView;
     private Uri pdfUri;
-    private int totalPages = 0; // We still need this for the dialog
+    private int totalPages = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_viewer);
 
-        // MODIFIED: Find the toolbar within the included layout
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -66,23 +64,18 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
                 .enableSwipe(true)
                 .swipeHorizontal(false)
                 .spacing(10) // This creates the visible page break
-                .onLoad(this) // We need this to get the total page count
-                // MODIFIED: Enable the library's default floating scroll handle
-                .scrollHandle(new DefaultScrollHandle(this))
-                // These settings can interfere with spacing, so ensure they are off
+                .onLoad(this)
+                .scrollHandle(new DefaultScrollHandle(this)) // This enables the floating indicator
                 .pageSnap(false)
                 .autoSpacing(false)
                 .load();
         }
     }
 
-    // This method is now only used to get the page count for our dialog
     @Override
     public void loadComplete(int nbPages) {
         this.totalPages = nbPages;
     }
-
-    // --- YOUR OTHER METHODS (Unchanged from before) ---
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -151,7 +144,7 @@ public class PdfViewerActivity extends AppCompatActivity implements OnLoadComple
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
     }
-    
+
     private String getFileNameFromUri(Uri uri) {
         String fileName = "Document";
         String scheme = uri.getScheme();
