@@ -168,25 +168,32 @@ public class HomeActivity extends AppCompatActivity {
     // This is the definitive fix for the hidden ad content.
     // =================================================================
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Find all the views from our new, complex layout
+        // Find all the views
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         TextView headlineView = adView.findViewById(R.id.ad_headline);
         TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
         ImageView iconView = adView.findViewById(R.id.ad_app_icon);
 
-        // Tell the NativeAdView which view is which. THIS IS THE CRITICAL STEP.
-        adView.setMediaView(mediaView);
+        // Tell the NativeAdView which view is which
         adView.setHeadlineView(headlineView);
         adView.setCallToActionView(callToActionView);
         adView.setIconView(iconView);
         adView.setAdvertiserView(advertiserView);
-
-        // Now, populate the views with the ad's content
+        
+        // This is the CRITICAL adaptive logic
         if (nativeAd.getMediaContent() != null) {
+            // If the ad HAS media, make the MediaView visible and populate it.
+            adView.setMediaView(mediaView);
             mediaView.setMediaContent(nativeAd.getMediaContent());
+            mediaView.setVisibility(View.VISIBLE);
+        } else {
+            // If the ad DOES NOT HAVE media (like the "Flood-It!" test ad),
+            // HIDE the MediaView completely. This will make the ad compact.
+            mediaView.setVisibility(View.GONE);
         }
 
+        // Now, populate the other views
         if (nativeAd.getHeadline() != null) {
             headlineView.setText(nativeAd.getHeadline());
         }
@@ -209,7 +216,7 @@ public class HomeActivity extends AppCompatActivity {
             advertiserView.setVisibility(View.GONE);
         }
 
-        // This final call registers the native ad and binds the views to it.
+        // Final registration call
         adView.setNativeAd(nativeAd);
     }
 
