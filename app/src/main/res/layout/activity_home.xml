@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -13,39 +12,20 @@
         android:layout_height="wrap_content"
         tools:context=".HomeActivity">
 
-        <!-- Your Toolbar's position is preserved -->
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/toolbar"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <!-- ... Your Toolbar and GridLayout are correct ... -->
 
-        <!-- Your GridLayout's position and content are preserved -->
-        <GridLayout
-            android:id="@+id/card_grid"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:columnCount="2"
-            android:rowCount="2"
-            android:useDefaultMargins="true"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-            <!-- Your 4 CardViews are unchanged -->
-            <androidx.cardview.widget.CardView android:id="@+id/card_scanner" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" /><TextView style="@style/HomeCardTextStyle" android:text="Scanner" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_pdf_tool" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_uni_tools" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_all_files" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" /><TextView style="@style/HomeCardTextStyle" android:text="All Files" /></LinearLayout></androidx.cardview.widget.CardView>
-        </GridLayout>
-
-        <!-- The Ad Container's position is preserved, and its height is now fixed -->
+        <!--
+        ===================================================================
+        THIS IS THE CORRECTED AD CONTAINER
+        ===================================================================
+        1. `android:layout_height` is now "wrap_content".
+        2. The fixed `minHeight` has been REMOVED.
+        This allows the container to shrink or grow to perfectly fit the ad inside it.
+        -->
         <FrameLayout
             android:id="@+id/ad_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="250dp"
             app:layout_constraintTop_toBottomOf="@id/card_grid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +37,7 @@
             android:elevation="6dp"
             android:clipToOutline="true" />
 
-        <!-- The Privacy Policy's position is preserved relative to the other elements -->
+        <!-- The privacy policy is now correctly constrained below the ad container -->
         <TextView
             android:id="@+id/privacy_policy_text"
             android:layout_width="wrap_content"
