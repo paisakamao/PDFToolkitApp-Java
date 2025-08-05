@@ -17,8 +17,10 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +40,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
@@ -114,12 +117,9 @@ public class HomeActivity extends AppCompatActivity {
         remoteConfig.setConfigSettingsAsync(configSettings);
 
         Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("admob_native_ad_enabled", false); // This is a Boolean
-        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110"); // This is a String
-        
-        // This is the new String parameter for your privacy policy
+        defaultConfigMap.put("admob_native_ad_enabled", false);
+        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
         defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
-        
         remoteConfig.setDefaultsAsync(defaultConfigMap);
 
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
@@ -159,37 +159,65 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    // =================================================================
+    // THIS METHOD IS COMPLETELY REPLACED TO SUPPORT THE NEW AD LAYOUT
+    // =================================================================
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        // Find all the new views from the redesigned layout
+        MediaView mediaView = adView.findViewById(R.id.ad_media);
         TextView headlineView = adView.findViewById(R.id.ad_headline);
+        TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
+        ImageView iconView = adView.findViewById(R.id.ad_app_icon);
 
-        if (nativeAd.getHeadline() != null && headlineView != null) {
+        // Set the MediaView. This is the main image/video.
+        adView.setMediaView(mediaView);
+        if (nativeAd.getMediaContent() != null) {
+            mediaView.setMediaContent(nativeAd.getMediaContent());
+        }
+
+        // Set the other assets
+        adView.setHeadlineView(headlineView);
+        if (nativeAd.getHeadline() != null) {
             headlineView.setText(nativeAd.getHeadline());
-            adView.setHeadlineView(headlineView);
         }
 
-        if (nativeAd.getCallToAction() != null && callToActionView != null) {
+        adView.setCallToActionView(callToActionView);
+        if (nativeAd.getCallToAction() != null) {
             callToActionView.setText(nativeAd.getCallToAction());
-            adView.setCallToActionView(callToActionView);
         }
 
+        adView.setIconView(iconView);
+        if (nativeAd.getIcon() != null) {
+            iconView.setImageDrawable(nativeAd.getIcon().getDrawable());
+            iconView.setVisibility(View.VISIBLE);
+        } else {
+            iconView.setVisibility(View.GONE);
+        }
+
+        adView.setAdvertiserView(advertiserView);
+        if (nativeAd.getAdvertiser() != null) {
+            advertiserView.setText(nativeAd.getAdvertiser());
+            advertiserView.setVisibility(View.VISIBLE);
+        } else {
+            advertiserView.setVisibility(View.GONE);
+        }
+
+        // This method tells the Google Mobile Ads SDK that you have finished
+        // populating your native ad view with this native ad.
         adView.setNativeAd(nativeAd);
     }
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
-            // Get the URL from the remoteConfig instance.
             String url = remoteConfig.getString("privacy_policy_url");
-            
             if (url == null || url.isEmpty()) {
                 Toast.makeText(HomeActivity.this, "Privacy Policy not available.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse(url));
-            
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivity(intent);
             } else {
