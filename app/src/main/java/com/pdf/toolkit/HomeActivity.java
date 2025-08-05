@@ -21,7 +21,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
@@ -32,7 +31,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
@@ -40,15 +38,14 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
-import com.google.android.material.bottomappbar.BottomAppBar; // NEW IMPORT
-import com.google.android.material.floatingactionbutton.FloatingActionButton; // NEW IMPORT
+import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -57,9 +54,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
+    // ... all variables are correct ...
     private static final String TAG = "HomeActivity";
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1001;
-
     private FirebaseRemoteConfig remoteConfig;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
 
@@ -89,7 +86,6 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         setupCardListeners();
-        // NEW: Initialize the bottom navigation menu
         setupBottomMenu();
     }
 
@@ -109,24 +105,15 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    // =================================================================
-    // NEW METHOD TO HANDLE ALL BOTTOM MENU LOGIC
-    // =================================================================
     private void setupBottomMenu() {
         BottomAppBar bottomAppBar = findViewById(R.id.bottom_app_bar);
         FloatingActionButton fabScanner = findViewById(R.id.fab_scanner);
 
-        // Set the click listener for the central scanner button
-        fabScanner.setOnClickListener(v -> {
-            // This performs the same action as your original scanner card
-            checkAndRequestStoragePermission();
-        });
+        fabScanner.setOnClickListener(v -> checkAndRequestStoragePermission());
 
-        // Set the click listener for the menu items in the bar
         bottomAppBar.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                // User is already on the home screen, do nothing or show a toast
                 Toast.makeText(HomeActivity.this, "Already on Home", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.nav_pdf_tools) {
@@ -137,14 +124,14 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_settings) {
-                // TODO: Replace with your actual Settings Activity
                 Toast.makeText(HomeActivity.this, "Settings clicked", Toast.LENGTH_SHORT).show();
                 return true;
             }
-            return false; // Return false for unhandled items
+            return false;
         });
     }
-
+    
+    // ... all other methods are correct and unchanged ...
     private void setupRemoteConfigAndLoadAd() {
         remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -210,7 +197,6 @@ public class HomeActivity extends AppCompatActivity {
 
         adView.setNativeAd(nativeAd);
     }
-
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
