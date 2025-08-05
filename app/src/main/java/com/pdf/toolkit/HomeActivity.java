@@ -111,7 +111,7 @@ public class HomeActivity extends AppCompatActivity {
 
         fabScanner.setOnClickListener(v -> checkAndRequestStoragePermission());
 
-        bottomAppBar.setOnMenuItemClickListener(item -> {
+                bottomAppBar.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
                 Toast.makeText(HomeActivity.this, "Already on Home", Toast.LENGTH_SHORT).show();
@@ -130,6 +130,7 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
     }
+
     
     // ... all other methods are correct and unchanged ...
     private void setupRemoteConfigAndLoadAd() {
