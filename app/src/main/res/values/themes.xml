@@ -1,36 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!--
-    ===================================================================
-    THIS IS THE STYLE THAT NEEDS THE FIX
-    ===================================================================
-    -->
     <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
         <item name="android:navigationBarColor">@color/soft_gray</item>
         
-        <!--
-        THIS IS THE FIX, MOVED TO THE CORRECT THEME.
-        This will make the bottom menu icons visible in your HomeActivity.
-        -->
+        <!-- This line is correct and will be used by the icons -->
         <item name="colorControlNormal">@android:color/black</item>
     </style>
 
-    <!--
-    ===================================================================
-    THE FIX HAS BEEN REMOVED FROM THIS STYLE
-    ===================================================================
-    (The PdfViewerActivity which uses this theme has its own separate fix for its arrow)
-    -->
     <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@color/home_background</item>
         <item name="android:windowBackground">@color/home_background</item>
-        <!-- The line <item name="colorControlNormal">@android:color/black</item> has been removed from here -->
+        <!-- This line is also needed for the PdfViewerActivity's back arrow -->
+        <item name="colorControlNormal">@android:color/black</item>
     </style>
 
-
+    <!-- ... The rest of your styles are correct ... -->
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -44,8 +31,6 @@
     <style name="ToolbarTitle_Small" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">20sp</item>
     </style>
-
-    <!-- === THESE ARE THE FINAL, STABLE STYLES FOR YOUR HOME SCREEN === -->
     <style name="HomeCardStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -53,7 +38,6 @@
         <item name="android:layout_margin">12dp</item>
     </style>
     <style name="HomeCardLayoutStyle">
-        <!-- This gives a fixed, uniform height to ensure consistency -->
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">180dp</item>
         <item name="android:orientation">vertical</item>
@@ -61,7 +45,6 @@
         <item name="android:padding">8dp</item>
     </style>
     <style name="HomeCardIconStyle">
-        <!-- This uses a large, fixed size for a prominent icon -->
         <item name="android:layout_width">120dp</item>
         <item name="android:layout_height">120dp</item>
         <item name="android:layout_marginBottom">12dp</item>
