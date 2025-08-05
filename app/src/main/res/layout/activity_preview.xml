@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1C1C1E"
+    tools:context=".PreviewActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/top_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#3A3A3C"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <ImageButton
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@android:color/white"
+            android:layout_gravity="start"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Preview"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:layout_gravity="center"/>
+        <Button
+            android:id="@+id/done_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Done"
+            android:layout_gravity="end"
+            android:layout_marginEnd="16dp"/>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ImageView
+        android:id="@+id/main_preview_image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/top_toolbar"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:src="@tools:sample/backgrounds/scenic" />
+
+    <LinearLayout
+        android:id="@+id/bottom_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#3A3A3C"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/thumbnails_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="horizontal"
+            tools:listitem="@layout/item_thumbnail"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <Button android:id="@+id/crop_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Crop" android:textColor="@android:color/white"/>
+            <Button android:id="@+id/retake_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Retake" android:textColor="@android:color/white"/>
+            <Button android:id="@+id/delete_button" style="@style/Widget.AppCompat.Button.Borderless" android:layout_weight="1" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Delete" android:textColor="@android:color/white"/>
+        </LinearLayout>
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/save_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

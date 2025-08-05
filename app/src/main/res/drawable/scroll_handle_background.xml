@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!--
+    MODIFIED: This color has transparency.
+    #A0000000 means ~63% transparent black.
+    You can change A0 to other values (e.g., 80 for 50%, C0 for 75%)
+    -->
+    <solid android:color="#A0000000" />
+
+    <!-- This makes it fully rounded -->
+    <corners android:radius="100dp" />
+
+</shape>
