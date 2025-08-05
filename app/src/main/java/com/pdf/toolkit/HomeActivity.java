@@ -1,6 +1,6 @@
 package com.pdf.toolkit;
 
-// All necessary imports, including the new ones for the fix
+// Add all necessary imports for the new features
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -18,13 +18,12 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View; // NEW IMPORT
+import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView; // NEW IMPORT
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
@@ -35,13 +34,12 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.nativead.MediaView; // NEW IMPORT
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
@@ -50,7 +48,6 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -91,6 +88,7 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         setupCardListeners();
+        // Add the call to set up the privacy policy link
         setupPrivacyPolicyLink();
     }
 
@@ -120,6 +118,7 @@ public class HomeActivity extends AppCompatActivity {
         Map<String, Object> defaultConfigMap = new HashMap<>();
         defaultConfigMap.put("admob_native_ad_enabled", false);
         defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
+        // Add the default for the privacy policy URL
         defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
         remoteConfig.setDefaultsAsync(defaultConfigMap);
 
@@ -143,6 +142,7 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
+                // We now inflate the new, professional ad layout
                 NativeAdView adView = (NativeAdView) LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
                 
                 // This now calls the new, correct method
@@ -164,18 +164,16 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     // =================================================================
-    // THIS METHOD IS COMPLETELY REPLACED TO SUPPORT THE NEW AD LAYOUT
-    // This is the definitive fix for the hidden ad content.
+    // THIS IS THE FINAL, CORRECT METHOD THAT FIXES THE AD
+    // It correctly registers all views and lets the SDK handle visibility.
     // =================================================================
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Find all the views from your layout
+        // Find all the views from the new layout
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         TextView headlineView = adView.findViewById(R.id.ad_headline);
         TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
         ImageView iconView = adView.findViewById(R.id.ad_app_icon);
-
-        // --- THE DEFINITIVE FIX STARTS HERE ---
 
         // 1. ALWAYS register all the views with the AdView. This is required.
         adView.setMediaView(mediaView);
@@ -189,7 +187,6 @@ public class HomeActivity extends AppCompatActivity {
         callToActionView.setText(nativeAd.getCallToAction());
 
         // 3. Let the SDK handle visibility automatically.
-        //    The SDK is smart enough to hide the MediaView if there is no media.
         if (nativeAd.getMediaContent() != null) {
             mediaView.setMediaContent(nativeAd.getMediaContent());
         }
@@ -206,7 +203,14 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
             adView.getAdvertiserView().setVisibility(View.VISIBLE);
-        }    private void setupPrivacyPolicyLink() {
+        }
+        
+        // 4. Final registration call. This binds everything together.
+        adView.setNativeAd(nativeAd);
+    }
+
+    // Add this method to handle the privacy policy link click
+    private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
             String url = remoteConfig.getString("privacy_policy_url");
