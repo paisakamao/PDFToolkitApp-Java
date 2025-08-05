@@ -207,37 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleDeletePages(fileName) { if (uploadedFiles.length !== 1) throw new Error('Please select one PDF file.'); const pageString = document.getElementById('delete-pages').value; const indicesToDelete = new Set(parsePageString(pageString)); if (indicesToDelete.size === 0) throw new Error('Please enter valid page numbers to delete.'); const pdf = await PDFDocument.load(await getFileBytes(uploadedFiles[0])); const initialPageCount = pdf.getPageCount(); for (let i = initialPageCount - 1; i >= 0; i--) { if (indicesToDelete.has(i)) { pdf.removePage(i); } } if (pdf.getPageCount() === initialPageCount) { throw new Error('No valid pages were selected for deletion.'); } downloadFile(await pdf.save(), fileName, 'application/pdf'); }
     
     // --- UTILITY FUNCTIONS ---
-    function updateStatusToSuccess(originalFileNames, newFileName) {
-        const isMultiFile = originalFileNames.length > 1 || !newFileName; // True for Merge, JPGtoPDF, PDFtoJPG
-
-        if (isMultiFile) {
-            filePreviews.querySelectorAll('.file-preview-item').forEach(item => {
-                const statusBadge = item.querySelector('.status-badge');
-                if (statusBadge) {
-                    statusBadge.textContent = 'Success!';
-                    statusBadge.className = 'status-badge status-success';
-                }
-            });
-            // For Merge and JPGtoPDF, add a new preview item for the final file.
-            if (newFileName && (modalTitle.textContent === 'Merge PDF' || modalTitle.textContent === 'JPG to PDF')) {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'file-preview-item';
-                previewItem.innerHTML = `<span><i class="fas fa-check-circle"></i> ${newFileName}</span><span class="status-badge"></span>`;
-                const previewBtn = createPreviewButton(newFileName);
-                previewItem.querySelector('.status-badge').appendChild(previewBtn);
-                filePreviews.appendChild(previewItem);
-            }
-        } else if (originalFileNames.length === 1 && newFileName) {
+function updateStatusToSuccess(originalFileNames, newFileName) {
+        if (originalFileNames.length === 1 && newFileName) {
             const previewItem = filePreviews.querySelector(`[data-filename="${originalFileNames[0]}"]`);
             if (previewItem) {
                 const statusBadge = previewItem.querySelector('.status-badge');
                 if (statusBadge) {
+                    // Create the button but leave it disabled for now.
+                    // The onFileSaved function will enable it once Java confirms the save.
                     const previewBtn = createPreviewButton(newFileName);
-                    statusBadge.innerHTML = '';
+                    statusBadge.innerHTML = ''; // Clear "Processing..."
                     statusBadge.appendChild(previewBtn);
                 }
             }
         }
+        // You can add logic for multi-file operations here later if needed
     }
 
     function createPreviewButton(fileName) {
@@ -246,24 +230,45 @@ document.addEventListener('DOMContentLoaded', () => {
         previewBtn.className = 'cta-button';
         previewBtn.style.padding = '0.2rem 0.6rem';
         previewBtn.style.fontSize = '0.8rem';
-        previewBtn.onclick = () => {
-            if (typeof Android !== 'undefined' && Android.previewFile) {
-                Android.previewFile(fileName);
+        
+        // The button starts disabled.
+        previewBtn.disabled = true;
+
+        // The onclick handler is now simpler. It will use the URI attached to the button.
+        previewBtn.onclick = function() {
+            if (typeof Android !== 'undefined' && Android.previewFile && this.dataset.uri) {
+                Android.previewFile(this.dataset.uri);
             } else {
-                alert("Cannot view file. Make sure you are in the Android app.");
+                alert("Cannot view file. Make sure you are in the Android app and the file was saved correctly.");
             }
         };
         return previewBtn;
     }
 
-    function updateStatusToError() { 
-        filePreviews.querySelectorAll('.status-badge').forEach(badge => { 
-            badge.textContent = 'Error!'; 
-            badge.className = 'status-badge status-error'; 
-        }); 
-    }
+    // =================================================================
+    // NEW FUNCTION: This is the callback that Java will trigger
+    // =================================================================
+    window.onFileSaved = function(fileName, uriString) {
+        // Find the preview button associated with this file name
+        const previewItem = Array.from(filePreviews.querySelectorAll('.file-preview-item')).find(item => {
+            const btn = item.querySelector('button.cta-button');
+            // We find the button by its text content initially
+            return btn && btn.textContent === 'View File';
+        });
+
+        if (previewItem) {
+            const previewBtn = previewItem.querySelector('button.cta-button');
+            if (previewBtn) {
+                // Attach the URI to the button as a data attribute and enable it
+                previewBtn.dataset.uri = uriString;
+                previewBtn.disabled = false;
+            }
+        }
+    };
+
 
     function downloadFile(data, fileName, fileType) {
+        // This function now just sends the data to Java.
         if (typeof Android !== 'undefined' && Android.saveBase64File) {
             const reader = new FileReader();
             reader.onload = function () {
@@ -278,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Android interface not found. Download will not be saved.");
         }
     }
+
 
     // --- INITIALIZE THE APP ---
     populateUI();
