@@ -168,58 +168,49 @@ public class HomeActivity extends AppCompatActivity {
     // This is the definitive fix for the hidden ad content.
     // =================================================================
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Find all the views
+        // Find all the views from your layout
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         TextView headlineView = adView.findViewById(R.id.ad_headline);
         TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
         ImageView iconView = adView.findViewById(R.id.ad_app_icon);
 
-        // Tell the NativeAdView which view is which
+        // --- THE DEFINITIVE FIX STARTS HERE ---
+
+        // 1. ALWAYS register all the views with the AdView. This is required.
+        adView.setMediaView(mediaView);
         adView.setHeadlineView(headlineView);
         adView.setCallToActionView(callToActionView);
         adView.setIconView(iconView);
         adView.setAdvertiserView(advertiserView);
-        
-        // This is the CRITICAL adaptive logic
+
+        // 2. Populate the views with the ad's content.
+        headlineView.setText(nativeAd.getHeadline());
+        callToActionView.setText(nativeAd.getCallToAction());
+
+        // 3. Let the SDK handle visibility automatically.
+        //    The SDK is smart enough to hide the MediaView if there is no media.
         if (nativeAd.getMediaContent() != null) {
-            // If the ad HAS media, make the MediaView visible and populate it.
-            adView.setMediaView(mediaView);
             mediaView.setMediaContent(nativeAd.getMediaContent());
-            mediaView.setVisibility(View.VISIBLE);
+        }
+
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
         } else {
-            // If the ad DOES NOT HAVE media (like the "Flood-It!" test ad),
-            // HIDE the MediaView completely. This will make the ad compact.
-            mediaView.setVisibility(View.GONE);
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
         }
 
-        // Now, populate the other views
-        if (nativeAd.getHeadline() != null) {
-            headlineView.setText(nativeAd.getHeadline());
-        }
-
-        if (nativeAd.getCallToAction() != null) {
-            callToActionView.setText(nativeAd.getCallToAction());
-        }
-
-        if (nativeAd.getIcon() != null) {
-            iconView.setImageDrawable(nativeAd.getIcon().getDrawable());
-            iconView.setVisibility(View.VISIBLE);
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getAdvertiserView().setVisibility(View.GONE);
         } else {
-            iconView.setVisibility(View.GONE);
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
         }
-
-        if (nativeAd.getAdvertiser() != null) {
-            advertiserView.setText(nativeAd.getAdvertiser());
-            advertiserView.setVisibility(View.VISIBLE);
-        } else {
-            advertiserView.setVisibility(View.GONE);
-        }
-
-        // Final registration call
+        
+        // 4. Final registration call. This binds everything together.
         adView.setNativeAd(nativeAd);
     }
-
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
