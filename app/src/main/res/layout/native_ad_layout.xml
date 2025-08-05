@@ -10,34 +10,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- The MediaView will now have more space to expand into -->
         <com.google.android.gms.ads.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="6dp"
+            android:scaleType="centerCrop"
             app:layout_constraintBottom_toTopOf="@id/bottom_bar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!--
-        ===================================================================
-        THIS IS THE MODIFIED BOTTOM BAR
-        ===================================================================
-        - Padding is reduced to make it more compact.
-        - Icon, Text, and Button sizes are all smaller.
-        -->
+        <!-- The bottom bar is unchanged but will now have less space -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="6dp"
+            android:padding="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <!-- MODIFIED: Icon is now smaller -->
             <ImageView
                 android:id="@+id/ad_app_icon"
                 android:layout_width="32dp"
@@ -49,15 +41,14 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/ad_call_to_action"
                 app:layout_constraintStart_toEndOf="@id/ad_app_icon"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <!-- MODIFIED: Headline text is now smaller -->
                 <TextView
                     android:id="@+id/ad_headline"
                     android:layout_width="wrap_content"
@@ -68,7 +59,6 @@
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
-                <!-- MODIFIED: Advertiser text is now smaller -->
                 <TextView
                     android:id="@+id/ad_advertiser"
                     android:layout_width="wrap_content"
@@ -79,14 +69,13 @@
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <!-- MODIFIED: Button is now shorter and text is smaller -->
             <Button
                 android:id="@+id/ad_call_to_action"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="36dp"
                 android:backgroundTint="@color/teal_700"
                 android:textColor="#FFFFFF"
-                android:textSize="10sp"
+                android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -106,7 +95,7 @@
             android:paddingBottom="2dp"
             android:text="Ad"
             android:textColor="@android:color/white"
-            android:textSize="8sp"
+            android:textSize="12sp"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
