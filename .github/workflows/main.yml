@@ -27,8 +27,7 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Force Clean Build Cache
-      # --- THIS IS THE MOST IMPORTANT FIX ---
-      # This command manually and forcefully deletes all cached build files.
+     
       run: rm -rf $HOME/.gradle/caches/ && rm -rf $HOME/.gradle/daemon/
 
     - name: Build with Gradle
