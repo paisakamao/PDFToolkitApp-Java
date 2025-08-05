@@ -168,49 +168,45 @@ public class HomeActivity extends AppCompatActivity {
     // This is the definitive fix for the hidden ad content.
     // =================================================================
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        // Find all the views from your layout
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         TextView headlineView = adView.findViewById(R.id.ad_headline);
         TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
         ImageView iconView = adView.findViewById(R.id.ad_app_icon);
-        TextView adLabel = adView.findViewById(R.id.ad_label);
 
+        // --- THE DEFINITIVE FIX STARTS HERE ---
+
+        // 1. ALWAYS register all the views with the AdView. This is required.
         adView.setMediaView(mediaView);
         adView.setHeadlineView(headlineView);
-        adView.setAdvertiserView(advertiserView);
         adView.setCallToActionView(callToActionView);
         adView.setIconView(iconView);
+        adView.setAdvertiserView(advertiserView);
 
+        // 2. Populate the views with the ad's content.
         headlineView.setText(nativeAd.getHeadline());
         callToActionView.setText(nativeAd.getCallToAction());
 
-        if (nativeAd.getIcon() != null) {
-            iconView.setImageDrawable(nativeAd.getIcon().getDrawable());
-            iconView.setVisibility(View.VISIBLE);
-        } else {
-            iconView.setVisibility(View.GONE);
-        }
-
-        if (nativeAd.getAdvertiser() != null) {
-            advertiserView.setText(nativeAd.getAdvertiser());
-            advertiserView.setVisibility(View.VISIBLE);
-        } else {
-            advertiserView.setVisibility(View.GONE);
-        }
-
+        // 3. Let the SDK handle visibility automatically.
+        //    The SDK is smart enough to hide the MediaView if there is no media.
         if (nativeAd.getMediaContent() != null) {
             mediaView.setMediaContent(nativeAd.getMediaContent());
-            mediaView.setVisibility(View.VISIBLE);
-        } else {
-            mediaView.setVisibility(View.GONE);
         }
 
-        if (adLabel != null) adLabel.setVisibility(View.VISIBLE);
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
 
-        adView.setNativeAd(nativeAd);
-    }
-}
-    private void setupPrivacyPolicyLink() {
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getAdvertiserView().setVisibility(View.GONE);
+        } else {
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+        }    private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
             String url = remoteConfig.getString("privacy_policy_url");
