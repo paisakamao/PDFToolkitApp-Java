@@ -9,32 +9,28 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <com.google.android.gms.ads.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/bottom_bar"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- The bottom bar is unchanged but will now have less space -->
+            app:layout_constraintEnd_toEndOf="parent" />
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottom_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:padding="6dp"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
             <ImageView
                 android:id="@+id/ad_app_icon"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -57,7 +53,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="#000000"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
