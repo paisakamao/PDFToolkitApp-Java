@@ -40,6 +40,8 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.material.bottomappbar.BottomAppBar; // NEW IMPORT
+import com.google.android.material.floatingactionbutton.FloatingActionButton; // NEW IMPORT
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
@@ -87,6 +89,8 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         setupCardListeners();
+        // NEW: Initialize the bottom navigation menu
+        setupBottomMenu();
     }
 
     private void setupCardListeners() {
@@ -102,6 +106,42 @@ public class HomeActivity extends AppCompatActivity {
         allFilesCard.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
             startActivity(intent);
+        });
+    }
+
+    // =================================================================
+    // NEW METHOD TO HANDLE ALL BOTTOM MENU LOGIC
+    // =================================================================
+    private void setupBottomMenu() {
+        BottomAppBar bottomAppBar = findViewById(R.id.bottom_app_bar);
+        FloatingActionButton fabScanner = findViewById(R.id.fab_scanner);
+
+        // Set the click listener for the central scanner button
+        fabScanner.setOnClickListener(v -> {
+            // This performs the same action as your original scanner card
+            checkAndRequestStoragePermission();
+        });
+
+        // Set the click listener for the menu items in the bar
+        bottomAppBar.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                // User is already on the home screen, do nothing or show a toast
+                Toast.makeText(HomeActivity.this, "Already on Home", Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (itemId == R.id.nav_pdf_tools) {
+                launchWebViewActivity("index.html");
+                return true;
+            } else if (itemId == R.id.nav_all_files) {
+                Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
+                startActivity(intent);
+                return true;
+            } else if (itemId == R.id.nav_settings) {
+                // TODO: Replace with your actual Settings Activity
+                Toast.makeText(HomeActivity.this, "Settings clicked", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            return false; // Return false for unhandled items
         });
     }
 
@@ -154,25 +194,23 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-    // MODIFIED: The adView.setClipToOutline(true); line has been REMOVED.
-    // The parent FrameLayout now handles all clipping via its XML attributes.
+    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        TextView headlineView = adView.findViewById(R.id.ad_headline);
+        Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
 
-    TextView headlineView = adView.findViewById(R.id.ad_headline);
-    Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
+        if (nativeAd.getHeadline() != null && headlineView != null) {
+            headlineView.setText(nativeAd.getHeadline());
+            adView.setHeadlineView(headlineView);
+        }
 
-    if (nativeAd.getHeadline() != null && headlineView != null) {
-        headlineView.setText(nativeAd.getHeadline());
-        adView.setHeadlineView(headlineView);
+        if (nativeAd.getCallToAction() != null && callToActionView != null) {
+            callToActionView.setText(nativeAd.getCallToAction());
+            adView.setCallToActionView(callToActionView);
+        }
+
+        adView.setNativeAd(nativeAd);
     }
 
-    if (nativeAd.getCallToAction() != null && callToActionView != null) {
-        callToActionView.setText(nativeAd.getCallToAction());
-        adView.setCallToActionView(callToActionView);
-    }
-
-    adView.setNativeAd(nativeAd);
-}
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
