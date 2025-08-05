@@ -128,6 +128,118 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new JSBridge(this), "Android");
 
+        String htmlFileToLoad = getIntent().getStringExtra(EXTRA_HTML_FILE);
+        if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
+            htmlFileToLoad = "index.html";
+        }
+        webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
+    }
+
+    public class JSBridge {
+        private final Context context;
+        private final ExecutorService executor = Executors.newSingleThreadExecutor();
+        private final Handler handler = new Handler(Looper.getMainLooper());
+
+        JSBridge(Context context) { this.context = context; }
+
+        @JavascriptInterface
+        public void saveBase64File(String base64Data, String fileName, String mimeType) { // MODIFIED: Added mimeType
+            executor.execute(() -> {
+                try {
+                    byte[] fileAsBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                    Uri fileUri = saveFileToDownloads(fileAsBytes, fileName, mimeType); // MODIFIED: Pass mimeType along
+
+                    if (fileUri != null) {
+                        String uriString = fileUri.toString();
+                        String jsCallback = String.format("javascript:onFileSaved('%s', '%s')", fileName, uriString);
+
+                        handler.post(() -> {
+                            Toast.makeText(context, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
+                            webView.evaluateJavascript(jsCallback, null);
+                        });
+                    } else {
+                        throw new Exception("Failed to get URI for saved file.");
+                    }
+                } catch (Exception e) {
+                    handler.post(() -> Toast.makeText(context, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void previewFile(String uriString) {
+            if (uriString == null || uriString.isEmpty()) {
+                Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                Uri pdfUri = Uri.parse(uriString);
+                Intent intent = new Intent(context, PdfViewerActivity.class);
+                intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(context, "Error opening PDF Viewer.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception { // MODIFIED: Added mimeType
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType); // MODIFIED: Use the provided mimeType
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDFToolkit");
+        }
+
+        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (uri == null) {
+            throw new Exception("Failed to create new MediaStore record.");
+        }
+        try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+            if (outputStream == null) {
+                throw new Exception("Failed to open output stream.");
+            }
+            outputStream.write(data);
+        }
+        return uri;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+}                }
+                return true;
+            }
+
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                String url = webView.getUrl();
+                if (url != null && url.contains("unitools.html")) {
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                            currentPermissionRequest = request;
+                            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                                microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+                            } else {
+                                request.grant(request.getResources());
+                            }
+                            return;
+                        }
+                    }
+                }
+                super.onPermissionRequest(request);
+            }
+        });
+
+        webView.addJavascriptInterface(new JSBridge(this), "Android");
+
         Intent intent = getIntent();
         String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
         if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
