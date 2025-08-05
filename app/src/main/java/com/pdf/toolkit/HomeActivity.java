@@ -87,6 +87,7 @@ public class HomeActivity extends AppCompatActivity {
         );
 
         setupCardListeners();
+        setupPrivacyPolicyLink();
     }
 
     private void setupCardListeners() {
@@ -113,8 +114,12 @@ public class HomeActivity extends AppCompatActivity {
         remoteConfig.setConfigSettingsAsync(configSettings);
 
         Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("admob_native_ad_enabled", false);
-        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
+        defaultConfigMap.put("admob_native_ad_enabled", false); // This is a Boolean
+        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110"); // This is a String
+        
+        // This is the new String parameter for your privacy policy
+        defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
+        
         remoteConfig.setDefaultsAsync(defaultConfigMap);
 
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
@@ -154,25 +159,45 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-    // MODIFIED: The adView.setClipToOutline(true); line has been REMOVED.
-    // The parent FrameLayout now handles all clipping via its XML attributes.
+    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        TextView headlineView = adView.findViewById(R.id.ad_headline);
+        Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
 
-    TextView headlineView = adView.findViewById(R.id.ad_headline);
-    Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
+        if (nativeAd.getHeadline() != null && headlineView != null) {
+            headlineView.setText(nativeAd.getHeadline());
+            adView.setHeadlineView(headlineView);
+        }
 
-    if (nativeAd.getHeadline() != null && headlineView != null) {
-        headlineView.setText(nativeAd.getHeadline());
-        adView.setHeadlineView(headlineView);
+        if (nativeAd.getCallToAction() != null && callToActionView != null) {
+            callToActionView.setText(nativeAd.getCallToAction());
+            adView.setCallToActionView(callToActionView);
+        }
+
+        adView.setNativeAd(nativeAd);
     }
 
-    if (nativeAd.getCallToAction() != null && callToActionView != null) {
-        callToActionView.setText(nativeAd.getCallToAction());
-        adView.setCallToActionView(callToActionView);
+    private void setupPrivacyPolicyLink() {
+        TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
+        privacyPolicyText.setOnClickListener(v -> {
+            // Get the URL from the remoteConfig instance.
+            String url = remoteConfig.getString("privacy_policy_url");
+            
+            if (url == null || url.isEmpty()) {
+                Toast.makeText(HomeActivity.this, "Privacy Policy not available.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(HomeActivity.this, "No browser found to open link.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    adView.setNativeAd(nativeAd);
-}
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
