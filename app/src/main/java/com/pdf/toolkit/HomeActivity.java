@@ -154,29 +154,25 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // THIS IS THE FIX:
-        // This tells the NativeAdView to clip its children to its own outline,
-        // which is defined by your rounded background drawable.
-        adView.setClipToOutline(true);
+private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+    // MODIFIED: The adView.setClipToOutline(true); line has been REMOVED.
+    // The parent FrameLayout now handles all clipping via its XML attributes.
 
-        // --- The rest of your method remains the same ---
-        TextView headlineView = adView.findViewById(R.id.ad_headline);
-        Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
+    TextView headlineView = adView.findViewById(R.id.ad_headline);
+    Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
 
-        if (nativeAd.getHeadline() != null && headlineView != null) {
-            headlineView.setText(nativeAd.getHeadline());
-            adView.setHeadlineView(headlineView);
-        }
-
-        if (nativeAd.getCallToAction() != null && callToActionView != null) {
-            callToActionView.setText(nativeAd.getCallToAction());
-            adView.setCallToActionView(callToActionView);
-        }
-
-        adView.setNativeAd(nativeAd);
+    if (nativeAd.getHeadline() != null && headlineView != null) {
+        headlineView.setText(nativeAd.getHeadline());
+        adView.setHeadlineView(headlineView);
     }
 
+    if (nativeAd.getCallToAction() != null && callToActionView != null) {
+        callToActionView.setText(nativeAd.getCallToAction());
+        adView.setCallToActionView(callToActionView);
+    }
+
+    adView.setNativeAd(nativeAd);
+}
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
             startGoogleScanner();
