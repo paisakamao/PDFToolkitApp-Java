@@ -80,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // MODIFIED: This now correctly uses the ID from your XML file
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -127,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // MODIFIED: Using the new, more powerful JSBridge
         webView.addJavascriptInterface(new JSBridge(this), "Android");
 
         Intent intent = getIntent();
@@ -140,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
     // =================================================================
     // THIS IS THE NEW, FULLY FUNCTIONAL JAVASCRIPT BRIDGE
+    // All methods are now correctly inside this class.
     // =================================================================
     public class JSBridge {
         private final Context context;
@@ -157,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
 
                     if (fileUri != null) {
                         String uriString = fileUri.toString();
-                        // This JavaScript function call will be executed in the WebView
                         String jsCallback = String.format("javascript:onFileSaved('%s', '%s')", fileName, uriString);
 
                         handler.post(() -> {
@@ -174,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void previewFile(String uriString) { // Renamed for clarity and to avoid conflict
+        public void previewFile(String uriString) {
             if (uriString == null || uriString.isEmpty()) {
                 Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show();
                 return;
@@ -191,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // New, modern file saving method that works on all Android versions
     private Uri saveFileToDownloads(byte[] data, String fileName) throws Exception {
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
@@ -222,99 +219,4 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-}        public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
-            if (filePathCallback != null) filePathCallback.onReceiveValue(null);
-            filePathCallback = fp;
-            try {
-                Intent intent = fcp.createIntent();
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                fileChooserLauncher.launch(intent);
-            } catch (Exception e) {
-                filePathCallback = null;
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public void onPermissionRequest(final PermissionRequest request) {
-            String url = webView.getUrl();
-
-            // === THIS IS THE KEY CHANGE ===
-            // Only handle the permission request if it's coming from unitools.html
-            if (url != null && url.contains("unitools.html")) {
-                for (String resource : request.getResources()) {
-                    if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
-                        currentPermissionRequest = request;
-                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                            microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
-                        } else {
-                            request.grant(request.getResources());
-                        }
-                        return; // We've handled the request
-                    }
-                }
-            }
-            
-            // For any other page (like index.html) or any other permission, do the default action.
-            super.onPermissionRequest(request);
-        }
-    });
-
-    webView.addJavascriptInterface(new JSBridge(this), "Android");
-    
-    Intent intent = getIntent();
-    String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
-    if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
-        htmlFileToLoad = "index.html";
-    }
-    webView.loadUrl("file:///android_asset/" + htmlFileToLoad); 
-}
-
-public class JSBridge {
-    private final Context context;
-    JSBridge(Context context) { this.context = context; }
-    @JavascriptInterface
-    public void saveBase64File(String base64Data, String fileName) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                saveFile(base64Data, fileName);
-            } else {
-                pendingBase64Data = base64Data;
-                pendingFileName = fileName;
-                requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
-        } else {
-            saveFile(base64Data, fileName);
-        }
-    }
-}
-
-private void saveFile(String base64Data, String fileName) {
-    runOnUiThread(() -> {
-        try {
-            byte[] fileAsBytes = Base64.decode(base64Data, Base64.DEFAULT);
-            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(downloadsDir, fileName);
-            try (OutputStream os = new FileOutputStream(file)) {
-                os.write(fileAsBytes);
-            }
-            Toast.makeText(this, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error saving file", Toast.LENGTH_LONG).show();
-        }
-    });
-}
-
-@Override
-public void onBackPressed() {
-    if (webView.canGoBack()) {
-        webView.goBack();
-    } else {
-        super.onBackPressed();
-    }
-}
-
-
 }
