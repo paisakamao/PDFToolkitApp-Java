@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+    MODIFIED: The empty placeholder item has been completely removed.
+    This is the definitive fix for the crash.
+    The BottomAppBar will automatically create the space for the FAB.
+    -->
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/ic_home"
@@ -8,11 +13,6 @@
         android:id="@+id/nav_pdf_tools"
         android:icon="@drawable/ic_tools"
         android:title="PDF Tools"/>
-    <!-- The center item is empty space for the FAB -->
-    <item
-        android:id="@+id/nav_placeholder"
-        android:title=""
-        android:enabled="false"/>
     <item
         android:id="@+id/nav_all_files"
         android:icon="@drawable/ic_files"
