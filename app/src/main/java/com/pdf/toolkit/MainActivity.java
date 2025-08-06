@@ -33,9 +33,11 @@ import androidx.core.content.ContextCompat;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 public class MainActivity extends AppCompatActivity {
 
+    private FirebaseRemoteConfig remoteConfig;
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        remoteConfig = FirebaseRemoteConfig.getInstance();
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -193,6 +196,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+        @JavascriptInterface
+        public String getTtsToolUrl() {
+            // It fetches the string value from the already-activated Remote Config.
+            return remoteConfig.getString("tts_tool_url");
+        }
+
+        @JavascriptInterface
+        public void openToolInBrowser(String url, String title) {
+            Intent intent = new Intent(context, TtsActivity.class);
+            intent.putExtra(TtsActivity.EXTRA_URL, url);
+            intent.putExtra(TtsActivity.EXTRA_TITLE, title);
+            context.startActivity(intent);
+        }
 
     private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
         ContentValues values = new ContentValues();
