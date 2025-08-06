@@ -143,6 +143,15 @@ public class MainActivity extends AppCompatActivity {
 
         JSBridge(Context context) { this.context = context; }
 
+                @JavascriptInterface
+            public void openToolInBrowser(String url, String title) {
+                Intent intent = new Intent(context, TtsActivity.class);
+                intent.putExtra(TtsActivity.EXTRA_URL, url);
+                intent.putExtra(TtsActivity.EXTRA_TITLE, title);
+                context.startActivity(intent);
+            }
+        }
+
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName, String mimeType) {
             executor.execute(() -> {
