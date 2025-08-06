@@ -30,19 +30,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FirebaseRemoteConfig remoteConfig;
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
-    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
+    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE";
 
     private PermissionRequest currentPermissionRequest;
+    private FirebaseRemoteConfig remoteConfig;
 
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
+        
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -139,21 +141,16 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
 
+    // =================================================================
+    // THIS IS THE CORRECTED AND COMPLETE JAVASCRIPT BRIDGE CLASS
+    // All methods are now correctly inside this single class definition.
+    // =================================================================
     public class JSBridge {
         private final Context context;
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
         private final Handler handler = new Handler(Looper.getMainLooper());
 
         JSBridge(Context context) { this.context = context; }
-
-                @JavascriptInterface
-            public void openToolInBrowser(String url, String title) {
-                Intent intent = new Intent(context, TtsActivity.class);
-                intent.putExtra(TtsActivity.EXTRA_URL, url);
-                intent.putExtra(TtsActivity.EXTRA_TITLE, title);
-                context.startActivity(intent);
-            }
-        }
 
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName, String mimeType) {
@@ -195,11 +192,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(context, "Error opening PDF Viewer.", Toast.LENGTH_SHORT).show();
             }
         }
-    }
 
         @JavascriptInterface
         public String getTtsToolUrl() {
-            // It fetches the string value from the already-activated Remote Config.
             return remoteConfig.getString("tts_tool_url");
         }
 
@@ -210,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(TtsActivity.EXTRA_TITLE, title);
             context.startActivity(intent);
         }
+    } // <-- The JSBridge class correctly ends here.
 
     private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
         ContentValues values = new ContentValues();
@@ -241,4 +237,4 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-}
+} // <-- The MainActivity class correctly ends here.
