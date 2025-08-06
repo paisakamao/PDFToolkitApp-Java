@@ -185,7 +185,7 @@
                 } else {
                     alert("This feature requires a newer version of the native Android app.");
                 }
-                return; // Stop the function here
+                return; 
             } const tool = toolImplementations[toolId]; if (!toolData || !tool) return; const { content, onMount } = tool(); modalContent.innerHTML = ` <div class="modal-header"> <h2>${toolData.title}</h2> <button id="modal-close-btn" class="modal-close-btn">×</button> </div> <p class="modal-description">${toolData.desc}</p> <div class="tool-section"> ${content} </div> `; modalContainer.classList.add('show'); document.body.style.overflow = 'hidden'; document.getElementById('modal-close-btn').addEventListener('click', closeModal); if (onMount) { onMount(); } }
             function closeModal() { modalContainer.classList.remove('show'); document.body.style.overflow = 'auto'; modalContent.innerHTML = ''; }
             toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) { const toolId = card.dataset.toolId; openModal(toolId); } });
