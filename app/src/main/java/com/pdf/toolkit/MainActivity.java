@@ -28,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.browser.customtabs.CustomTabsIntent; // NEW, IMPORTANT IMPORT
 import androidx.core.content.ContextCompat;
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
-    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE";
+    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
 
     private PermissionRequest currentPermissionRequest;
     private FirebaseRemoteConfig remoteConfig;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
-        
+
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -141,10 +142,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
 
-    // =================================================================
-    // THIS IS THE CORRECTED AND COMPLETE JAVASCRIPT BRIDGE CLASS
-    // All methods are now correctly inside this single class definition.
-    // =================================================================
     public class JSBridge {
         private final Context context;
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -198,14 +195,34 @@ public class MainActivity extends AppCompatActivity {
             return remoteConfig.getString("tts_tool_url");
         }
 
+        // MODIFIED: This method now launches a Chrome Custom Tab instead of the old TtsActivity
         @JavascriptInterface
-        public void openToolInBrowser(String url, String title) {
-            Intent intent = new Intent(context, TtsActivity.class);
-            intent.putExtra(TtsActivity.EXTRA_URL, url);
-            intent.putExtra(TtsActivity.EXTRA_TITLE, title);
-            context.startActivity(intent);
+        public void openToolInBrowser(String url) {
+            if (url == null || url.isEmpty()) {
+                // Use a handler to show Toast on the main thread
+                new Handler(Looper.getMainLooper()).post(() ->
+                        Toast.makeText(context, "URL is not available.", Toast.LENGTH_SHORT).show()
+                );
+                return;
+            }
+
+            // Build the Chrome Custom Tab Intent
+            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+            
+            // Set the toolbar color to match your app's card background for a seamless look
+            builder.setToolbarColor(ContextCompat.getColor(context, R.color.card_background));
+            builder.setShowTitle(true);
+            
+            // Set custom animations to make it slide up and down like a dialog
+            builder.setStartAnimations(context, R.anim.slide_in_up, R.anim.stay);
+            builder.setExitAnimations(context, R.anim.stay, R.anim.slide_out_down);
+            
+            CustomTabsIntent customTabsIntent = builder.build();
+            
+            // Launch the URL. This will open the floating Chrome window.
+            customTabsIntent.launchUrl(context, Uri.parse(url));
         }
-    } // <-- The JSBridge class correctly ends here.
+    }
 
     private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
         ContentValues values = new ContentValues();
@@ -237,4 +254,4 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-} // <-- The MainActivity class correctly ends here.
+}
