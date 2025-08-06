@@ -49,10 +49,6 @@
         android:name=".ScannerActivity"
         android:exported="false"
         android:theme="@style/Theme.PDFToolkit.Scanner" />
-    <activity
-        android:name=".TtsActivity"
-        android:exported="false"
-        android:theme="@style/Theme.PDFToolkit.DialogActivity" />
 
     <provider
         android:name="androidx.core.content.FileProvider"
