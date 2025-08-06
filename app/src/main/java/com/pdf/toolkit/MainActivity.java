@@ -217,7 +217,9 @@ public class MainActivity extends AppCompatActivity {
             builder.setStartAnimations(context, R.anim.slide_in_up, R.anim.stay);
             builder.setExitAnimations(context, R.anim.stay, R.anim.slide_out_down);
             
-            CustomTabsIntent customTabsIntent = builder.build();
+           
+builder.setUrlBarHidingEnabled(true); 
+CustomTabsIntent customTabsIntent = builder.build();
             
             // Launch the URL. This will open the floating Chrome window.
             customTabsIntent.launchUrl(context, Uri.parse(url));
