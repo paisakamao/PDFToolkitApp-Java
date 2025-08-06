@@ -167,7 +167,26 @@
             // --- UNIVERSAL SETUP FUNCTIONS ---
             function renderToolCards() { toolsGrid.innerHTML = tools.sort((a,b) => a.title.localeCompare(b.title)).map(tool => ` <article class="tool-card" data-tool-id="${tool.id}"> <i class="fas ${tool.icon} card-icon"></i> <h2>${tool.title}</h2> </article> `).join(''); }
             let notificationTimeout; function showNotification(message, duration = 3000) { clearTimeout(notificationTimeout); notificationEl.textContent = message; notificationEl.style.opacity = '1'; notificationEl.style.bottom = '20px'; notificationTimeout = setTimeout(() => { notificationEl.style.opacity = '0'; notificationEl.style.bottom = '-100px'; }, duration); }
-            function openModal(toolId) { const toolData = tools.find(t => t.id === toolId); const tool = toolImplementations[toolId]; if (!toolData || !tool) return; const { content, onMount } = tool(); modalContent.innerHTML = ` <div class="modal-header"> <h2>${toolData.title}</h2> <button id="modal-close-btn" class="modal-close-btn">×</button> </div> <p class="modal-description">${toolData.desc}</p> <div class="tool-section"> ${content} </div> `; modalContainer.classList.add('show'); document.body.style.overflow = 'hidden'; document.getElementById('modal-close-btn').addEventListener('click', closeModal); if (onMount) { onMount(); } }
+            function openModal(toolId) { const toolData = tools.find(t => t.id === toolId);             if (!toolData) return;
+
+            // NEW LOGIC: Check if the tool is Text to Speech
+            if (toolId === 'text-to-speech') {
+                if (typeof Android !== 'undefined' && Android.getTtsToolUrl && Android.openToolInBrowser) {
+                    // 1. Ask the Android app for the URL from Firebase
+                    const ttsUrl = Android.getTtsToolUrl();
+
+                    // 2. Safety check: make sure the URL is not empty
+                    if (ttsUrl && ttsUrl.length > 5) { // length > 5 is a basic check for a valid URL
+                         // 3. Tell the Android app to open this URL in the floating window
+                        Android.openToolInBrowser(ttsUrl, toolData.title);
+                    } else {
+                        alert("The Text to Speech tool URL is not configured. Please try again later.");
+                    }
+                } else {
+                    alert("This feature requires a newer version of the native Android app.");
+                }
+                return; // Stop the function here
+            } const tool = toolImplementations[toolId]; if (!toolData || !tool) return; const { content, onMount } = tool(); modalContent.innerHTML = ` <div class="modal-header"> <h2>${toolData.title}</h2> <button id="modal-close-btn" class="modal-close-btn">×</button> </div> <p class="modal-description">${toolData.desc}</p> <div class="tool-section"> ${content} </div> `; modalContainer.classList.add('show'); document.body.style.overflow = 'hidden'; document.getElementById('modal-close-btn').addEventListener('click', closeModal); if (onMount) { onMount(); } }
             function closeModal() { modalContainer.classList.remove('show'); document.body.style.overflow = 'auto'; modalContent.innerHTML = ''; }
             toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) { const toolId = card.dataset.toolId; openModal(toolId); } });
             modalContainer.addEventListener('click', (e) => { if (e.target === modalContainer) { closeModal(); } });
