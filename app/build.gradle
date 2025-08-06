@@ -39,4 +39,5 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.1.0')
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.android.gms:play-services-ads:23.1.0'
+implementation 'androidx.browser:browser:1.8.0' // Or the latest version
 }
