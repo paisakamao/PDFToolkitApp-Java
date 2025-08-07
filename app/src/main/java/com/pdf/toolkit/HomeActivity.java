@@ -329,7 +329,7 @@ public class HomeActivity extends AppCompatActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this)
             .setView(dialogView)
-            .setCancelable(false)
+            .setCancelable(true)
             .create();
             
         if (dialog.getWindow() != null) {
