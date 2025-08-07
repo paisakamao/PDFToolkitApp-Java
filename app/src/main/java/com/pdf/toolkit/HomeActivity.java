@@ -1,6 +1,6 @@
 package com.pdf.toolkit;
 
-// All necessary imports, including the ones that were missing
+// All necessary imports for the final version
 import android.Manifest;
 import android.animation.Animator;
 import android.app.Activity;
@@ -25,7 +25,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -45,6 +44,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.WindowCompat;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.ads.AdLoader;
@@ -75,41 +75,44 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseRemoteConfig remoteConfig;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
-    private boolean isReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // --- THIS IS THE NEW, CORRECT SPLASH SCREEN LOGIC ---
+
+        // 1. Go edge-to-edge. MUST be called before super.onCreate().
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        // 2. Install the splash screen.
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
         final LottieAnimationView lottieView = findViewById(R.id.splash_animation_view);
         final View content = findViewById(R.id.main_content_scrollview);
 
-        content.getViewTreeObserver().addOnPreDrawListener(
-            new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    if (isReady) {
-                        content.getViewTreeObserver().removeOnPreDrawListener(this);
-                        lottieView.playAnimation();
-                        lottieView.addAnimatorListener(new Animator.AnimatorListener() {
-                            @Override public void onAnimationStart(Animator animation) {}
-                            @Override public void onAnimationCancel(Animator animation) {}
-                            @Override public void onAnimationRepeat(Animator animation) {}
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                lottieView.setVisibility(View.GONE);
-                                content.setVisibility(View.VISIBLE);
-                            }
-                        });
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            });
+        // 3. Keep the splash screen visible for a short, fixed time.
+        splashScreen.setKeepOnScreenCondition(() -> true);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            splashScreen.setKeepOnScreenCondition(() -> false);
+        }, 1500); // 1.5 second delay
 
+        // 4. Play the Lottie animation immediately.
+        lottieView.playAnimation();
+
+        // 5. Set a listener for when the animation finishes.
+        lottieView.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override public void onAnimationStart(@NonNull Animator animation) {}
+            @Override public void onAnimationEnd(@NonNull Animator animation) {
+                lottieView.setVisibility(View.GONE);
+                content.setVisibility(View.VISIBLE);
+            }
+            @Override public void onAnimationCancel(@NonNull Animator animation) {}
+            @Override public void onAnimationRepeat(@NonNull Animator animation) {}
+        });
+
+        // --- ALL YOUR ORIGINAL SETUP CODE NOW RUNS IN THE BACKGROUND ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF Toolkit");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
@@ -132,8 +135,6 @@ public class HomeActivity extends AppCompatActivity {
 
         setupCardListeners();
         setupPrivacyPolicyLink();
-        
-        isReady = true;
     }
 
     private void setupCardListeners() {
