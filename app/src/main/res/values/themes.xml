@@ -1,31 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!--
-    ===================================================================
-    THIS IS THE FINAL, CORRECT SPLASH SCREEN THEME
-    ===================================================================
-    -->
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/home_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_image</item>
-        <item name="windowSplashScreenAnimationDuration">1000</item>
-        <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
-    </style>
-
-    <!--
-    ===================================================================
-    THESE ARE YOUR FINAL, CORRECT APP THEMES
-    ===================================================================
-    -->
-    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    <!-- This was the stable base theme. All activities and dialogs inherit from this. -->
+    <style name="Theme.PDFToolkit" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- This is the critical line that makes all icons visible -->
         <item name="colorControlNormal">@android:color/black</item>
     </style>
 
-    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit.NoActionBar"/>
+    <!-- Your HomeActivity uses this theme -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.PDFToolkit">
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+        <item name="android:navigationBarColor">@color/soft_gray</item>
+    </style>
+
+    <!-- Your PdfViewerActivity uses this theme -->
+    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit">
+        <item name="android:statusBarColor">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+    </style>
 
     <!-- All other styles below are correct and unchanged -->
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -65,5 +58,4 @@
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
     </style>
-
 </resources>
