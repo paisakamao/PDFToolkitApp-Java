@@ -1,6 +1,8 @@
 package com.pdf.toolkit;
 
+// All necessary imports, including new ones for the Splash Screen
 import android.Manifest;
+import android.animation.Animator;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -14,18 +16,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +40,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.splashscreen.SplashScreen;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
@@ -70,12 +71,59 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseRemoteConfig remoteConfig;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
+    private boolean isContentReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // This MUST be the first call in onCreate for the Splash Screen API to work.
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        final LottieAnimationView lottieView = findViewById(R.id.splash_animation_view);
+        final View content = findViewById(R.id.main_content_scrollview);
+
+        // Set up a listener to wait for the main content to be ready to draw.
+        content.getViewTreeObserver().addOnPreDrawListener(
+            new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    // Check our flag. If the content isn't ready, wait.
+                    if (isContentReady) {
+                        // The content is ready, so we can start the animation.
+                        // Remove the listener to prevent this from running again.
+                        content.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                        // Start the Lottie animation.
+                        lottieView.playAnimation();
+
+                        // Add a listener to know when the animation is finished.
+                        lottieView.addAnimatorListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(@NonNull Animator animation) {}
+
+                            @Override
+                            public void onAnimationEnd(@NonNull Animator animation) {
+                                // Animation is over. Hide the Lottie view and show the real content.
+                                lottieView.setVisibility(View.GONE);
+                                content.setVisibility(View.VISIBLE);
+                            }
+
+                            @Override
+                            public void onAnimationCancel(@NonNull Animator animation) {}
+
+                            @Override
+                            public void onAnimationRepeat(@NonNull Animator animation) {}
+                        });
+                        return true; // Proceed with the draw.
+                    } else {
+                        return false; // The content is not ready, so wait.
+                    }
+                }
+            });
+
+        // --- All of your original, working setup code is here ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF Toolkit");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
@@ -98,6 +146,10 @@ public class HomeActivity extends AppCompatActivity {
 
         setupCardListeners();
         setupPrivacyPolicyLink();
+
+        // After all setup is complete, we set our flag to true.
+        // The onPreDraw listener will now know it's safe to start the animation.
+        isContentReady = true;
     }
 
     private void setupCardListeners() {
