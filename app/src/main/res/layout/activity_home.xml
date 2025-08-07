@@ -1,83 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-===================================================================
-THIS IS THE FINAL, CORRECT LAYOUT
-===================================================================
-- The root is now a ScrollView for a clean, simple structure.
-- `android:fitsSystemWindows="true"` is correctly placed on the ScrollView.
-  This is the definitive fix for the full-screen layout.
-- There are absolutely no syntax errors or invalid comments.
--->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- The root is back to your original, stable ConstraintLayout -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
     android:background="@color/home_background"
-    android:fitsSystemWindows="true"
     tools:context=".HomeActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- The ScrollView contains all your content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        
+        <!-- This attribute is crucial for handling the edge-to-edge display -->
+        android:fitsSystemWindows="true">
 
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/toolbar"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <GridLayout
-            android:id="@+id/card_grid"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:columnCount="2"
-            android:rowCount="2"
-            android:useDefaultMargins="true"
-            app:layout_constraintTop_toBottomOf="@id/toolbar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-            
-            <androidx.cardview.widget.CardView android:id="@+id/card_scanner" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" /><TextView style="@style/HomeCardTextStyle" android:text="Scanner" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_pdf_tool" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_uni_tools" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" /></LinearLayout></androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView android:id="@+id/card_all_files" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" /><TextView style="@style/HomeCardTextStyle" android:text="All Files" /></LinearLayout></androidx.cardview.widget.CardView>
-        </GridLayout>
+            <include
+                android:id="@+id/toolbar"
+                layout="@layout/toolbar"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-        <FrameLayout
-            android:id="@+id/ad_container"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/card_grid"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_card_background"
-            android:elevation="6dp"
-            android:clipToOutline="true" />
+            <GridLayout
+                android:id="@+id/card_grid"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:useDefaultMargins="true"
+                app:layout_constraintTop_toBottomOf="@id/toolbar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/privacy_policy_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Privacy Policy"
-            android:textColor="@color/teal_700"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:padding="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground"
-            app:layout_constraintTop_toBottomOf="@id/ad_container"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+                <androidx.cardview.widget.CardView android:id="@+id/card_scanner" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_scan_file" /><TextView style="@style/HomeCardTextStyle" android:text="Scanner" /></LinearLayout></androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView android:id="@+id/card_pdf_tool" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_pdf_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Pdf Tool" /></LinearLayout></androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView android:id="@+id/card_uni_tools" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_uni_tools" /><TextView style="@style/HomeCardTextStyle" android:text="Uni Tools" /></LinearLayout></androidx.cardview.widget.CardView>
+                <androidx.cardview.widget.CardView android:id="@+id/card_all_files" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" /><TextView style="@style/HomeCardTextStyle" android:text="All Files" /></LinearLayout></androidx.cardview.widget.CardView>
+            </GridLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+            <FrameLayout
+                android:id="@+id/ad_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/card_grid"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/rounded_card_background"
+                android:elevation="6dp"
+                android:clipToOutline="true" />
+
+            <TextView
+                android:id="@+id/privacy_policy_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Privacy Policy"
+                android:textColor="@color/teal_700"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                app:layout_constraintTop_toBottomOf="@id/ad_container"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
