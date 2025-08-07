@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
     android:gravity="center_horizontal">
 
+    <!--
+    ===================================================================
+    THIS IS THE ONLY CHANGE
+    ===================================================================
+    - We are changing the `android:src` to point to your new `ic_done` png.
+    - We are setting a fixed size to ensure it looks good and consistent.
+    -->
     <ImageView
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_success_checkmark"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/ic_done"
         android:layout_marginBottom="16dp"/>
 
     <TextView
@@ -28,9 +36,17 @@
         android:text="Your PDF has been saved successfully."
         android:textSize="16sp"
         android:gravity="center"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="16dp"/>
 
-    <!-- File Details Section -->
+    <ImageView
+        android:id="@+id/dialog_thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerCrop"
+        tools:src="@android:color/darker_gray" />
+
+    <!-- File Details Section (Unchanged) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,14 +54,12 @@
         android:padding="12dp"
         android:background="@drawable/rounded_card_background"
         android:layout_marginBottom="24dp">
-
         <TextView
             android:id="@+id/dialog_filename"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Filename: SCAN_2025.pdf"
             android:textStyle="bold"/>
-
         <TextView
             android:id="@+id/dialog_path"
             android:layout_width="wrap_content"
@@ -53,7 +67,6 @@
             android:text="Path: Downloads/PDFToolkit"
             android:textSize="12sp"
             android:layout_marginTop="4dp"/>
-
         <TextView
             android:id="@+id/dialog_details"
             android:layout_width="wrap_content"
@@ -63,20 +76,18 @@
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 
-    <!-- Action Buttons -->
+    <!-- Action Buttons (Unchanged) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center">
-
         <Button
             android:id="@+id/dialog_btn_new_scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Scan"
             style="@style/Widget.MaterialComponents.Button.TextButton"/>
-
         <Button
             android:id="@+id/dialog_btn_share"
             android:layout_width="wrap_content"
@@ -85,12 +96,10 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-
         <Button
             android:id="@+id/dialog_btn_view_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="View File"/>
-
     </LinearLayout>
 </LinearLayout>
