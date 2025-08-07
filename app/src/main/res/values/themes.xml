@@ -1,33 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!--
-    ===================================================================
-    THIS IS THE MISSING SPLASH SCREEN THEME THAT CAUSED THE CRASH
-    ===================================================================
-    -->
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <!-- The background color -->
-        <item name="windowSplashScreenBackground">@color/home_background</item>
-        
-        <!-- The static image you want to show -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_image</item>
-        
-        <!-- How long the static image stays on screen -->
-        <item name="windowSplashScreenAnimationDuration">1000</item> <!-- 1 second -->
-
-        <!-- The theme to use AFTER the splash screen is finished -->
-        <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
-    </style>
-
-    <!-- ... The rest of your themes are correct ... -->
-    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    <!-- This is the stable base theme. All activities and dialogs inherit from this. -->
+    <style name="Theme.PDFToolkit" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- This is the critical line that makes all icons visible -->
         <item name="colorControlNormal">@android:color/black</item>
     </style>
-    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit.NoActionBar"/>
+
+    <!-- Your HomeActivity uses this theme, and it correctly inherits from the base theme. -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.PDFToolkit">
+        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+        <item name="android:navigationBarColor">@color/soft_gray</item>
+    </style>
+
+    <!-- Your PdfViewerActivity uses this theme, and it correctly inherits. -->
+    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit">
+        <item name="android:statusBarColor">@color/home_background</item>
+        <item name="android:windowBackground">@color/home_background</item>
+    </style>
+
+    <!-- The rest of your styles are correct and unchanged -->
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
