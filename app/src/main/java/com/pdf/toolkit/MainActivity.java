@@ -1,6 +1,5 @@
 package com.pdf.toolkit;
 
-// Add all necessary imports for the final version
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,13 +23,16 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
+
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
 
     private PermissionRequest currentPermissionRequest;
-    private FirebaseRemoteConfig remoteConfig; // MODIFIED: Added Remote Config instance
+    private FirebaseRemoteConfig remoteConfig;
 
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -82,9 +84,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // MODIFIED: This activity now gets its own instance of Remote Config
         remoteConfig = FirebaseRemoteConfig.getInstance();
-
+        
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -173,12 +174,23 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void previewFile(String uriString) {
-            // ... this method is correct and unchanged ...
+            if (uriString == null || uriString.isEmpty()) {
+                Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                Uri pdfUri = Uri.parse(uriString);
+                Intent intent = new Intent(context, PdfViewerActivity.class);
+                intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(context, "Error opening PDF Viewer.", Toast.LENGTH_SHORT).show();
+            }
         }
 
         @JavascriptInterface
         public String getTtsToolUrl() {
-            // This now correctly gets the value from this activity's remoteConfig instance
             return remoteConfig.getString("tts_tool_url");
         }
 
@@ -202,7 +214,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
-        // ... this method is correct and unchanged ...
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDFToolkit");
+        }
+
+        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (uri == null) {
+            throw new Exception("Failed to create new MediaStore record.");
+        }
+        try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+            if (outputStream == null) {
+                throw new Exception("Failed to open output stream.");
+            }
+            outputStream.write(data);
+        }
+        return uri;
     }
 
     @Override
