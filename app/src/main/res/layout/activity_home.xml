@@ -1,38 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- The root is back to your original, stable ConstraintLayout -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/home_background"
+    
+    <!-- This attribute is crucial for edge-to-edge display -->
+    android:fitsSystemWindows="true"
+    
+    tools:context=".HomeActivity">
 
+    <!-- The Toolbar is now the top-level element inside the scrolling content -->
     <ScrollView
-        android:id="@+id/main_content_scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:visibility="invisible"
-        android:background="@color/home_background">
+        android:fillViewport="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:context=".HomeActivity">
+            android:layout_height="wrap_content">
 
-            <!--
-            ===================================================================
-            THIS IS THE FIX FOR THE LAYOUT
-            ===================================================================
-            - `android:fitsSystemWindows="true"` is added to the Toolbar include.
-            - This tells the Toolbar to add its own padding to avoid the status bar.
-              The rest of the layout does not need this, as it scrolls.
-            -->
             <include
                 android:id="@+id/toolbar"
                 layout="@layout/toolbar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:fitsSystemWindows="true"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -89,15 +81,4 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/splash_animation_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/home_background"
-        android:scaleType="centerInside"
-        app:lottie_rawRes="@raw/splash_animation"
-        app:lottie_autoPlay="false"
-        app:lottie_loop="false" />
-
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
