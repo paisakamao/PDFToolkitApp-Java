@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+   <!--
+    ===================================================================
+    THIS IS THE THEME THAT CAUSED THE CRASH
+    ===================================================================
+    -->
    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/home_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        
+        <!--
+        THIS IS THE FIX:
+        The path is now correctly pointing to the "@mipmap" folder instead of "@drawable".
+        This will resolve the build error.
+        -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+
         <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
     </style>
 
