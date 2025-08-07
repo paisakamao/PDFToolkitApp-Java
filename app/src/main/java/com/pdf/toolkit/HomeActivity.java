@@ -1,5 +1,6 @@
 package com.pdf.toolkit;
 
+// All necessary imports for the final version
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -41,6 +42,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.WindowCompat;
 
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -73,9 +76,14 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // --- THIS IS THE FINAL, SIMPLE, AND CORRECT SPLASH SCREEN LOGIC ---
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        SplashScreen.installSplashScreen(this);
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // --- ALL YOUR ORIGINAL SETUP CODE RUNS AS NORMAL ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF Toolkit");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
