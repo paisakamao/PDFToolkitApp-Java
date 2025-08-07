@@ -8,8 +8,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
-        /* Your CSS is perfect and unchanged */
-        :root { --color-bg-main: #f0f2f5; --color-bg-card: #ffffff; --color-primary-accent: #007BFF; --color-text-primary: #212529; --color-text-secondary: #6c757d; --color-border: #dee2e6; --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --border-radius: 16px; --shadow-sm: 0 2px 4px rgba(0,0,0,0.05); --shadow-md: 0 5px 15px rgba(0,0,0,0.1); }
+        :root {
+            --color-bg-main: #f0f2f5;
+            --color-bg-card: #ffffff;
+            --color-primary-accent: #007BFF;
+            --color-text-primary: #212529;
+            --color-text-secondary: #6c757d;
+            --color-border: #dee2e6;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 16px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 5px 15px rgba(0,0,0,0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: var(--font-family); background-color: var(--color-bg-main); color: var(--color-text-primary); line-height: 1.6; }
         .main-content { padding: 1.5rem; }
@@ -17,7 +27,20 @@
         .tool-card { background-color: var(--color-bg-card); border-radius: var(--border-radius); padding: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: var(--shadow-sm); cursor: pointer; text-align: center; aspect-ratio: 1 / 1; }
         .tool-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
         .tool-card .card-icon { font-size: 2.25rem; color: var(--color-primary-accent); margin-bottom: 0.75rem; }
-        .tool-card h2 { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); }
+        .tool-card h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            /*
+            ===================================================================
+            THIS IS THE CSS FIX FOR THE TEXT WRAPPING AND CARD SIZE ISSUES
+            ===================================================================
+            - `word-break: break-word;` forces long text like "Timer/Stopwatch" to wrap.
+            - This allows the grid to correctly calculate the size for all cards,
+              making them uniform squares.
+            */
+            word-break: break-word;
+        }
         .btn { display: inline-block; background-color: var(--color-primary-accent); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; cursor: pointer; text-align: center; transition: background-color 0.2s ease; }
         .btn:hover { background-color: #0056b3; }
         .btn-secondary { background-color: var(--color-text-secondary); }
@@ -65,7 +88,7 @@
             function downloadFile(data, fileName, fileType) { if (typeof Android !== 'undefined' && Android.saveBase64File) { const reader = new FileReader(); reader.onload = function() { const base64Data = reader.result.split(',')[1]; Android.saveBase64File(base64Data, fileName, fileType); }; reader.onerror = function() { showNotification('Error: Could not read the file for download.', 3000); }; reader.readAsDataURL(new Blob([data], { type: fileType })); } else { showNotification("Download function is only available in the Android app.", 4000); } }
 
             const tools = [ { id: "text-to-speech", title: "Text to Speech", desc: "Convert written text into speech using your device's voices.", icon: "fa-volume-up" }, { id: "speech-to-text", title: "Speech to Text", desc: "Transcribe your spoken words into text using your microphone.", icon: "fa-microphone-alt" }, { id: "qr-code-generator", title: "QR Code Generator", desc: "Create and download QR codes for URLs, text, and more.", icon: "fa-qrcode" }, { id: "password-generator", title: "Password Generator", desc: "Generate strong, secure, and customizable passwords.", icon: "fa-key" }, { id: "tip-calculator", title: "Tip Calculator", desc: "Split bills and calculate the tip amount per person.", icon: "fa-receipt" }, { id: "random-number", title: "Random Number", desc: "Generate random numbers within a specified range.", icon: "fa-random" }, { id: "dice-coin", title: "Dice & Coin", desc: "Simulate dice rolls and coin flips for random outcomes.", icon: "fa-dice-d6" }, { id: "word-counter", title: "Word Counter", desc: "Count words, characters, and sentences in your text.", icon: "fa-file-word" }, { id: "case-converter", title: "Case Converter", desc: "Convert text to UPPERCASE, lowercase, Title Case, etc.", icon: "fa-text-height" }, { id: "lorem-ipsum", title: "Lorem Ipsum", desc: "Generate placeholder text for your designs and mockups.", icon: "fa-paragraph" }, { id: "url-encoder", title: "URL Encoder", desc: "Encode or decode special characters in URLs.", icon: "fa-link" }, { id: "hash-generator", title: "Hash Generator", desc: "Create MD5, SHA-1, and SHA-256 hashes from text.", icon: "fa-fingerprint" }, { id: "markdown-html", title: "Markdown Preview", desc: "Write in Markdown and see a live HTML preview.", icon: "fa-markdown" }, { id: "html-playground", title: "HTML Playground", desc: "Write HTML and CSS and see a live preview of your code.", icon: "fa-code" }, { id: "json-formatter", title: "JSON Formatter", desc: "Validate, format, and beautify your JSON data.", icon: "fa-sitemap" }, { id: "unit-converter", title: "Unit Converter", desc: "Convert various units of length, weight, and temperature.", icon: "fa-ruler-combined" }, { id: "age-calculator", title: "Age Calculator", desc: "Calculate exact age from a date of birth.", icon: "fa-calendar-alt" }, { id: "bmi-calculator", title: "BMI Calculator", desc: "Calculate your Body Mass Index.", icon: "fa-weight" }, { id: "emi-calculator", title: "EMI Calculator", desc: "Calculate your Equated Monthly Installment for loans.", icon: "fa-percent" }, { id: "sip-calculator", title: "SIP Calculator", desc: "Estimate the returns on your Systematic Investment Plan (SIP).", icon: "fa-chart-line" }, { id: "base64-encoder", title: "Base64 Tools", desc: "Encode text to Base64 or decode from Base64 back to text.", icon: "fa-exchange-alt" }, { id: "timer-stopwatch", title: "Timer/Stopwatch", desc: "A versatile timer and stopwatch for all your timing needs.", icon: "fa-stopwatch" }, ];
-            
+
             // =================================================================
             // THIS IS THE COMPLETE, RESTORED TOOL IMPLEMENTATIONS OBJECT
             // =================================================================
@@ -95,7 +118,6 @@
             function renderToolCards() { toolsGrid.innerHTML = tools.sort((a,b) => a.title.localeCompare(b.title)).map(tool => ` <article class="tool-card" data-tool-id="${tool.id}"> <i class="fas ${tool.icon} card-icon"></i> <h2>${tool.title}</h2> </article> `).join(''); }
             let notificationTimeout; function showNotification(message, duration = 3000) { clearTimeout(notificationTimeout); notificationEl.textContent = message; notificationEl.style.opacity = '1'; notificationEl.style.bottom = '20px'; notificationTimeout = setTimeout(() => { notificationEl.style.opacity = '0'; notificationEl.style.bottom = '-100px'; }, duration); }
             
-            // --- FINAL, CORRECT openModal FUNCTION ---
             function openModal(toolId) {
                 const toolData = tools.find(t => t.id === toolId);
                 if (!toolData) return;
