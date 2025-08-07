@@ -9,6 +9,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
         /* Your CSS is perfect and unchanged */
+        :root { --color-bg-main: #f0f2f5; --color-bg-card: #ffffff; --color-primary-accent: #007BFF; --color-text-primary: #212529; --color-text-secondary: #6c757d; --color-border: #dee2e6; --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --border-radius: 16px; --shadow-sm: 0 2px 4px rgba(0,0,0,0.05); --shadow-md: 0 5px 15px rgba(0,0,0,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); background-color: var(--color-bg-main); color: var(--color-text-primary); line-height: 1.6; }
+        .main-content { padding: 1.5rem; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; }
+        .tool-card { background-color: var(--color-bg-card); border-radius: var(--border-radius); padding: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: var(--shadow-sm); cursor: pointer; text-align: center; aspect-ratio: 1 / 1; }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .tool-card .card-icon { font-size: 2.25rem; color: var(--color-primary-accent); margin-bottom: 0.75rem; }
+        .tool-card h2 { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); }
+        .btn { display: inline-block; background-color: var(--color-primary-accent); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; cursor: pointer; text-align: center; transition: background-color 0.2s ease; }
+        .btn:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: var(--color-text-secondary); }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .tool-input, .tool-select, .tool-textarea { width: 100%; padding: 10px; background-color: #fff; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text-primary); font-size: 1rem; margin-bottom: 1rem; }
+        .tool-input:focus, .tool-select:focus, .tool-textarea:focus { outline: none; border-color: var(--color-primary-accent); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
+        .tool-textarea { min-height: 120px; resize: vertical; }
+        .modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        .modal-container.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--color-bg-main); padding: 1.5rem; border-radius: var(--border-radius); box-shadow: var(--shadow-md); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-container.show .modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); }
+        .modal-header h2 { font-size: 1.5rem; color: var(--color-text-primary); }
+        .modal-description { font-size: 1rem; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+        .modal-close-btn { background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--color-text-secondary); }
+        .modal-close-btn:hover { color: var(--color-text-primary); }
+        .notification { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #333; color: white; padding: 12px 24px; border-radius: 8px; box-shadow: var(--shadow-md); z-index: 3000; transition: bottom 0.5s ease, opacity 0.5s ease; }
+        .playground-container { display: flex; height: 400px; gap: 1rem; flex-direction: column; }
+        .playground-editor { flex: 1; display: flex; flex-direction: column; }
+        .playground-editor textarea { flex: 1; resize: none; }
+        #preview-pane { flex: 1; border: 1px solid var(--color-border); background-color: #fff; }
+        .dice-coin-container { display: flex; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 1rem; }
+        .dice, .coin { font-size: 4rem; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; border: 2px solid var(--color-border); border-radius: var(--border-radius); }
+        @media (max-width: 600px) { .tools-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } .playground-container { height: 300px; } }
     </style>
 </head>
 <body>
@@ -35,7 +68,6 @@
             
             // =================================================================
             // THIS IS THE COMPLETE, RESTORED TOOL IMPLEMENTATIONS OBJECT
-            // THIS FIXES THE "WORD COUNT" and other broken modals.
             // =================================================================
             const toolImplementations = {
                 'text-to-speech': () => ({ content: `<textarea id="tts-text" class="tool-textarea" placeholder="Enter text to speak..."></textarea><label for="tts-voice">Voice:</label><select id="tts-voice" class="tool-select"></select><div class="tool-controls"><button id="tts-speak-btn" class="btn">Speak</button><button id="tts-stop-btn" class="btn btn-secondary">Stop</button></div><div id="tts-status" class="result-box mt-1" style="color:red;"></div>`, onMount: () => { const synth = window.speechSynthesis; const textInput = document.getElementById('tts-text'); const voiceSelect = document.getElementById('tts-voice'); const speakBtn = document.getElementById('tts-speak-btn'); const stopBtn = document.getElementById('tts-stop-btn'); const statusBox = document.getElementById('tts-status'); let voices = []; function populateVoiceList() { voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name)); voiceSelect.innerHTML = voices.map((voice, i) => `<option value="${i}" ${voice.default ? 'selected' : ''}>${voice.name} (${voice.lang})</option>`).join(''); if (voices.length === 0) { statusBox.textContent = "No Text-to-Speech voices were found on this device. Please check your phone's settings."; speakBtn.disabled = true; voiceSelect.disabled = true; } else { statusBox.textContent = ""; speakBtn.disabled = false; voiceSelect.disabled = false; } } if (!synth) { statusBox.textContent = "Text-to-Speech is not supported in this browser/WebView."; speakBtn.disabled = true; stopBtn.disabled = true; return; } populateVoiceList(); if (synth.onvoiceschanged !== undefined) { synth.onvoiceschanged = populateVoiceList; } else { setTimeout(populateVoiceList, 500); } speakBtn.addEventListener('click', () => { if (synth.speaking) { showNotification("Already speaking.", 3000); return; } if (textInput.value.trim() !== '') { const utterThis = new SpeechSynthesisUtterance(textInput.value); utterThis.voice = voices[voiceSelect.value]; synth.speak(utterThis); } else { showNotification("Please enter text to speak.", 3000); } }); stopBtn.addEventListener('click', () => synth.cancel()); } }),
@@ -63,9 +95,7 @@
             function renderToolCards() { toolsGrid.innerHTML = tools.sort((a,b) => a.title.localeCompare(b.title)).map(tool => ` <article class="tool-card" data-tool-id="${tool.id}"> <i class="fas ${tool.icon} card-icon"></i> <h2>${tool.title}</h2> </article> `).join(''); }
             let notificationTimeout; function showNotification(message, duration = 3000) { clearTimeout(notificationTimeout); notificationEl.textContent = message; notificationEl.style.opacity = '1'; notificationEl.style.bottom = '20px'; notificationTimeout = setTimeout(() => { notificationEl.style.opacity = '0'; notificationEl.style.bottom = '-100px'; }, duration); }
             
-            // =================================================================
-            // FINAL, CORRECT openModal FUNCTION
-            // =================================================================
+            // --- FINAL, CORRECT openModal FUNCTION ---
             function openModal(toolId) {
                 const toolData = tools.find(t => t.id === toolId);
                 if (!toolData) return;
