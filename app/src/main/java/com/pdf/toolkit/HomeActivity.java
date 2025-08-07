@@ -293,9 +293,11 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
+        // Inflate the custom layout
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
+        // Find all the views
         ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
@@ -304,6 +306,7 @@ public class HomeActivity extends AppCompatActivity {
         Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
         Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
 
+        // Load the thumbnail image
         if (thumbnailUri != null) {
             ivThumbnail.setImageURI(thumbnailUri);
             ivThumbnail.setVisibility(View.VISIBLE);
@@ -311,6 +314,7 @@ public class HomeActivity extends AppCompatActivity {
             ivThumbnail.setVisibility(View.GONE);
         }
 
+        // Get file size
         String fileSize = "Unknown";
         try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -324,18 +328,21 @@ public class HomeActivity extends AppCompatActivity {
             Log.e(TAG, "Could not get file size.", e);
         }
 
+        // Populate the views (Filename is now removed)
         tvPath.setText("Path: Downloads/PDFToolkit");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
+        // Create the AlertDialog
         AlertDialog dialog = new AlertDialog.Builder(this)
             .setView(dialogView)
-            .setCancelable(true)
+            .setCancelable(true) // MODIFIED: Allows back button to close
             .create();
             
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
+        // Set button actions
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
         btnViewFile.setOnClickListener(v -> {
@@ -353,12 +360,14 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
         });
         
+        // Show the toast message instead of the description
         Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
 
         dialog.show();
 
+        // This must be called AFTER dialog.show() to get the root view.
         dialog.getWindow().getDecorView().post(() -> {
-            ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
+            FrameLayout root = (FrameLayout) dialog.getWindow().getDecorView().findViewById(android.R.id.content);
             ImageView doneIcon = new ImageView(this);
             doneIcon.setImageResource(R.drawable.ic_done);
             doneIcon.setElevation(20f);
@@ -376,7 +385,7 @@ public class HomeActivity extends AppCompatActivity {
             });
         });
     }
-
+}
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
     private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { try { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } catch (Exception e) { Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION); startActivity(intent); } } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE); } }
