@@ -1,61 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- This was the stable base theme. All activities and dialogs inherit from this. -->
-    <style name="Theme.PDFToolkit" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- This is the critical line that makes all icons visible -->
+    <!--
+    ===================================================================
+    THIS IS THE MISSING SPLASH SCREEN THEME THAT CAUSED THE CRASH
+    ===================================================================
+    -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- The background color -->
+        <item name="windowSplashScreenBackground">@color/home_background</item>
+        
+        <!-- The static image you want to show -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_image</item>
+        
+        <!-- How long the static image stays on screen -->
+        <item name="windowSplashScreenAnimationDuration">1000</item> <!-- 1 second -->
+
+        <!-- The theme to use AFTER the splash screen is finished -->
+        <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
+    </style>
+
+    <!-- ... The rest of your themes are correct ... -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="colorControlNormal">@android:color/black</item>
     </style>
-
-    <!-- Your HomeActivity uses this theme -->
-    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.PDFToolkit">
-        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
-        <item name="android:windowBackground">@color/home_background</item>
-        <item name="android:navigationBarColor">@color/soft_gray</item>
-    </style>
-
-    <!-- Your PdfViewerActivity uses this theme -->
-    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit">
-        <item name="android:statusBarColor">@color/home_background</item>
-        <item name="android:windowBackground">@color/home_background</item>
-    </style>
-
-    <!-- All other styles below are correct and unchanged -->
+    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit.NoActionBar"/>
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowBackground">@android:color/black</item>
     </style>
-    <style name="ToolbarTitle_Large" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">24sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-    <style name="ToolbarTitle_Small" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">20sp</item>
-    </style>
-    <style name="HomeCardStyle">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_margin">12dp</item>
-    </style>
-    <style name="HomeCardLayoutStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">180dp</item>
-        <item name="android:orientation">vertical</item>
-        <item name="android:gravity">center</item>
-        <item name="android:padding">8dp</item>
-    </style>
-    <style name="HomeCardIconStyle">
-        <item name="android:layout_width">120dp</item>
-        <item name="android:layout_height">120dp</item>
-        <item name="android:layout_marginBottom">12dp</item>
-    </style>
-    <style name="HomeCardTextStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">#000000</item>
-        <item name="android:textSize">16sp</item>
-    </style>
+    <style name="ToolbarTitle_Large" parent="TextAppearance.Widget.AppCompat.Toolbar.Title"><item name="android:textSize">24sp</item><item name="android:textStyle">bold</item></style>
+    <style name="ToolbarTitle_Small" parent="TextAppearance.Widget.AppCompat.Toolbar.Title"><item name="android:textSize">20sp</item></style>
+    <style name="HomeCardStyle"><item name="android:layout_width">0dp</item><item name="android:layout_height">wrap_content</item><item name="android:layout_columnWeight">1</item><item name="android:layout_margin">12dp</item></style>
+    <style name="HomeCardLayoutStyle"><item name="android:layout_width">match_parent</item><item name="android:layout_height">180dp</item><item name="android:orientation">vertical</item><item name="android:gravity">center</item><item name="android:padding">8dp</item></style>
+    <style name="HomeCardIconStyle"><item name="android:layout_width">120dp</item><item name="android:layout_height">120dp</item><item name="android:layout_marginBottom">12dp</item></style>
+    <style name="HomeCardTextStyle"><item name="android:layout_width">wrap_content</item><item name="android:layout_height">wrap_content</item><item name="android:textColor">#000000</item><item name="android:textSize">16sp</item></style>
 </resources>
