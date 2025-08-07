@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    
+    <!-- Using a professional blue color. You can change this to a color from your colors.xml -->
+    <solid android:color="#007BFF" />
+    
+    <!-- This creates the rounded "bubble" effect -->
+    <corners android:radius="100dp" />
+
+</shape>
