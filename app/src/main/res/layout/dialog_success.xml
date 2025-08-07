@@ -36,7 +36,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/dialog_title"
-            app:tint="@drawable/dialog_button_background"/>
+            app:tint="@color/black"/>
 
         <ImageButton
             android:id="@+id/dialog_btn_share"
@@ -47,7 +47,7 @@
             app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/dialog_title"
-            app:tint="@drawable/dialog_button_background"/>
+            app:tint="@color/black"/>
 
         <ImageView
             android:id="@+id/dialog_thumbnail"
