@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-THE ROOT IS NOW A ScrollView. This is the definitive fix for the overlap issue.
-`fillViewport="true"` ensures it behaves correctly on all screen sizes.
--->
+ <FrameLayout
+    android:id="@+id/ad_container"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    app:layout_constraintTop_toBottomOf="@id/card_grid"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/rounded_card_background"
+    android:elevation="6dp"
+    android:clipToOutline="true">
+     
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -88,3 +99,15 @@ THE ROOT IS NOW A ScrollView. This is the definitive fix for the overlap issue.
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
+
+            <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/splash_animation_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/home_background"
+        android:scaleType="centerInside"
+        app:lottie_rawRes="@raw/splash_animation"
+        app:lottie_autoPlay="false"
+        app:lottie_loop="false" />
+
+ </FrameLayout>
