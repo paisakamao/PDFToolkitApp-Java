@@ -14,12 +14,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -294,7 +297,6 @@ public class HomeActivity extends AppCompatActivity {
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
         ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
-        TextView tvFileName = dialogView.findViewById(R.id.dialog_filename);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
         ImageButton btnClose = dialogView.findViewById(R.id.dialog_btn_close);
@@ -322,7 +324,6 @@ public class HomeActivity extends AppCompatActivity {
             Log.e(TAG, "Could not get file size.", e);
         }
 
-        tvFileName.setText("Filename: " + fileName);
         tvPath.setText("Path: Downloads/PDFToolkit");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
@@ -331,18 +332,12 @@ public class HomeActivity extends AppCompatActivity {
             .setCancelable(false)
             .create();
             
-        // This is required for the dialog background to be transparent and show the CardView's corners
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
-
-        btnNewScan.setOnClickListener(v -> {
-            dialog.dismiss();
-            startGoogleScanner();
-        });
-
+        btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
         btnViewFile.setOnClickListener(v -> {
             dialog.dismiss();
             Intent intent = new Intent(HomeActivity.this, PdfViewerActivity.class);
@@ -350,7 +345,6 @@ public class HomeActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
         });
-
         btnShare.setOnClickListener(v -> {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("application/pdf");
@@ -363,21 +357,24 @@ public class HomeActivity extends AppCompatActivity {
 
         dialog.show();
 
-        // This must be called AFTER dialog.show() to get the root view
-        FrameLayout root = (FrameLayout) dialog.getWindow().getDecorView();
-        ImageView doneIcon = new ImageView(this);
-        doneIcon.setImageResource(R.drawable.ic_done);
-        doneIcon.setElevation(20f);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
-        root.addView(doneIcon, params);
-
-        doneIcon.setAlpha(1.0f);
-        doneIcon.animate()
-            .alpha(0.0f)
-            .setDuration(1200)
-            .setStartDelay(300)
-            .withEndAction(() -> root.removeView(doneIcon))
-            .start();
+        dialog.getWindow().getDecorView().post(() -> {
+            ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
+            ImageView doneIcon = new ImageView(this);
+            doneIcon.setImageResource(R.drawable.ic_done);
+            doneIcon.setElevation(20f);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
+            
+            new Handler(Looper.getMainLooper()).post(() -> {
+                root.addView(doneIcon, params);
+                doneIcon.setAlpha(1.0f);
+                doneIcon.animate()
+                    .alpha(0.0f)
+                    .setDuration(1200)
+                    .setStartDelay(300)
+                    .withEndAction(() -> root.removeView(doneIcon))
+                    .start();
+            });
+        });
     }
 
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
