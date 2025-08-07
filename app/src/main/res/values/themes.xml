@@ -7,7 +7,7 @@
         <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
     </style>
 
-    <!--
+    <!-
     ===================================================================
     THIS IS THE CORRECTED BASE THEME
     ===================================================================
