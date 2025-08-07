@@ -46,7 +46,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.WindowCompat;
 
-import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
@@ -78,41 +77,22 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // --- THIS IS THE NEW, CORRECT SPLASH SCREEN LOGIC ---
+        // --- THIS IS THE FINAL, SIMPLE, AND CORRECT SPLASH SCREEN LOGIC ---
 
         // 1. Go edge-to-edge. MUST be called before super.onCreate().
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
-        // 2. Install the splash screen.
-        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
-
+        // 2. Install the splash screen. The system will read your theme,
+        //    show your static image, and handle the timing automatically.
+        SplashScreen.installSplashScreen(this);
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        final LottieAnimationView lottieView = findViewById(R.id.splash_animation_view);
-        final View content = findViewById(R.id.main_content_scrollview);
+        // --- ALL THE LOTTIE AND ANIMATION LOGIC IS GONE ---
+        // The system handles everything now. It's much cleaner and faster.
 
-        // 3. Keep the splash screen visible for a short, fixed time.
-        splashScreen.setKeepOnScreenCondition(() -> true);
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            splashScreen.setKeepOnScreenCondition(() -> false);
-        }, 1500); // 1.5 second delay
-
-        // 4. Play the Lottie animation immediately.
-        lottieView.playAnimation();
-
-        // 5. Set a listener for when the animation finishes.
-        lottieView.addAnimatorListener(new Animator.AnimatorListener() {
-            @Override public void onAnimationStart(@NonNull Animator animation) {}
-            @Override public void onAnimationEnd(@NonNull Animator animation) {
-                lottieView.setVisibility(View.GONE);
-                content.setVisibility(View.VISIBLE);
-            }
-            @Override public void onAnimationCancel(@NonNull Animator animation) {}
-            @Override public void onAnimationRepeat(@NonNull Animator animation) {}
-        });
-
-        // --- ALL YOUR ORIGINAL SETUP CODE NOW RUNS IN THE BACKGROUND ---
+        // --- ALL YOUR ORIGINAL SETUP CODE RUNS AS NORMAL ---
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF Toolkit");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
