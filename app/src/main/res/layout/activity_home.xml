@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
 
     <ScrollView
         android:id="@+id/main_content_scrollview"
@@ -21,9 +19,20 @@
             android:layout_height="wrap_content"
             tools:context=".HomeActivity">
 
+            <!--
+            ===================================================================
+            THIS IS THE FIX FOR THE LAYOUT
+            ===================================================================
+            - `android:fitsSystemWindows="true"` is added to the Toolbar include.
+            - This tells the Toolbar to add its own padding to avoid the status bar.
+              The rest of the layout does not need this, as it scrolls.
+            -->
             <include
                 android:id="@+id/toolbar"
                 layout="@layout/toolbar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fitsSystemWindows="true"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -80,7 +89,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/splash_animation_view"
