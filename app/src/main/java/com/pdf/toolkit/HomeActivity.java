@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -225,10 +226,6 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    // =================================================================
-    // THIS METHOD IS REPLACED
-    // It now passes all necessary info to the new dialog.
-    // =================================================================
     private void saveAsPdfAndShowDialog(java.util.List<GmsDocumentScanningResult.Page> pages) {
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Creating PDF...");
@@ -292,10 +289,6 @@ public class HomeActivity extends AppCompatActivity {
         }).start();
     }
 
-    // =================================================================
-    // THIS METHOD IS COMPLETELY REPLACED
-    // It now uses the custom dialog_success.xml layout with the thumbnail.
-    // =================================================================
     private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
@@ -304,8 +297,9 @@ public class HomeActivity extends AppCompatActivity {
         TextView tvFileName = dialogView.findViewById(R.id.dialog_filename);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
+        ImageButton btnClose = dialogView.findViewById(R.id.dialog_btn_close);
+        ImageButton btnShare = dialogView.findViewById(R.id.dialog_btn_share);
         Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
-        Button btnShare = dialogView.findViewById(R.id.dialog_btn_share);
         Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
 
         if (thumbnailUri != null) {
@@ -336,6 +330,13 @@ public class HomeActivity extends AppCompatActivity {
             .setView(dialogView)
             .setCancelable(false)
             .create();
+            
+        // This is required for the dialog background to be transparent and show the CardView's corners
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
 
         btnNewScan.setOnClickListener(v -> {
             dialog.dismiss();
@@ -358,7 +359,25 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
         });
         
+        Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
+
         dialog.show();
+
+        // This must be called AFTER dialog.show() to get the root view
+        FrameLayout root = (FrameLayout) dialog.getWindow().getDecorView();
+        ImageView doneIcon = new ImageView(this);
+        doneIcon.setImageResource(R.drawable.ic_done);
+        doneIcon.setElevation(20f);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
+        root.addView(doneIcon, params);
+
+        doneIcon.setAlpha(1.0f);
+        doneIcon.animate()
+            .alpha(0.0f)
+            .setDuration(1200)
+            .setStartDelay(300)
+            .withEndAction(() -> root.removeView(doneIcon))
+            .start();
     }
 
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
