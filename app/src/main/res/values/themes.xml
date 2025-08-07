@@ -1,36 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-   <!--
-    ===================================================================
-    THIS IS THE CORRECTED SPLASH SCREEN THEME
-    ===================================================================
-    -->
    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/home_background</item>
-        
-        <!--
-        THIS IS THE FIX:
-        Instead of the mipmap icon, we now point to our new transparent drawable.
-        This will hide the initial static icon completely.
-        -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/transparent_drawable</item>
-
         <item name="postSplashScreenTheme">@style/Theme.PDFToolkit.NoActionBar</item>
     </style>
 
-    <!-- ... The rest of your themes are correct and do not need to be changed ... -->
-    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:statusBarColor" tools:targetApi="l">@color/home_background</item>
-        <item name="android:windowBackground">@color/home_background</item>
-        <item name="android:navigationBarColor">@color/soft_gray</item>
+    <!--
+    ===================================================================
+    THIS IS THE CORRECTED BASE THEME
+    ===================================================================
+    - It inherits from a modern Material3 theme for proper edge-to-edge support.
+    - Status and navigation bars are made transparent.
+    -->
+    <style name="Theme.PDFToolkit.NoActionBar" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item> <!-- Assumes a light background color -->
         <item name="colorControlNormal">@android:color/black</item>
     </style>
-    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/home_background</item>
-        <item name="android:windowBackground">@color/home_background</item>
-        <item name="colorControlNormal">@android:color/black</item>
+
+    <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.PDFToolkit.NoActionBar">
+        <!-- This now correctly inherits all the necessary attributes -->
     </style>
+    
+    <!-- All other styles below are correct and unchanged -->
     <style name="Theme.PDFToolkit.Scanner" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -68,5 +63,4 @@
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">16sp</item>
     </style>
-
 </resources>
