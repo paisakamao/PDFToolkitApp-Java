@@ -21,14 +21,14 @@
 
         <!--
         ===================================================================
-        THIS IS THE FIX: The theme is now correctly pointing to the
-        splash screen theme that we just re-added to themes.xml
+        THIS IS THE FIX: The theme is now correctly pointing back to the
+        stable, non-splash screen theme.
         ===================================================================
         -->
         <activity
             android:name=".HomeActivity"
             android:exported="true"
-            android:theme="@style/Theme.App.Starting">
+            android:theme="@style/Theme.PDFToolkit.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -38,7 +38,7 @@
         <!-- ... All your other activities and providers are correct ... -->
         <activity android:name=".MainActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar" />
         <activity android:name=".AllFilesActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-        <activity android:name=".PdfViewerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.WithToolbar" />            
+        <activity android:name=".PdfViewerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.WithToolbar" />
         <activity android:name=".ScannerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.Scanner" />
         <provider android:name="androidx.core.content.FileProvider" android:authorities="com.pdf.toolkit.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" /></provider>
         <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.provider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" /></provider>
