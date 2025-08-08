@@ -296,88 +296,43 @@ public class HomeActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.dialog_success, null);
+private void showSuccessDialog() {
+    // Inflate dialog view
+    LayoutInflater inflater = getLayoutInflater();
+    View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
-        ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
-        TextView tvPath = dialogView.findViewById(R.id.dialog_path);
-        TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
-        ImageButton btnClose = dialogView.findViewById(R.id.dialog_btn_close);
-        ImageButton btnShare = dialogView.findViewById(R.id.dialog_btn_share);
-        Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
-        Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setView(dialogView);
+    builder.setCancelable(false);
 
-        if (thumbnailUri != null) {
-            ivThumbnail.setImageURI(thumbnailUri);
-            ivThumbnail.setVisibility(View.VISIBLE);
-        } else {
-            ivThumbnail.setVisibility(View.GONE);
-        }
+    AlertDialog dialog = builder.create();
 
-        String fileSize = "Unknown";
-        try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                if (!cursor.isNull(sizeIndex)) {
-                    long size = cursor.getLong(sizeIndex);
-                    fileSize = android.text.format.Formatter.formatShortFileSize(this, size);
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Could not get file size.", e);
-        }
+    // Find views
+    TextView messageText = dialogView.findViewById(R.id.dialog_message);
+    ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon);
+    Button okButton = dialogView.findViewById(R.id.dialog_ok);
 
-        tvPath.setText("Path: Downloads/PDFToolkit");
-        tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
+    // Set message
+    messageText.setText("Task completed successfully!");
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create();
-            
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
+    // Show GIF before showing dialog
+    doneIcon.setVisibility(View.VISIBLE);
+    Glide.with(this)
+            .asGif()
+            .load(R.raw.ic_done)
+            .into(doneIcon);
 
-        btnClose.setOnClickListener(v -> dialog.dismiss());
-        btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
-        btnViewFile.setOnClickListener(v -> {
-            dialog.dismiss();
-            Intent intent = new Intent(HomeActivity.this, PdfViewerActivity.class);
-            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(intent);
-        });
-        btnShare.setOnClickListener(v -> {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("application/pdf");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
-        });
-        
-        Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
+    // OK button closes dialog
+    okButton.setOnClickListener(v -> dialog.dismiss());
 
-        dialog.show();
+    dialog.show();
 
-            ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon);
-            
-            // Make it visible
-            doneIcon.setVisibility(View.VISIBLE);
-            
-            // Load the GIF with Glide
-            Glide.with(this)
-                 .asGif()
-                 .load(R.drawable.ic_done) // if it's in drawable folder
-                 .into(doneIcon);
-            
-            // Optional: Hide after animation delay
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                doneIcon.setVisibility(View.GONE);
-            }, 1500); // adjust time to match GIF duration
+    // Hide the GIF after 1.5 seconds
+    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        doneIcon.setVisibility(View.GONE);
+    }, 1500);
+}
 
-    }
 
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
