@@ -39,5 +39,8 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.1.0')
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.android.gms:play-services-ads:23.1.0'
-implementation 'androidx.browser:browser:1.8.0' // Or the latest version
+    implementation 'androidx.browser:browser:1.8.0' // Or the latest version
+    // This is the library that will correctly load and play your GIF
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 }
