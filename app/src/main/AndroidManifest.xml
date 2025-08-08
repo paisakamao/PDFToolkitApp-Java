@@ -17,16 +17,11 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
-        <!--
-        ===================================================================
-        THIS IS THE FIX: The theme is now correctly pointing back to the
-        stable, non-splash screen theme.
-        ===================================================================
-        -->
+        <!-- New SplashActivity as launcher -->
         <activity
-            android:name=".HomeActivity"
+            android:name=".SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.PDFToolkit.NoActionBar">
             <intent-filter>
@@ -35,13 +30,43 @@
             </intent-filter>
         </activity>
 
-        <!-- ... All your other activities and providers are correct ... -->
-        <activity android:name=".MainActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-        <activity android:name=".AllFilesActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-        <activity android:name=".PdfViewerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.WithToolbar" />
-        <activity android:name=".ScannerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.Scanner" />
-        <provider android:name="androidx.core.content.FileProvider" android:authorities="com.pdf.toolkit.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" /></provider>
-        <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.provider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" /></provider>
-    
+        <!-- HomeActivity is now a normal activity -->
+        <activity
+            android:name=".HomeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+
+        <activity android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+
+        <activity android:name=".AllFilesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+
+        <activity android:name=".PdfViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.WithToolbar" />
+
+        <activity android:name=".ScannerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PDFToolkit.Scanner" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.pdf.toolkit.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 </manifest>
