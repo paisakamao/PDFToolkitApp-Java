@@ -18,7 +18,128 @@
         <TextView
             android:id="@+id/dialog_title"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header: Title on the left, Share and Close on the right -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/dialog_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Success"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"/>
+
+            <ImageButton
+                android:id="@+id/dialog_btn_close"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_close"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:tint="@color/black"/>
+
+            <ImageButton
+                android:id="@+id/dialog_btn_share"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_share"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_toStartOf="@id/dialog_btn_close"
+                android:layout_centerVertical="true"
+                app:tint="@color/black"/>
+        </RelativeLayout>
+
+        <!-- Thumbnail Preview -->
+        <ImageView
+            android:id="@+id/dialog_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            tools:src="@android:color/darker_gray" />
+        
+        <!-- MODIFIED: File Details Section -->
+        <LinearLayout
+            android:id="@+id/dialog_details_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_card_background">
+            
+            <TextView
+                android:id="@+id/dialog_path"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Path: Downloads/PDFToolkit"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/dialog_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Pages: 3 | Size: 1.2 MB"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+        
+        <!-- MODIFIED: Bottom Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/dialog_btn_new_scan"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="New Scan"
+                android:textColor="@android:color/white"
+                android:background="@drawable/dialog_button_background"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/dialog_btn_view_file"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="View File"
+                android:textColor="@android:color/white"
+                android:background="@drawable/dialog_button_background"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
             android:text="Success"
             android:textColor="@android:color/black"
             android:textSize="22sp"
