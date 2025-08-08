@@ -1,137 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardBackgroundColor="@color/card_background"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="8dp"
-    app:cardUseCompatPadding="true">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="24dp">
-
-        <TextView
-            android:id="@+id/dialog_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Success"
-            android:textColor="@android:color/black"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/dialog_btn_share"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!--
-        ===================================================================
-        THIS IS THE FIX FOR THE CLOSE BUTTON
-        ===================================================================
-        - `android:src` now correctly points to your @drawable/ic_close.png
-        - The `app:tint` attribute has been completely REMOVED.
-        -->
-        <ImageButton
-            android:id="@+id/dialog_btn_close"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_close"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/dialog_title" />
-
-        <!--
-        ===================================================================
-        THIS IS THE FIX FOR THE SHARE BUTTON
-        ===================================================================
-        - `android:src` now correctly points to your @drawable/ic_share.png
-        - The `app:tint` attribute has been completely REMOVED.
-        -->
-        <ImageButton
-            android:id="@+id/dialog_btn_share"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_share"
-            app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/dialog_title" />
-
-        <ImageView
-            android:id="@+id/dialog_thumbnail"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginTop="16dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dialog_title"
-            tools:src="@android:color/darker_gray" />
-
-        <LinearLayout
-            android:id="@+id/dialog_details_container"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_card_background"
-            android:orientation="vertical"
-            android:padding="12dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dialog_thumbnail">
-
-            <TextView
-                android:id="@+id/dialog_path"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                tools:text="Path: Downloads/PDFToolkit" />
-
-            <TextView
-                android:id="@+id/dialog_details"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
-                tools:text="Pages: 3 | Size: 1.2 MB" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dialog_details_container">
-
-            <Button
-                android:id="@+id/dialog_btn_new_scan"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/dialog_button_background"
-                android:text="New Scan"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/dialog_btn_view_file"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/dialog_button_background"
-                android:text="View File"
-                android:textColor="@android:color/white"
-                android:textSize="12sp" />
-        </LinearLayout>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp" app:cardUseCompatPadding="true">
+<androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp">
+<TextView android:id="@+id/dialog_title" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Success" android:textColor="@android:color/black" android:textSize="22sp" android:textStyle="bold" app:layout_constraintEnd_toStartOf="@+id/dialog_btn_share" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="@+id/dialog_btn_share"/>
+<ImageButton android:id="@+id/dialog_btn_close" android:layout_width="48dp" android:layout_height="48dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_close" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
+<ImageButton android:id="@+id/dialog_btn_share" android:layout_width="48dp" android:layout_height="48dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_share" app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close" app:layout_constraintTop_toTopOf="parent"/>
+<ImageView android:id="@+id/dialog_thumbnail" android:layout_width="0dp" android:layout_height="200dp" android:layout_marginTop="16dp" android:scaleType="centerCrop" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_title" tools:src="@android:color/darker_gray"/>
+<LinearLayout android:id="@+id/dialog_details_container" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:background="@drawable/rounded_card_background" android:orientation="vertical" android:padding="12dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_thumbnail">
+<TextView android:id="@+id/dialog_path" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" tools:text="Path: Downloads/PDFToolkit"/>
+<TextView android:id="@+id/dialog_details" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textSize="12sp" tools:text="Pages: 3 | Size: 1.2 MB"/>
+</LinearLayout>
+<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:orientation="horizontal" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_details_container">
+<Button android:id="@+id/dialog_btn_new_scan" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:layout_weight="1" android:background="@drawable/dialog_button_background" android:text="New Scan" android:textColor="@android:color/white" android:textSize="12sp"/>
+<Button android:id="@+id/dialog_btn_view_file" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:background="@drawable/dialog_button_background" android:text="View File" android:textColor="@android:color/white" android:textSize="12sp"/>
+</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
