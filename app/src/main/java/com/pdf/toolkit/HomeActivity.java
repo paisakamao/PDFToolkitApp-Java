@@ -296,43 +296,104 @@ public class HomeActivity extends AppCompatActivity {
         }).start();
     }
 
-private void showSuccessDialog() {
-    // Inflate dialog view
-    LayoutInflater inflater = getLayoutInflater();
+private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
+    LayoutInflater inflater = LayoutInflater.from(this);
     View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setView(dialogView);
-    builder.setCancelable(false);
+    ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
+    TextView tvPath = dialogView.findViewById(R.id.dialog_path);
+    TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
+    ImageButton btnClose = dialogView.findViewById(R.id.dialog_btn_close);
+    ImageButton btnShare = dialogView.findViewById(R.id.dialog_btn_share);
+    Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
+    Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
+    ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon); // GIF ImageView
 
-    AlertDialog dialog = builder.create();
+    // Thumbnail
+    if (thumbnailUri != null) {
+        ivThumbnail.setImageURI(thumbnailUri);
+        ivThumbnail.setVisibility(View.VISIBLE);
+    } else {
+        ivThumbnail.setVisibility(View.GONE);
+    }
 
-    // Find views
-    TextView messageText = dialogView.findViewById(R.id.dialog_message);
-    ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon);
-    Button okButton = dialogView.findViewById(R.id.dialog_ok);
+    // File size lookup (safe)
+    String fileSize = "Unknown";
+    try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
+        if (cursor != null && cursor.moveToFirst()) {
+            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+            if (sizeIndex != -1 && !cursor.isNull(sizeIndex)) {
+                long size = cursor.getLong(sizeIndex);
+                fileSize = android.text.format.Formatter.formatShortFileSize(this, size);
+            }
+        }
+    } catch (Exception e) {
+        Log.e(TAG, "Could not get file size.", e);
+    }
 
-    // Set message
-    messageText.setText("Task completed successfully!");
+    tvPath.setText("Path: Downloads/PDFToolkit");
+    tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
-    // Show GIF before showing dialog
-    doneIcon.setVisibility(View.VISIBLE);
-    Glide.with(this)
-            .asGif()
-            .load(R.raw.ic_done)
-            .into(doneIcon);
+    // Build dialog
+    AlertDialog dialog = new AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create();
 
-    // OK button closes dialog
-    okButton.setOnClickListener(v -> dialog.dismiss());
+    if (dialog.getWindow() != null) {
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+    }
 
+    // Button listeners (same behaviour as before)
+    btnClose.setOnClickListener(v -> dialog.dismiss());
+    btnNewScan.setOnClickListener(v -> {
+        dialog.dismiss();
+        startGoogleScanner();
+    });
+    btnViewFile.setOnClickListener(v -> {
+        dialog.dismiss();
+        Intent intent = new Intent(HomeActivity.this, PdfViewerActivity.class);
+        intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(intent);
+    });
+    btnShare.setOnClickListener(v -> {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("application/pdf");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
+    });
+
+    // Show toast
+    Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
+
+    // === GIF: load from res/raw BEFORE showing dialog ===
+    // Ensure you placed ic_done.gif into res/raw/ic_done.gif
+    try {
+        // Make visible (in case it's "gone" in XML)
+        doneIcon.setVisibility(View.VISIBLE);
+
+        Glide.with(this)
+                .asGif()
+                .load(R.raw.ic_done) // raw resource
+                .into(doneIcon);
+    } catch (Exception e) {
+        // If GIF fails to load, log but still show dialog
+        Log.e(TAG, "Failed to load ic_done.gif with Glide", e);
+        // Optionally fallback to a static drawable:
+        // doneIcon.setImageResource(R.drawable.ic_done_static);
+        doneIcon.setVisibility(View.GONE);
+    }
+
+    // Show dialog
     dialog.show();
 
-    // Hide the GIF after 1.5 seconds
+    // Auto-hide GIF after 1500ms (so it doesn't loop while dialog stays open).
     new Handler(Looper.getMainLooper()).postDelayed(() -> {
-        doneIcon.setVisibility(View.GONE);
+        if (doneIcon != null) doneIcon.setVisibility(View.GONE);
     }, 1500);
 }
-
 
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
