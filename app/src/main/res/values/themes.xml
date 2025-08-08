@@ -11,6 +11,15 @@
     THIS IS THE UPDATED STYLE
     ===================================================================
      -->
+
+    <style name="Theme.PDFToolkit.SuccessDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <!-- This makes the icon buttons (Share, Close) black -->
+        <item name="colorControlNormal">@android:color/black</item>
+        <!-- This sets the blue color for the main action buttons -->
+        <item name="colorPrimary">#007BFF</item>
+    </style>
+
+
 <style name="Theme.PDFToolkit.WithToolbar" parent="Theme.MaterialComponents.Light.NoActionBar">
 <item name="android:statusBarColor">@color/home_background</item>
 <item name="android:windowBackground">@color/home_background</item>
