@@ -21,14 +21,14 @@
 
         <!-- New SplashActivity as launcher -->
         <activity
-            android:name=".SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+    android:name=".SplashActivity"
+    android:exported="true"
+    android:theme="@style/Theme.PDFToolkit.FullScreen">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+</activity>
 
         <!-- HomeActivity is now a normal activity -->
         <activity
