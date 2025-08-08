@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Build;
@@ -42,9 +44,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide; // NEW, IMPORTANT IMPORT
-import com.bumptech.glide.request.target.Target;
-
+import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
@@ -299,7 +299,6 @@ public class HomeActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
-        // ... all your view finding is correct ...
         ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
@@ -308,10 +307,26 @@ public class HomeActivity extends AppCompatActivity {
         Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
         Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
 
-        // ... all your data population is correct ...
-        if (thumbnailUri != null) { /* ... set thumbnail ... */ }
+        if (thumbnailUri != null) {
+            ivThumbnail.setImageURI(thumbnailUri);
+            ivThumbnail.setVisibility(View.VISIBLE);
+        } else {
+            ivThumbnail.setVisibility(View.GONE);
+        }
+
         String fileSize = "Unknown";
-        try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) { /* ... get file size ... */ } catch (Exception e) { /* ... */ }
+        try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (!cursor.isNull(sizeIndex)) {
+                    long size = cursor.getLong(sizeIndex);
+                    fileSize = android.text.format.Formatter.formatShortFileSize(this, size);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Could not get file size.", e);
+        }
+
         tvPath.setText("Path: Downloads/PDFToolkit");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
@@ -324,52 +339,80 @@ public class HomeActivity extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
-        // ... all your button click listeners are correct ...
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
-        btnViewFile.setOnClickListener(v -> { /* ... */ });
-        btnShare.setOnClickListener(v -> { /* ... */ });
+        btnViewFile.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(HomeActivity.this, PdfViewerActivity.class);
+            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        });
+        btnShare.setOnClickListener(v -> {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/pdf");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
+        });
         
         Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
 
         dialog.show();
 
-        // =================================================================
-        // THIS IS THE FINAL, GUARANTEED FIX FOR THE ANIMATION
-        // =================================================================
         dialog.getWindow().getDecorView().post(() -> {
-            FrameLayout root = (FrameLayout) dialog.getWindow().getDecorView().findViewById(android.R.id.content);
-            if (root == null) return;
-            
+            ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
             ImageView doneIcon = new ImageView(this);
+            doneIcon.setImageResource(R.drawable.ic_done);
             doneIcon.setElevation(20f);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
-            root.addView(doneIcon, params);
             
-            // USE GLIDE TO PLAY THE GIF
-            Glide.with(this)
-                .asGif()
-                .load(R.drawable.ic_done) // Glide correctly loads your ic_done.gif
-                .into(doneIcon);
-
-            // Hide and remove the icon after a short delay
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                root.addView(doneIcon, params);
+                doneIcon.setAlpha(1.0f);
                 doneIcon.animate()
                     .alpha(0.0f)
-                    .setDuration(300) // Quick fade out
+                    .setDuration(1200)
+                    .setStartDelay(300)
                     .withEndAction(() -> root.removeView(doneIcon))
                     .start();
-            }, 1200); // Wait 1.2 seconds before fading out
+            });
         });
     }
 
-    // --- The rest of your HomeActivity.java is correct and unchanged ---
-}
+    private void checkAndRequestStoragePermission() {
+        if (hasStoragePermission()) {
+            startGoogleScanner();
+        } else {
+            requestStoragePermission();
+        }
+    }
 
-    private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
-    private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
-    private void requestStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { try { Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); intent.setData(Uri.parse("package:" + getPackageName())); startActivity(intent); } catch (Exception e) { Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION); startActivity(intent); } } else { ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE); } }
-    
+    private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        } else {
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private void requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            } catch (Exception e) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(intent);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                STORAGE_PERMISSION_REQUEST_CODE);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -380,8 +423,22 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void startGoogleScanner() { GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder().setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL).setGalleryImportAllowed(false).setPageLimit(20).setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG).build(); GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options); scanner.getStartScanIntent(this).addOnSuccessListener(intentSender -> scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build())).addOnFailureListener(e -> Toast.makeText(this, "Scanner not available.", Toast.LENGTH_SHORT).show()); }
-    
+    private void startGoogleScanner() {
+        GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+            .setGalleryImportAllowed(false)
+            .setPageLimit(20)
+            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+            .build();
+
+        GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
+        scanner.getStartScanIntent(this)
+            .addOnSuccessListener(intentSender ->
+                scannerLauncher.launch(new IntentSenderRequest.Builder(intentSender).build()))
+            .addOnFailureListener(e ->
+                Toast.makeText(this, "Scanner not available.", Toast.LENGTH_SHORT).show());
+    }
+
     private Bitmap uriToResizedBitmap(Uri uri) {
         try (InputStream inputStream = getContentResolver().openInputStream(uri)) {
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -397,7 +454,7 @@ public class HomeActivity extends AppCompatActivity {
             return null;
         }
     }
-    
+
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -405,13 +462,14 @@ public class HomeActivity extends AppCompatActivity {
         if (height > reqHeight || width > reqWidth) {
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+            while ((halfHeight / inSampleSize) >= reqHeight &&
+                   (halfWidth / inSampleSize) >= reqWidth) {
                 inSampleSize *= 2;
             }
         }
         return inSampleSize;
     }
-    
+
     private void launchWebViewActivity(String fileName, String ttsUrl) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
