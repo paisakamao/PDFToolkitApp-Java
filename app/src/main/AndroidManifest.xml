@@ -21,7 +21,9 @@
 
         <!-- New SplashActivity as launcher -->
         <activity
-    android:name=".SplashActivity" android:theme="@style/Theme.PDFToolkit.FullScreen">
+    android:name=".SplashActivity"
+    android:theme="@style/SplashTheme"
+    android:exported="true">
     <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
