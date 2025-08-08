@@ -1,4 +1,4 @@
-package com.pdf.toolkit;;
+package com.pdf.toolkit;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,11 +8,10 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.DrawableImageViewTarget;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DURATION = 5000; // ms for 5s GIF
+    private static final int SPLASH_DURATION = 5000; // 5 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,13 +20,13 @@ public class SplashActivity extends AppCompatActivity {
 
         ImageView splashGif = findViewById(R.id.splash_gif);
 
-        // Load GIF from res/raw using Glide
+        // Load GIF from res/raw directly
         Glide.with(this)
                 .asGif()
                 .load(R.raw.my_splash)
-                .into(new DrawableImageViewTarget(splashGif));
+                .into(splashGif);
 
-        // Open HomeActivity after GIF finishes
+        // Move to HomeActivity after delay
         new Handler().postDelayed(() -> {
             startActivity(new Intent(SplashActivity.this, HomeActivity.class));
             finish();
