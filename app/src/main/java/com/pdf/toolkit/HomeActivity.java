@@ -292,10 +292,12 @@ public class HomeActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
+   private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, int pageCount, @Nullable Uri thumbnailUri) {
+        // Inflate the custom layout
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
+        // Find all the views
         ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
@@ -327,7 +329,8 @@ public class HomeActivity extends AppCompatActivity {
         tvPath.setText("Path: Downloads/PDFToolkit");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        // MODIFIED: We now apply our new dialog theme
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.Theme_PDFToolkit_SuccessDialog)
             .setView(dialogView)
             .setCancelable(true)
             .create();
@@ -336,6 +339,7 @@ public class HomeActivity extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
 
+        // Set button actions
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
         btnViewFile.setOnClickListener(v -> {
@@ -359,6 +363,8 @@ public class HomeActivity extends AppCompatActivity {
 
         dialog.getWindow().getDecorView().post(() -> {
             ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
+            if (root == null) return;
+            
             ImageView doneIcon = new ImageView(this);
             doneIcon.setImageResource(R.drawable.ic_done);
             doneIcon.setElevation(20f);
@@ -376,6 +382,9 @@ public class HomeActivity extends AppCompatActivity {
             });
         });
     }
+
+    // --- The rest of your HomeActivity.java is correct and unchanged ---
+}
 
     private void checkAndRequestStoragePermission() { if (hasStoragePermission()) { startGoogleScanner(); } else { requestStoragePermission(); } }
     private boolean hasStoragePermission() { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { return Environment.isExternalStorageManager(); } else { return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; } }
