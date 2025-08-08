@@ -1,5 +1,6 @@
 package com.pdf.toolkit;
 
+// All necessary imports for the final version
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -299,7 +300,6 @@ public class HomeActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_success, null);
 
-        // Find all the views, including the new done icon
         ImageView ivThumbnail = dialogView.findViewById(R.id.dialog_thumbnail);
         TextView tvPath = dialogView.findViewById(R.id.dialog_path);
         TextView tvDetails = dialogView.findViewById(R.id.dialog_details);
@@ -307,11 +307,27 @@ public class HomeActivity extends AppCompatActivity {
         ImageButton btnShare = dialogView.findViewById(R.id.dialog_btn_share);
         Button btnNewScan = dialogView.findViewById(R.id.dialog_btn_new_scan);
         Button btnViewFile = dialogView.findViewById(R.id.dialog_btn_view_file);
-        ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon);
 
-        if (thumbnailUri != null) { /* ... set thumbnail ... */ }
+        if (thumbnailUri != null) {
+            ivThumbnail.setImageURI(thumbnailUri);
+            ivThumbnail.setVisibility(View.VISIBLE);
+        } else {
+            ivThumbnail.setVisibility(View.GONE);
+        }
+
         String fileSize = "Unknown";
-        try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) { /* ... get file size ... */ } catch (Exception e) { /* ... */ }
+        try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (!cursor.isNull(sizeIndex)) {
+                    long size = cursor.getLong(sizeIndex);
+                    fileSize = android.text.format.Formatter.formatShortFileSize(this, size);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Could not get file size.", e);
+        }
+
         tvPath.setText("Path: Downloads/PDFToolkit");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
@@ -326,41 +342,46 @@ public class HomeActivity extends AppCompatActivity {
 
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnNewScan.setOnClickListener(v -> { dialog.dismiss(); startGoogleScanner(); });
-        btnViewFile.setOnClickListener(v -> { /* ... */ });
-        btnShare.setOnClickListener(v -> { /* ... */ });
+        btnViewFile.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(HomeActivity.this, PdfViewerActivity.class);
+            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        });
+        btnShare.setOnClickListener(v -> {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/pdf");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(shareIntent, "Share PDF using..."));
+        });
         
         Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
 
         dialog.show();
 
-        // =================================================================
-        // THIS IS THE FINAL, GUARANTEED FIX FOR THE ANIMATION AND ICONS
-        // =================================================================
-        int iconColor = ContextCompat.getColor(this, R.color.black);
-        btnClose.setColorFilter(iconColor, PorterDuff.Mode.SRC_IN);
-        btnShare.setColorFilter(iconColor, PorterDuff.Mode.SRC_IN);
-
-        // Make the icon visible
-        doneIcon.setVisibility(View.VISIBLE);
-        
-        // USE GLIDE TO PLAY THE GIF
-        Glide.with(this)
-            .asGif()
-            .load(R.drawable.ic_done) // Glide correctly loads your ic_done.gif
-            .into(doneIcon);
-
-        // Hide and remove the icon after a short delay
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            doneIcon.animate()
-                .alpha(0.0f)
-                .setDuration(300) // Quick fade out
-                .withEndAction(() -> doneIcon.setVisibility(View.GONE))
-                .start();
-        }, 1500); // Wait 1.5 seconds before fading out
+        dialog.getWindow().getDecorView().post(() -> {
+            ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
+            if (root == null) return;
+            
+            ImageView doneIcon = new ImageView(this);
+            doneIcon.setImageResource(R.drawable.ic_done);
+            doneIcon.setElevation(20f);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
+            
+            new Handler(Looper.getMainLooper()).post(() -> {
+                root.addView(doneIcon, params);
+                doneIcon.setAlpha(1.0f);
+                doneIcon.animate()
+                    .alpha(0.0f)
+                    .setDuration(1200)
+                    .setStartDelay(300)
+                    .withEndAction(() -> root.removeView(doneIcon))
+                    .start();
+            });
+        });
     }
-
-    // --- The rest of your HomeActivity.java is correct and unchanged ---
-}
 
     private void checkAndRequestStoragePermission() {
         if (hasStoragePermission()) {
@@ -451,7 +472,7 @@ public class HomeActivity extends AppCompatActivity {
         }
         return inSampleSize;
     }
-
+    
     private void launchWebViewActivity(String fileName, String ttsUrl) {
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_HTML_FILE, fileName);
