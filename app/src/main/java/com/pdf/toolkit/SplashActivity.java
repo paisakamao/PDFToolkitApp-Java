@@ -1,39 +1,35 @@
-package your.package.name;
+package com.pdf.toolkit;;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import pl.droidsonroids.gif.GifDrawable;
-import pl.droidsonroids.gif.GifImageView;
-
-import java.io.IOException;
-import java.io.InputStream;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DURATION = 3000; // ms (adjust to GIF length)
+    private static final int SPLASH_DURATION = 5000; // ms for 5s GIF
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        GifImageView gifImageView = findViewById(R.id.splash_gif);
+        ImageView splashGif = findViewById(R.id.splash_gif);
 
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.my_splash);
-            GifDrawable gifDrawable = new GifDrawable(inputStream);
-            gifImageView.setImageDrawable(gifDrawable);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Load GIF from res/raw using Glide
+        Glide.with(this)
+                .asGif()
+                .load(R.raw.my_splash)
+                .into(new DrawableImageViewTarget(splashGif));
 
-        // Move to MainActivity after duration
+        // Open HomeActivity after GIF finishes
         new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            startActivity(new Intent(SplashActivity.this, HomeActivity.class));
             finish();
         }, SPLASH_DURATION);
     }
