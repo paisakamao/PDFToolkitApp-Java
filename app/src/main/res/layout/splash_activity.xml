@@ -4,11 +4,9 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- Using GifImageView from 'pl.droidsonroids.gif' -->
-    <pl.droidsonroids.gif.GifImageView
+    <ImageView
         android:id="@+id/splash_gif"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@raw/my_splash" />
+        android:scaleType="centerCrop" />
 </RelativeLayout>
