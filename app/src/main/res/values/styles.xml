@@ -1,5 +1,17 @@
-<style name="Theme.PDFToolkit.FullScreen" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-    <item name="android:windowFullscreen">true</item>
-    <item name="android:statusBarColor">@android:color/transparent</item>
-    <item name="android:navigationBarColor">@android:color/transparent</item>
-</style>
+<resources>
+
+    <!-- Base app theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@color/primaryColor</item>
+        <item name="android:navigationBarColor">@color/primaryColor</item>
+    </style>
+
+    <!-- Splash screen theme -->
+    <style name="SplashTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInScreen">true</item>
+        <item name="android:windowLayoutInScreenDecorOverlay">true</item>
+    </style>
+
+</resources>
