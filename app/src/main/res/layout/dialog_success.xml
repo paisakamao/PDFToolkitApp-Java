@@ -1,17 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp" app:cardUseCompatPadding="true">
-<androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp">
-<TextView android:id="@+id/dialog_title" android:layout_width="0dp" android:layout_height="wrap_content" android:text="Success" android:textColor="@android:color/black" android:textSize="22sp" android:textStyle="bold" app:layout_constraintEnd_toStartOf="@+id/dialog_btn_share" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="@+id/dialog_btn_share"/>
-<ImageButton android:id="@+id/dialog_btn_close" android:layout_width="36dp" android:layout_height="36dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_close" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"/>
-<ImageButton android:id="@+id/dialog_btn_share" android:layout_width="36dp" android:layout_height="36dp" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/ic_share" app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close" app:layout_constraintTop_toTopOf="parent"/>
-<ImageView android:id="@+id/dialog_thumbnail" android:layout_width="0dp" android:layout_height="200dp" android:layout_marginTop="16dp" android:scaleType="centerCrop" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_title" tools:src="@android:color/darker_gray"/>
-<LinearLayout android:id="@+id/dialog_details_container" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:background="@drawable/rounded_card_background" android:orientation="vertical" android:padding="12dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_thumbnail">
-<TextView android:id="@+id/dialog_path" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="12sp" tools:text="Path: Downloads/PDFToolkit"/>
-<TextView android:id="@+id/dialog_details" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textSize="12sp" tools:text="Pages: 3 | Size: 1.2 MB"/>
-</LinearLayout>
-<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:orientation="horizontal" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/dialog_details_container">
-<Button android:id="@+id/dialog_btn_new_scan" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:layout_weight="1" android:background="@drawable/dialog_button_background" android:text="New Scan" android:textColor="@android:color/white" android:textSize="12sp"/>
-<Button android:id="@+id/dialog_btn_view_file" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:background="@drawable/dialog_button_background" android:text="View File" android:textColor="@android:color/white" android:textSize="12sp"/>
-</LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+<!-- The root is a CardView, which correctly provides the rounded corners, background, and shadow. -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
+
+    <!-- ConstraintLayout is used to precisely position all elements. -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- The title is constrained to the start and to the buttons on the right. -->
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Success"
+            android:textColor="@android:color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/dialog_btn_share"
+            app:layout_constraintEnd_toStartOf="@+id/dialog_btn_share"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/dialog_btn_share" />
+
+        <!-- The Close button is correctly pinned to the top-right corner. -->
+        <ImageButton
+            android:id="@+id/dialog_btn_close"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- The Share button is correctly pinned next to the Close button. -->
+        <ImageButton
+            android:id="@+id/dialog_btn_share"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_share"
+            app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- The thumbnail is correctly constrained below the header. -->
+        <ImageView
+            android:id="@+id/dialog_thumbnail"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dialog_title"
+            tools:src="@android:color/darker_gray" />
+
+        <!-- The details section is correctly constrained below the thumbnail. -->
+        <LinearLayout
+            android:id="@+id/dialog_details_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_card_background"
+            android:orientation="vertical"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dialog_thumbnail">
+
+            <TextView
+                android:id="@+id/dialog_path"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                tools:text="Path: Downloads/PDFToolkit" />
+
+            <TextView
+                android:id="@+id/dialog_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                tools:text="Pages: 3 | Size: 1.2 MB" />
+        </LinearLayout>
+
+        <!-- The bottom buttons are in a LinearLayout, which correctly ensures they share the space and do not overlap. -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dialog_details_container">
+
+            <Button
+                android:id="@+id/dialog_btn_new_scan"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/dialog_button_background"
+                android:text="New Scan"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/dialog_btn_view_file"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/dialog_button_background"
+                android:text="View File"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
