@@ -35,19 +35,17 @@
             android:src="@drawable/ic_close"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/dialog_title"
-            app:tint="@color/black"/>
+            app:layout_constraintBottom_toBottomOf="@+id/dialog_title"/>
 
         <ImageButton
             android:id="@+id/dialog_btn_share"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:icon="@android:drawable/ic_menu_share"
+            android:src="@drawable/ic_share"
             app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@+id/dialog_title"
-            app:tint="@color/black"/>
+            app:layout_constraintBottom_toBottomOf="@+id/dialog_title"/>
 
         <ImageView
             android:id="@+id/dialog_thumbnail"
