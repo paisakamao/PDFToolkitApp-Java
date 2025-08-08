@@ -361,26 +361,22 @@ public class HomeActivity extends AppCompatActivity {
 
         dialog.show();
 
-        dialog.getWindow().getDecorView().post(() -> {
-            ViewGroup root = (ViewGroup) dialog.getWindow().getDecorView();
-            if (root == null) return;
+            ImageView doneIcon = dialogView.findViewById(R.id.dialog_done_icon);
             
-            ImageView doneIcon = new ImageView(this);
-            doneIcon.setImageResource(R.drawable.ic_done);
-            doneIcon.setElevation(20f);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(200, 200, android.view.Gravity.CENTER);
+            // Make it visible
+            doneIcon.setVisibility(View.VISIBLE);
             
-            new Handler(Looper.getMainLooper()).post(() -> {
-                root.addView(doneIcon, params);
-                doneIcon.setAlpha(1.0f);
-                doneIcon.animate()
-                    .alpha(0.0f)
-                    .setDuration(1200)
-                    .setStartDelay(300)
-                    .withEndAction(() -> root.removeView(doneIcon))
-                    .start();
-            });
-        });
+            // Load the GIF with Glide
+            Glide.with(this)
+                 .asGif()
+                 .load(R.drawable.ic_done) // if it's in drawable folder
+                 .into(doneIcon);
+            
+            // Optional: Hide after animation delay
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                doneIcon.setVisibility(View.GONE);
+            }, 1500); // adjust time to match GIF duration
+
     }
 
     private void checkAndRequestStoragePermission() {
