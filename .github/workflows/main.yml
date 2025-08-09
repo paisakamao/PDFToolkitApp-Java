@@ -10,9 +10,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -26,16 +24,15 @@ jobs:
     - name: Grant execute permission for Gradle wrapper
       run: chmod +x ./gradlew
 
-    - name: Force Clean Build Cache
-      run: rm -rf $HOME/.gradle/caches/ && rm -rf $HOME/.gradle/daemon/
-
     - name: Decode keystore
       run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_tool.p12
 
-    - name: List files in app directory (debug)
-      run: ls -l app/
-
+    # THIS IS THE STEP YOU NEED TO MODIFY
     - name: Build signed Release APK
+      env: # <--- ADD THIS BLOCK
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: ./gradlew clean assembleRelease
 
     - name: Upload signed APK artifact
