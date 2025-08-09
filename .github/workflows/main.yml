@@ -32,11 +32,10 @@ jobs:
     - name: Decode keystore
       run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_tool.p12
 
+    - name: List files in app directory (debug)
+      run: ls -l app/
+
     - name: Build signed Release APK
-      env:
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: ./gradlew clean assembleRelease
 
     - name: Upload signed APK artifact
