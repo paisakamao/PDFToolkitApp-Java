@@ -20,15 +20,15 @@
             android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <!-- New SplashActivity as launcher -->
-      <activity
-    android:name=".my_splash"
-    android:exported="true"
-    android:theme="@style/Theme.MyApp.Splash">
-    <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-    </intent-filter>
-</activity>
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.PDFToolkit.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <!-- HomeActivity is now a normal activity -->
         <activity
