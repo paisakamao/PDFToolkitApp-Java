@@ -38,22 +38,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- NEW: Description TextView -->
+        <!-- ====================== UPDATED DESCRIPTION TEXTVIEW ====================== -->
         <TextView
             android:id="@+id/dialog_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:background="@drawable/description_border"  <!-- ADDED: Applies the border and background -->
+            android:padding="16dp"  <!-- ADDED: Adds space between the text and the border -->
             android:textColor="@android:color/black"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/dialog_title"
-            tools:text="his feature works with an external link. To use our online tool, please click 'Open'. This is not a third-party link; it is our online tool." />
+            tools:text="This feature works with an external link. To use our online tool, please click 'Open'. This is not a third-party link; it is our online tool." />
+        <!-- ======================================================================= -->
 
-        <!-- REMOVED: Thumbnail ImageView -->
-        <!-- REMOVED: File details section (path and size) -->
-        <!-- REMOVED: Share button -->
 
         <!-- Container for the bottom buttons with updated text and IDs -->
         <LinearLayout
