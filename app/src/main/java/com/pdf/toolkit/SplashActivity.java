@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DURATION = 5000; // 5 seconds
+    private static final int SPLASH_DURATION = 6000; // 5 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
