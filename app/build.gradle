@@ -6,6 +6,7 @@ plugins {
 android {
     namespace 'com.pdf.toolkit'
     compileSdk 34
+
     defaultConfig {
         applicationId "com.pdf.toolkit"
         minSdk 24
@@ -13,12 +14,26 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
+    signingConfigs {
+        release {
+            // Keystore file path relative to module directory
+            storeFile file("app/pdf_toolkit.jks")
+            // Use environment variables for security
+            storePassword System.getenv("PDF>>tool.kit<")
+            keyAlias System.getenv("pdf")
+            keyPassword System.getenv("PDF>>tool.kit<")
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release  // Use the release signing config here
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -26,7 +41,6 @@ android {
 }
 
 dependencies {
-    // Your existing, working dependencies
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.activity:activity:1.8.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -35,12 +49,10 @@ dependencies {
     implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
     implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1'
 
-    // --- NEW DEPENDENCIES FOR FIREBASE AND ADMOB ---
     implementation platform('com.google.firebase:firebase-bom:33.1.0')
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.android.gms:play-services-ads:23.1.0'
-    implementation 'androidx.browser:browser:1.8.0' // Or the latest version
-    // This is the library that will correctly load and play your GIF
+    implementation 'androidx.browser:browser:1.8.0'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 }
