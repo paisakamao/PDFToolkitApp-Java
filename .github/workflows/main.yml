@@ -27,16 +27,17 @@ jobs:
     - name: Decode keystore
       run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_tool.p12
 
-    # THIS IS THE STEP YOU NEED TO MODIFY
-    - name: Build signed Release APK
-      env: # <--- ADD THIS BLOCK
+    # --- CHANGE #1: Updated the step name and the Gradle command ---
+    - name: Build signed Release AAB (App Bundle)
+      env:
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      run: ./gradlew clean assembleRelease
+      run: ./gradlew clean bundleRelease
 
-    - name: Upload signed APK artifact
+    # --- CHANGE #2: Updated the step name and the path to the .aab file ---
+    - name: Upload signed AAB artifact
       uses: actions/upload-artifact@v4
       with:
-        name: PDF-ToolKit-Release
-        path: app/build/outputs/apk/release/app-release.apk
+        name: PDF-ToolKit-Release-AAB
+        path: app/build/outputs/bundle/release/app-release.aab
