@@ -17,7 +17,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("app/pdf_toolkit.jks")  // path must be correct relative to your project root
+            storeFile file("pdf_toolkit.jks") 
             storePassword System.getenv("KEYSTORE_PASSWORD")
             keyAlias System.getenv("KEY_ALIAS")
             keyPassword System.getenv("KEY_PASSWORD")
