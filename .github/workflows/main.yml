@@ -30,7 +30,7 @@ jobs:
       run: rm -rf $HOME/.gradle/caches/ && rm -rf $HOME/.gradle/daemon/
 
     - name: Decode keystore
-      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_tool.jks
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_toolkit.jks
 
     - name: Build signed Release APK
       env:
