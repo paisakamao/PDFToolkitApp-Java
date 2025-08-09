@@ -1,8 +1,0 @@
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/splash_bg_color" />
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/your_logo_or_gif" />
-    </item>
-</layer-list>
