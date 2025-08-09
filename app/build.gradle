@@ -18,11 +18,10 @@ android {
     signingConfigs {
         release {
             // Keystore file path relative to module directory
-            storeFile file("pdf_toolkit.jks")
-            // Use environment variables for security
-            storePassword System.getenv("PDF>>tool.kit<")
-            keyAlias System.getenv("pdf")
-            keyPassword System.getenv("PDF>>tool.kit<")
+            storePassword "your_actual_password_here"
+            keyAlias "your_actual_key_alias"
+            keyPassword "your_actual_key_password"
+
         }
     }
 
