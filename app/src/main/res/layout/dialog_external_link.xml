@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- Title of the dialog -->
+        <TextView
+            android:id="@+id/dialog_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="External Link"
+            android:textColor="@android:color/black"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/dialog_btn_close"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Close button in the top right corner -->
+        <ImageButton
+            android:id="@+id/dialog_btn_close"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- NEW: Description TextView -->
+        <TextView
+            android:id="@+id/dialog_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dialog_title"
+            tools:text="his feature works with an external link. To use our online tool, please click 'Open'. This is not a third-party link; it is our online tool." />
+
+        <!-- REMOVED: Thumbnail ImageView -->
+        <!-- REMOVED: File details section (path and size) -->
+        <!-- REMOVED: Share button -->
+
+        <!-- Container for the bottom buttons with updated text and IDs -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/dialog_description">
+
+            <!-- UPDATED: Button for "Copy Link" -->
+            <Button
+                android:id="@+id/dialog_btn_copy_link"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/dialog_button_background"
+                android:text="Copy Link"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <!-- UPDATED: Button for "Open Link" -->
+            <Button
+                android:id="@+id/dialog_btn_open_link"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/dialog_button_background"
+                android:text="Open Link"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
