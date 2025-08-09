@@ -125,19 +125,20 @@
                 const toolData = tools.find(t => t.id === toolId);
                 if (!toolData) return;
 
-                if (toolId === 'text-to-speech') {
-                    if (typeof Android !== 'undefined' && Android.getTtsToolUrl && Android.openToolInBrowser) {
-                        const ttsUrl = Android.getTtsToolUrl();
-                        if (ttsUrl && ttsUrl.length > 5) {
-                            Android.openToolInBrowser(ttsUrl);
-                        } else {
-                            alert("The Text to Speech tool URL is not configured.");
-                        }
-                    } else {
-                        alert("This feature requires the native Android app.");
-                    }
-                    return;
-                }
+				 if (toolId === 'text-to-speech') {
+				    // 1. Check if the Android bridge and our NEW function exist.
+				    if (typeof Android !== 'undefined' && Android.showTtsConfirmationDialog) {
+				        
+				        // 2. If they exist, just call the function.
+				        // Android (Java) will handle getting the URL and checking if it's valid.
+				        Android.showTtsConfirmationDialog();
+				
+				    } else {
+				        // This is the fallback if the page is opened in a regular browser.
+				        alert("This feature requires the native Android app environment.");
+				    }
+				    return; // Stop further execution.
+				}
                 const tool = toolImplementations[toolId];
                 if (!tool) {
                     console.error("Tool implementation not found for:", toolId);
