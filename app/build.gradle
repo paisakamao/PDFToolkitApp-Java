@@ -17,11 +17,10 @@ android {
 
     signingConfigs {
         release {
-            // Keystore file path relative to module directory
-            storePassword "your_actual_password_here"
-            keyAlias "your_actual_key_alias"
-            keyPassword "your_actual_key_password"
-
+            storeFile file("app/pdf_toolkit.jks")  // path must be correct relative to your project root
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
         }
     }
 
