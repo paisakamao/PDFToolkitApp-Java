@@ -15,8 +15,4 @@
     <!-- ✅ Added missing purple -->
     <color name="purple_500">#6200EE</color>
 
-    <!-- Primary and accent colors -->
-    <color name="primaryColor">#007BFF</color>     <!-- App blue -->
-    <color name="primaryColorDark">#0056B3</color> <!-- Darker blue -->
-    <color name="colorAccent">#FF4081</color>      <!-- Pink accent -->
 </resources>
