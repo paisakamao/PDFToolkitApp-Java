@@ -3,10 +3,15 @@ package com.pdf.toolkit;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +20,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -22,11 +29,13 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
@@ -85,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
-        
+
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
 
@@ -95,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        // UPDATED: Replaced the default WebViewClient with our custom one to show the dialog
+        webView.setWebViewClient(new MyCustomWebViewClient());
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
@@ -140,6 +151,80 @@ public class MainActivity extends AppCompatActivity {
             htmlFileToLoad = "index.html";
         }
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
+    }
+
+    /**
+     * This custom WebViewClient intercepts URL clicks to show our dialog.
+     */
+    private class MyCustomWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            // Check if the link is a standard web link that should open externally.
+            if (url.startsWith("http://") || url.startsWith("https://")) {
+                // Show our custom dialog instead of navigating immediately.
+                showCustomExternalLinkDialog(url);
+                // Return true to tell the WebView we've handled this click.
+                return true;
+            }
+            // For other links (e.g., internal file links), let the WebView handle them.
+            return false;
+        }
+    }
+
+    /**
+     * Inflates and shows the custom dialog from dialog_external_link.xml
+     * @param url The URL that was clicked.
+     */
+    private void showCustomExternalLinkDialog(final String url) {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_external_link);
+
+        TextView title = dialog.findViewById(R.id.dialog_title);
+        TextView description = dialog.findViewById(R.id.dialog_description);
+        Button copyButton = dialog.findViewById(R.id.dialog_btn_copy_link);
+        Button openButton = dialog.findViewById(R.id.dialog_btn_open_link);
+        ImageButton closeButton = dialog.findViewById(R.id.dialog_btn_close);
+
+        title.setText("External Link");
+        description.setText("This tool works with external links. If you want to use this tool, please click 'Open'. It is not a 3rd party link; this is our online tool.");
+
+        // The "Open Link" button will now use your excellent Custom Tab logic!
+        openButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            openUrlInCustomTab(url);
+        });
+
+        copyButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("URL", url);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, "Link copied", Toast.LENGTH_SHORT).show();
+        });
+
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.setCancelable(true);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        dialog.show();
+    }
+
+    /**
+     * Helper method to launch a URL in a styled Custom Tab.
+     * This contains the logic from your JSBridge for reuse.
+     */
+    private void openUrlInCustomTab(String url) {
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setToolbarColor(ContextCompat.getColor(this, R.color.card_background));
+        builder.setShowTitle(true);
+        builder.setStartAnimations(this, R.anim.slide_in_up, R.anim.stay);
+        builder.setExitAnimations(this, R.anim.stay, R.anim.slide_out_down);
+        builder.setUrlBarHidingEnabled(true);
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, Uri.parse(url));
     }
 
     public class JSBridge {
@@ -202,14 +287,8 @@ public class MainActivity extends AppCompatActivity {
                 );
                 return;
             }
-            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-            builder.setToolbarColor(ContextCompat.getColor(context, R.color.card_background));
-            builder.setShowTitle(true);
-            builder.setStartAnimations(context, R.anim.slide_in_up, R.anim.stay);
-            builder.setExitAnimations(context, R.anim.stay, R.anim.slide_out_down);
-            builder.setUrlBarHidingEnabled(true);
-            CustomTabsIntent customTabsIntent = builder.build();
-            customTabsIntent.launchUrl(context, Uri.parse(url));
+            // Calls the helper method for consistency
+            openUrlInCustomTab(url);
         }
     }
 
@@ -217,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDFToolkit");
         }
