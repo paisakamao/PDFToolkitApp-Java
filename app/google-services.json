@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "90107330569",
+    "project_id": "pdfscan-6fd50",
+    "storage_bucket": "pdfscan-6fd50.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90107330569:android:8dc294a1fd3d4fbca978d8",
+        "android_client_info": {
+          "package_name": "com.pdfscanner.toolkit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAklU6bkAv-wYyoZR5Kz6EWI7T1uUCBEvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
