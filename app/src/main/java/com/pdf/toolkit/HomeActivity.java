@@ -1,4 +1,4 @@
-package com.pdf.toolkit;
+package com.pdfscanner.toolkit;
 
 // All necessary imports for the final version
 import android.Manifest;
