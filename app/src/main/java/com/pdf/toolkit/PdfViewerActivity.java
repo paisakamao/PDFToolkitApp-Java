@@ -1,4 +1,4 @@
-package com.pdf.toolkit;
+package com.pdfscanner.toolkit;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -23,7 +23,7 @@ import java.io.File;
 // This is the final, clean version.
 public class PdfViewerActivity extends AppCompatActivity implements OnLoadCompleteListener {
 
-    public static final String EXTRA_FILE_URI = "com.pdf.toolkit.FILE_URI";
+    public static final String EXTRA_FILE_URI = "com.pdfscanner.toolkit.FILE_URI";
     private PDFView pdfView;
     private Uri pdfUri;
     private int totalPages = 0;
