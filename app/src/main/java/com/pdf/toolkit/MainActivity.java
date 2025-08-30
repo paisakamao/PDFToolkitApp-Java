@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
-    public static final String EXTRA_HTML_FILE = "com.pdf.toolkit.HTML_FILE_TO_LOAD";
+    public static final String EXTRA_HTML_FILE = "com.pdfscanner.toolkit.HTML_FILE_TO_LOAD";
 
     private PermissionRequest currentPermissionRequest;
     private FirebaseRemoteConfig remoteConfig;
