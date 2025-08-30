@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.pdf.toolkit'
+    namespace 'com.pdfscanner.toolkit'
     compileSdk 34
 
     defaultConfig {
