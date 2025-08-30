@@ -27,22 +27,27 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/pdf_tool.p12
 
-      - name: Build signed Release AAB (App Bundle)
+      # Build both APK and AAB
+      - name: Build signed Release APK & AAB
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew clean bundleRelease
+        run: |
+          ./gradlew clean assembleRelease
+          ./gradlew bundleRelease
 
-      # 🚀 Upload to a single "Nightly Build" release instead of artifacts
-      - name: Upload AAB to Nightly Release
+      # 🚀 Upload both to a single "Nightly Build" release
+      - name: Upload APK & AAB to Nightly Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: nightly
           name: Nightly Build
-          body: "This is the latest automatic build of the app bundle (.aab). It is replaced on each push to main."
+          body: "This is the latest automatic build of the app (.apk for Samsung, .aab for Google Play). Replaced on each push to main."
           draft: false
           prerelease: true
-          files: app/build/outputs/bundle/release/app-release.aab
+          files: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/bundle/release/app-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
