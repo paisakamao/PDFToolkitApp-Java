@@ -1,4 +1,4 @@
-package com.pdf.toolkit;
+package com.pdfscanner.toolkit;
 // (This file is complete and correct from our previous working version)
 import android.content.Context;
 import android.net.Uri;
