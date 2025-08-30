@@ -1,4 +1,4 @@
-package com.pdf.toolkit;
+package com.pdfscanner.toolkit;
 // (This is the stable version using file paths)
 import android.content.ContentValues;
 import android.content.Intent;
