@@ -24,7 +24,7 @@ public class CustomScrollHandle implements ScrollHandle {
     public void setupLayout(PDFView pdfView) {
         this.pdfView = pdfView;
         LayoutInflater inflater = LayoutInflater.from(context);
-        textView = (TextView) inflater.inflate(com.pdf.toolkit.R.layout.custom_scroll_handle, pdfView, false);
+        textView = (TextView) inflater.inflate(com.pdfscanner.toolkit.R.layout.custom_scroll_handle, pdfView, false);
         textView.setVisibility(View.INVISIBLE);
         pdfView.addView(textView);
     }
