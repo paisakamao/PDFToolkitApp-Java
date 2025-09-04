@@ -81,7 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                tools:text="Path: Downloads/PDFToolkit" />
+                tools:text="Path: Downloads/PDF Kit Pro" />
 
             <TextView
                 android:id="@+id/dialog_details"
