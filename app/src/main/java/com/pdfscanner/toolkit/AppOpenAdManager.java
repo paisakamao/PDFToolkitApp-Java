@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
@@ -23,51 +25,64 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     private boolean isLoadingAd = false;
     private boolean isShowingAd = false;
     private Activity currentActivity;
-    private final String AD_UNIT_ID;
 
-    // --- CONSTRUCTOR (UPDATED) ---
+    // ✅ Google Test App Open Ad ID
+    private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+
+    private String adUnitId;
+
     public AppOpenAdManager(Application myApplication) {
         this.myApplication = myApplication;
-        this.AD_UNIT_ID = FirebaseRemoteConfig.getInstance().getString("android_app_open_ad_id");
+
+        // Pull from Remote Config first
+        String rcAdUnitId = FirebaseRemoteConfig.getInstance().getString("android_app_open_ad_id");
+
+        // ✅ Always fallback to test ID if RC is empty
+        if (rcAdUnitId == null || rcAdUnitId.isEmpty()) {
+            Log.w(TAG, "Remote Config app open ad ID empty. Using test ID.");
+            adUnitId = TEST_AD_UNIT_ID;
+        } else {
+            adUnitId = rcAdUnitId;
+        }
+
         this.myApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
 
-        // THIS IS THE FIX: Proactively load the first ad on startup, but only if the ID is valid.
-        if (AD_UNIT_ID != null && !AD_UNIT_ID.isEmpty()) {
-            loadAd();
-        }
+        // Preload on startup
+        loadAd();
     }
-    // --- END OF FIX ---
 
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
+        Log.d(TAG, "App in foreground, checking ad...");
         showAdIfAvailable();
-        Log.d(TAG, "App is in foreground.");
     }
 
     public void loadAd() {
-        // THIS IS THE FIX: Add a check here to be extra safe against empty IDs.
-        if (isLoadingAd || isAdAvailable() || AD_UNIT_ID == null || AD_UNIT_ID.isEmpty()) {
+        if (isLoadingAd || isAdAvailable()) return;
+
+        if (adUnitId == null || adUnitId.isEmpty()) {
+            Log.e(TAG, "No valid Ad Unit ID. Skipping load.");
             return;
         }
 
         isLoadingAd = true;
         AdRequest request = new AdRequest.Builder().build();
         AppOpenAd.load(
-                myApplication, AD_UNIT_ID, request,
+                myApplication, adUnitId, request,
                 AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
                 new AppOpenAd.AppOpenAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull AppOpenAd ad) {
                         appOpenAd = ad;
                         isLoadingAd = false;
-                        Log.d(TAG, "App Open Ad loaded.");
+                        Log.d(TAG, "App Open Ad loaded successfully.");
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         isLoadingAd = false;
-                        Log.e(TAG, "App Open Ad failed to load: " + loadAdError.getMessage());
+                        Log.e(TAG, "App Open Ad failed: " + loadAdError.getMessage());
                     }
                 });
     }
@@ -77,52 +92,4 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     }
 
     private void showAdIfAvailable() {
-        if (isShowingAd || !isAdAvailable()) {
-            Log.d(TAG, "Ad not available or already showing.");
-            loadAd(); // Try to load the next one
-            return;
-        }
-
-        appOpenAd.setFullScreenContentCallback(
-                new FullScreenContentCallback() {
-                    @Override
-                    public void onAdDismissedFullScreenContent() {
-                        appOpenAd = null;
-                        isShowingAd = false;
-                        Log.d(TAG, "Ad dismissed.");
-                        loadAd();
-                    }
-
-                    @Override
-                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                        appOpenAd = null;
-                        isShowingAd = false;
-                        Log.e(TAG, "Ad failed to show: " + adError.getMessage());
-                        loadAd();
-                    }
-
-                    @Override
-                    public void onAdShowedFullScreenContent() {
-                        Log.d(TAG, "Ad showed successfully.");
-                    }
-                });
-        isShowingAd = true;
-        appOpenAd.show(currentActivity);
-    }
-
-    // ActivityLifecycleCallbacks methods (all unchanged)
-    @Override
-    public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
-    @Override
-    public void onActivityStarted(@NonNull Activity activity) { currentActivity = activity; }
-    @Override
-    public void onActivityResumed(@NonNull Activity activity) { currentActivity = activity; }
-    @Override
-    public void onActivityPaused(@NonNull Activity activity) {}
-    @Override
-    public void onActivityStopped(@NonNull Activity activity) {}
-    @Override
-    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
-    @Override
-    public void onActivityDestroyed(@NonNull Activity activity) { currentActivity = null; }
-}
+        if (isShowingAd || !isAdAvailable() || currentActivity == null) {
