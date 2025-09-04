@@ -18,6 +18,9 @@ public class AdManager {
     private static AdManager instance;
     private InterstitialAd mInterstitialAd;
 
+    // ✅ Google-provided test interstitial ID
+    private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
+
     private AdManager() {}
 
     public static synchronized AdManager getInstance() {
@@ -27,7 +30,6 @@ public class AdManager {
         return instance;
     }
 
-    // --- METHOD (UPDATED) ---
     public void loadInterstitialAd(Context context) {
         if (mInterstitialAd != null) {
             return;
@@ -35,12 +37,11 @@ public class AdManager {
 
         String adUnitId = FirebaseRemoteConfig.getInstance().getString("android_interstitial_ad_id");
 
-        // THIS IS THE FIX: If the Ad Unit ID is empty, log an error and do not proceed.
+        // ✅ Always fall back to test ID
         if (adUnitId == null || adUnitId.isEmpty()) {
-            Log.e(TAG, "Interstitial Ad Unit ID from Remote Config is empty. Ad will not be loaded.");
-            return;
+            Log.w(TAG, "Remote Config adUnitId empty. Using test ID.");
+            adUnitId = TEST_AD_UNIT_ID;
         }
-        // --- END OF FIX ---
 
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAd.load(context, adUnitId, adRequest,
@@ -48,7 +49,7 @@ public class AdManager {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         mInterstitialAd = interstitialAd;
-                        Log.i(TAG, "Interstitial ad loaded.");
+                        Log.i(TAG, "Interstitial ad loaded successfully.");
                     }
 
                     @Override
@@ -64,12 +65,10 @@ public class AdManager {
             mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                 @Override
                 public void onAdDismissedFullScreenContent() {
-                    Log.d(TAG, "Ad was dismissed.");
+                    Log.d(TAG, "Ad dismissed.");
                     mInterstitialAd = null;
                     loadInterstitialAd(activity);
-                    if (onAdDismissed != null) {
-                        onAdDismissed.run();
-                    }
+                    if (onAdDismissed != null) onAdDismissed.run();
                 }
 
                 @Override
@@ -77,22 +76,18 @@ public class AdManager {
                     Log.e(TAG, "Ad failed to show: " + adError.getMessage());
                     mInterstitialAd = null;
                     loadInterstitialAd(activity);
-                    if (onAdDismissed != null) {
-                        onAdDismissed.run();
-                    }
+                    if (onAdDismissed != null) onAdDismissed.run();
                 }
 
                 @Override
                 public void onAdShowedFullScreenContent() {
-                    Log.d(TAG, "Ad showed fullscreen content.");
+                    Log.d(TAG, "Ad showed fullscreen.");
                 }
             });
             mInterstitialAd.show(activity);
         } else {
-            Log.d(TAG, "Interstitial ad was not ready. Skipping.");
-            if (onAdDismissed != null) {
-                onAdDismissed.run();
-            }
+            Log.w(TAG, "Interstitial ad not ready, running fallback.");
+            if (onAdDismissed != null) onAdDismissed.run();
         }
     }
 }
