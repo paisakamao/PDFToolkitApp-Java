@@ -53,6 +53,7 @@
     </div>
 
 <script>
+// This is the complete, corrected script.
 document.addEventListener('DOMContentLoaded', () => {
     // --- LIBRARY SETUP ---
     const { PDFDocument, rgb, StandardFonts, degrees } = PDFLib;
@@ -85,9 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     let uploadedFiles = [];
     
-    // --- AD INTEGRATION START ---
-    let adSuccessCallback = null; // This will hold the function to run after an ad is dismissed
-    // --- AD INTEGRATION END ---
+    // --- AD INTEGRATION & RACE CONDITION FIX START ---
+    let adSuccessCallback = null;
+    let lastSavedFileUri = null; // This will store the file URI to prevent the race condition
+    // --- AD INTEGRATION & RACE CONDITION FIX END ---
 
     // --- INITIALIZATION ---
     function populateUI() {
@@ -104,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fileDropArea.addEventListener('dragleave', () => fileDropArea.classList.remove('dragover'));
         fileDropArea.addEventListener('drop', (e) => { fileDropArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-        // MODIFIED: The processBtn's listener is now set dynamically in openModal
     }
 
     // --- MODAL & FILE HANDLING LOGIC ---
@@ -117,12 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
         modalOptionsContainer.innerHTML = '';
         uploadedFiles = [];
         fileInput.value = '';
+        lastSavedFileUri = null; // Reset the stored URI for the new tool session
 
-        // MODIFIED: Reset the process button to its original state
         processBtn.textContent = 'Process Files';
-        processBtn.style.display = 'none'; // Hide it initially
+        processBtn.style.display = 'none';
         processBtn.disabled = false;
-        processBtn.onclick = processFiles; // Re-assign the original click handler
+        processBtn.onclick = processFiles;
 
         if (tool.options) {
             let optionsHtml = '';
@@ -168,10 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MAIN PROCESSING ROUTER ---
     async function processFiles() {
-        // MODIFIED: Change button state to "Processing"
         processBtn.disabled = true;
         processBtn.textContent = 'Processing...';
-
         filePreviews.querySelectorAll('.status-badge').forEach(badge => { 
             badge.textContent = 'Processing...'; 
             badge.className = 'status-badge status-processing'; 
@@ -187,12 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'Rotate PDF': newFileName = 'rotated.pdf'; await handleRotatePdf(newFileName); break;
                 case 'Add Page Numbers': newFileName = 'paginated.pdf'; await handleAddPageNumbers(newFileName); break;
                 case 'Add Watermark': newFileName = 'watermarked.pdf'; await handleAddWatermark(newFileName); break;
-                case 'PDF to JPG': await handlePdfToJpg(); break; // This one is special
+                case 'PDF to JPG': await handlePdfToJpg(); break;
                 case 'JPG to PDF': newFileName = 'converted.pdf'; await handleJpgToPdf(newFileName); break;
                 case 'Delete Pages': newFileName = 'edited.pdf'; await handleDeletePages(newFileName); break;
                 default: throw new Error('Selected tool is not implemented.');
             }
-            // MODIFIED: Pass the new file name to the success handler
             updateStatusToSuccess(newFileName);
         } catch (error) {
             console.error('Processing Error:', error);
@@ -201,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- TOOL IMPLEMENTATION FUNCTIONS (No changes needed here) ---
+    // --- TOOL IMPLEMENTATION FUNCTIONS (These remain unchanged) ---
     const getFileBytes = async (file) => file.arrayBuffer();
     async function handleMergePdf(fileName) { if (uploadedFiles.length < 2) throw new Error('Please select at least two PDF files.'); const mergedPdf = await PDFDocument.create(); for (const file of uploadedFiles) { const pdf = await PDFDocument.load(await getFileBytes(file)); const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices()); copiedPages.forEach(page => mergedPdf.addPage(page)); } downloadFile(await mergedPdf.save(), fileName, 'application/pdf'); }
     function parsePageString(pageString) { if (!pageString) return []; return pageString.split(',').flatMap(part => { if (part.includes('-')) { const [start, end] = part.split('-').map(Number); if (isNaN(start) || isNaN(end) || start > end) return []; return Array.from({ length: end - start + 1 }, (_, i) => start + i - 1); } const num = Number(part); return isNaN(num) ? [] : [num - 1]; }); }
@@ -215,59 +213,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UTILITY FUNCTIONS ---
     
-    // MODIFIED: This function is now the central point for showing the ad and then updating the UI.
+    // This is the fully corrected function with the race-condition fix and the UI bug fix.
     function updateStatusToSuccess(newFileName) {
-        // Define what should happen AFTER the ad is closed.
         adSuccessCallback = () => {
             const toolName = modalTitle.textContent;
 
-            // FIX: For multi-file tools, clear the old "processing" previews.
+            // Clear old previews for multi-file tools
             if (toolName === 'JPG to PDF' || toolName === 'Merge PDF') {
-                filePreviews.innerHTML = ''; 
+                filePreviews.innerHTML = '';
             }
 
+            // **THE FIX IS HERE:** This code now correctly updates all status badges
+            // from "Processing..." to "Success!" after the ad is dismissed.
+            filePreviews.querySelectorAll('.status-badge.status-processing').forEach(badge => {
+                badge.textContent = 'Success!';
+                badge.className = 'status-badge status-success';
+            });
+
+            // Handle the main button's state
             if (toolName === 'PDF to JPG') {
-                filePreviews.querySelectorAll('.status-badge').forEach(badge => {
-                    badge.textContent = 'Success!';
-                    badge.className = 'status-badge status-success';
-                });
-                processBtn.textContent = 'Done!'; // Just show a success state
+                processBtn.textContent = 'Done!';
             } else if (newFileName) {
-                // For other tools, update the button to be a "View File" button
                 processBtn.textContent = 'View File';
-                processBtn.disabled = true; // Disabled until the file URI is received from Android
+                processBtn.disabled = true; // Button is disabled until we get the file URI
                 processBtn.onclick = function() {
                     if (typeof Android !== 'undefined' && Android.previewFile && this.dataset.uri) {
                         Android.previewFile(this.dataset.uri);
                     } else {
-                        console.log("Preview URI: ", this.dataset.uri);
                         alert("Cannot view file. Ensure you're in the Android app.");
                     }
                 };
+
+                // Check if the file URI arrived while the ad was showing
+                if (lastSavedFileUri) {
+                    processBtn.dataset.uri = lastSavedFileUri;
+                    processBtn.disabled = false;
+                }
             }
         };
 
-        // Trigger the ad. If Android interface isn't available (testing in browser), run the success callback immediately.
+        // Trigger the ad
         if (typeof Android !== 'undefined' && Android.showInterstitialAd) {
             Android.showInterstitialAd();
         } else {
-            console.log("Android interface not found, skipping ad.");
+            console.warn("Android interface not found, skipping ad.");
             onAdDismissed();
         }
     }
 
-    // MODIFIED: This function is called from your Java code after the ad is dismissed.
+    // Called from Java after the ad is dismissed
     window.onAdDismissed = function() {
         if (typeof adSuccessCallback === 'function') {
             adSuccessCallback();
-            adSuccessCallback = null; // Clear it after use
+            adSuccessCallback = null;
         }
     };
     
-    // MODIFIED: This function now attaches the URI to the main button
+    // Called from Java when the file is saved
     window.onFileSaved = function(fileName, uriString) {
-        // The main button is now the target
-        if (processBtn.textContent === 'View File') {
+        // Store the URI in our variable to prevent the race condition
+        lastSavedFileUri = uriString;
+        
+        // Also check if the 'View File' button is already on screen and waiting for the URI
+        if (processBtn.textContent === 'View File' && processBtn.disabled) {
             processBtn.dataset.uri = uriString;
             processBtn.disabled = false;
         }
@@ -278,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.textContent = 'Error!'; 
             badge.className = 'status-badge status-error'; 
         }); 
-        // MODIFIED: Reset the button on error
         processBtn.textContent = 'Try Again';
         processBtn.disabled = false;
     }
