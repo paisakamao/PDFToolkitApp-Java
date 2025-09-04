@@ -40,6 +40,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 
+// --- ADDED FOR ADS ---
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+// --- END ---
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import java.io.OutputStream;
@@ -49,6 +53,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
+    private AdView mAdView; // --- ADDED FOR BANNER AD ---
     private ValueCallback<Uri[]> filePathCallback;
     public static final String EXTRA_HTML_FILE = "com.pdfscanner.toolkit.HTML_FILE_TO_LOAD";
 
@@ -94,6 +99,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
+
+        // --- ADDED FOR BANNER AD ---
+        // This finds the AdView in your activity_main.xml and loads the banner ad.
+        mAdView = findViewById(R.id.adView);
+        String bannerAdId = remoteConfig.getString("android_banner_ad_id");
+        // We set the real Ad Unit ID programmatically from Remote Config
+        mAdView.setAdUnitId(bannerAdId);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+        // --- END OF BANNER AD CODE ---
 
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
@@ -152,11 +167,8 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
 
-    /**
-     * Inflates and shows the custom dialog from dialog_external_link.xml
-     * @param url The URL to open or copy.
-     */
     private void showCustomExternalLinkDialog(final String url) {
+        // ... (This method remains unchanged)
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_external_link);
@@ -194,11 +206,8 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /**
-     * Helper method to launch a URL in a styled Custom Tab.
-     * @param url The URL to launch.
-     */
     private void openUrlInCustomTab(String url) {
+        // ... (This method remains unchanged)
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setToolbarColor(ContextCompat.getColor(this, R.color.card_background));
         builder.setShowTitle(true);
@@ -215,6 +224,26 @@ public class MainActivity extends AppCompatActivity {
         private final Handler handler = new Handler(Looper.getMainLooper());
 
         JSBridge(Context context) { this.context = context; }
+
+        // --- ADDED FOR INTERSTITIAL ADS ---
+        /**
+         * This method is called from JavaScript (in pdftools.html or unitools.html)
+         * to show a native interstitial ad.
+         */
+        @JavascriptInterface
+        public void showInterstitialAd() {
+            // Ads must be shown on the main UI thread.
+            handler.post(() -> {
+                if (context instanceof Activity) {
+                    AdManager.getInstance().showInterstitial((Activity) context, () -> {
+                        // This code runs AFTER the user closes the ad.
+                        // It calls the `onAdDismissed` function back in the JavaScript to continue the app flow.
+                        webView.evaluateJavascript("javascript:onAdDismissed();", null);
+                    });
+                }
+            });
+        }
+        // --- END OF NEW METHOD ---
 
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName, String mimeType) {
@@ -241,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void previewFile(String uriString) {
+            // ... (This method remains unchanged)
             if (uriString == null || uriString.isEmpty()) {
                 Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show();
                 return;
@@ -258,9 +288,9 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void showTtsConfirmationDialog() {
+            // ... (This method remains unchanged)
             final String ttsUrl = remoteConfig.getString("tts_tool_url");
             
-            // The dialog must be shown on the main UI thread.
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (ttsUrl == null || ttsUrl.isEmpty()) {
                     Toast.makeText(context, "Tool URL is not available.", Toast.LENGTH_SHORT).show();
@@ -272,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
+        // ... (This method remains unchanged)
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
