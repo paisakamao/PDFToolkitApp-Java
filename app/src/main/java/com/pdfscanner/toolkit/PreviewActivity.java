@@ -95,7 +95,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit");
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDF Kit Pro");
                 }
                 Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (pdfUri != null) {
