@@ -8,4 +8,6 @@
     <string name="page_count_placeholder">Pages: 0</string>
     <string name="create_pdf_button">Create PDF</string>
     <string name="done_button_text">Done</string>
+
+    <string name="banner_ad_unit_id_placeholder">placeholder</string>
 </resources>
