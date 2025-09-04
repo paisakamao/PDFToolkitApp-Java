@@ -1,16 +1,13 @@
-// Make sure this is your app's package name
 package com.pdfscanner.toolkit;
 
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
@@ -18,7 +15,6 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
-// Manages loading and showing App Open Ads on app foreground
 public class AppOpenAdManager implements DefaultLifecycleObserver, Application.ActivityLifecycleCallbacks {
 
     private static final String TAG = "AppOpenAdManager";
@@ -29,22 +25,29 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     private Activity currentActivity;
     private final String AD_UNIT_ID;
 
+    // --- CONSTRUCTOR (UPDATED) ---
     public AppOpenAdManager(Application myApplication) {
         this.myApplication = myApplication;
         this.AD_UNIT_ID = FirebaseRemoteConfig.getInstance().getString("android_app_open_ad_id");
         this.myApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
+
+        // THIS IS THE FIX: Proactively load the first ad on startup, but only if the ID is valid.
+        if (AD_UNIT_ID != null && !AD_UNIT_ID.isEmpty()) {
+            loadAd();
+        }
     }
+    // --- END OF FIX ---
 
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
-        // App came to foreground
         showAdIfAvailable();
         Log.d(TAG, "App is in foreground.");
     }
 
     public void loadAd() {
-        if (isLoadingAd || isAdAvailable()) {
+        // THIS IS THE FIX: Add a check here to be extra safe against empty IDs.
+        if (isLoadingAd || isAdAvailable() || AD_UNIT_ID == null || AD_UNIT_ID.isEmpty()) {
             return;
         }
 
@@ -76,7 +79,7 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     private void showAdIfAvailable() {
         if (isShowingAd || !isAdAvailable()) {
             Log.d(TAG, "Ad not available or already showing.");
-            loadAd();
+            loadAd(); // Try to load the next one
             return;
         }
 
@@ -107,31 +110,19 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
         appOpenAd.show(currentActivity);
     }
 
-    // ActivityLifecycleCallbacks methods
+    // ActivityLifecycleCallbacks methods (all unchanged)
     @Override
     public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
-
     @Override
-    public void onActivityStarted(@NonNull Activity activity) {
-        currentActivity = activity;
-    }
-
+    public void onActivityStarted(@NonNull Activity activity) { currentActivity = activity; }
     @Override
-    public void onActivityResumed(@NonNull Activity activity) {
-        currentActivity = activity;
-    }
-
+    public void onActivityResumed(@NonNull Activity activity) { currentActivity = activity; }
     @Override
     public void onActivityPaused(@NonNull Activity activity) {}
-
     @Override
     public void onActivityStopped(@NonNull Activity activity) {}
-
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
-
     @Override
-    public void onActivityDestroyed(@NonNull Activity activity) {
-        currentActivity = null;
-    }
+    public void onActivityDestroyed(@NonNull Activity activity) { currentActivity = null; }
 }
