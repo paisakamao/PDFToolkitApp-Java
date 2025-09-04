@@ -1,0 +1,15 @@
+<!-- res/xml/remote_config_defaults.xml -->
+<defaultsMap>
+    <entry>
+        <key>android_banner_ad_id</key>
+        <value>ca-app-pub-3940256099942544/6300978111</value> <!-- Test ID -->
+    </entry>
+    <entry>
+        <key>android_interstitial_ad_id</key>
+        <value>ca-app-pub-3940256099942544/1033173712</value> <!-- Test ID -->
+    </entry>
+    <entry>
+        <key>android_app_open_ad_id</key>
+        <value>ca-app-pub-3940256099942544/9257395921</value> <!-- Test ID -->
+    </entry>
+</defaultsMap>
