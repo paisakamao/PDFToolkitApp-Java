@@ -153,7 +153,7 @@ public class PreviewActivity extends AppCompatActivity implements ThumbnailAdapt
     private void cleanupCache() {
         File imageDir = new File(getCacheDir(), "images");
         if (imageDir.exists()) {
-            File[] files = image.listFiles();
+            File[] files = imageDir.listFiles();
             if (files != null) {
                 for (File file : files) {
                     file.delete();
