@@ -281,43 +281,4 @@ public class MainActivity extends AppCompatActivity {
                 if (ttsUrl == null || ttsUrl.isEmpty()) {
                     Toast.makeText(context, "Tool URL is not available.", Toast.LENGTH_SHORT).show();
                     return;
-                }
-                showCustomExternalLinkDialog(ttsUrl);
-            });
-        }
-    }
-
-    private Uri saveFileToDownloads(byte[] data, String fileName, String mimeType) throws Exception {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDF Kit Pro");
-        }
-
-        Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-        if (uri == null) {
-            throw new Exception("Failed to create new MediaStore record.");
-        }
-        try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
-            if (outputStream == null) {
-                throw new Exception("Failed to open output stream.");
-            }
-            outputStream.write(data);
-        }
-        
-        // --- THIS IS THE CRITICAL LINE THAT WAS LIKELY MISSING ---
-        // Every path through this method must either throw an exception or return a Uri.
-        return uri;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
-}
+            
