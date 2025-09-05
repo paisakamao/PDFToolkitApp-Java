@@ -135,7 +135,7 @@ public class HomeActivity extends AppCompatActivity {
         Map<String, Object> defaultConfigMap = new HashMap<>();
         defaultConfigMap.put("admob_native_ad_enabled", false);
         defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110"); // test id
-        defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
+        defaultConfigMap.put("privacy_policy_url", "https://sites.google.com/view/pdft-oolbox-privacy-policy");
         defaultConfigMap.put("tts_tool_url", "https://textiispeech.blogspot.com/p/unitools.html");
         remoteConfig.setDefaultsAsync(defaultConfigMap);
 
