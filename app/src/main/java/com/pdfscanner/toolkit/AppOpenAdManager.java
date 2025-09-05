@@ -1,4 +1,3 @@
-// ❗ REPLACE the entire contents of AppOpenAdManager.java with this code.
 package com.pdfscanner.toolkit;
 
 import android.app.Activity;
@@ -25,24 +24,22 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     private boolean isShowingAd = false;
     private Activity currentActivity;
     private final String AD_UNIT_ID;
+    private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
+
 
     public AppOpenAdManager(Application myApplication) {
         this.myApplication = myApplication;
 
-        // --- ROBUSTNESS FIX: Three-level fallback for Ad Unit ID ---
         String adUnitId = FirebaseRemoteConfig.getInstance().getString("android_app_open_ad_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
-            // Level 2 fallback is handled by the defaults in MyApplication.
-            // Level 3 is a hardcoded test ID as a final safety net.
-            adUnitId = "ca-app-pub-3940256099942544/9257395921"; // Test ID
             Log.e(TAG, "App Open Ad ID from Remote Config is empty. Using hardcoded test ID.");
+            adUnitId = TEST_AD_UNIT_ID;
         }
         this.AD_UNIT_ID = adUnitId;
-        // --- END OF FIX ---
 
         this.myApplication.registerActivityLifecycleCallbacks(this);
         ProcessLifecycleOwner.get().getLifecycle().addObserver(this);
-        loadAd(); // Proactively load the first ad
+        loadAd();
     }
 
     @Override
@@ -128,6 +125,8 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     public void onActivityStopped(@NonNull Activity activity) {}
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
+
+    // --- THIS IS THE CORRECTED LINE ---
     @Override
-    public void onActivityDestroyed(@NonNull Activity) { currentActivity = null; }
+    public void onActivityDestroyed(@NonNull Activity activity) { currentActivity = null; }
 }
