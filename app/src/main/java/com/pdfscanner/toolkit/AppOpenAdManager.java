@@ -26,7 +26,7 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
     private boolean isShowingAd = false;
     private Activity currentActivity;
 
-    // ✅ Google Test App Open Ad ID
+    // ✅ Google Test App Open Ad ID (safe fallback)
     private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921";
 
     private String adUnitId;
@@ -93,3 +93,66 @@ public class AppOpenAdManager implements DefaultLifecycleObserver, Application.A
 
     private void showAdIfAvailable() {
         if (isShowingAd || !isAdAvailable() || currentActivity == null) {
+            Log.d(TAG, "Ad not ready to show.");
+            loadAd();
+            return;
+        }
+
+        appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                Log.d(TAG, "App Open Ad dismissed.");
+                appOpenAd = null;
+                isShowingAd = false;
+                loadAd(); // Load next one
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                Log.e(TAG, "App Open Ad failed to show: " + adError.getMessage());
+                appOpenAd = null;
+                isShowingAd = false;
+                loadAd();
+            }
+
+            @Override
+            public void onAdShowedFullScreenContent() {
+                Log.d(TAG, "App Open Ad showed.");
+                isShowingAd = true;
+            }
+        });
+
+        isShowingAd = true;
+        appOpenAd.show(currentActivity);
+    }
+
+    // --- Activity Lifecycle Callbacks ---
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+        currentActivity = activity;
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+        currentActivity = activity;
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {}
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {}
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+        if (currentActivity == activity) {
+            currentActivity = null;
+        }
+    }
+}
