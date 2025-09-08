@@ -85,7 +85,7 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
-        MobileAds.initialize(this, initializationStatus -> {});
+
         setupRemoteConfigAndLoadAd();
 
         scannerLauncher = registerForActivityResult(
