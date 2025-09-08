@@ -18,7 +18,7 @@ public class AdManager {
     private static AdManager instance;
     private InterstitialAd mInterstitialAd;
 
-    // ✅ Google-provided test interstitial ID
+    // Google test interstitial ID
     private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private AdManager() {}
@@ -32,12 +32,13 @@ public class AdManager {
 
     public void loadInterstitialAd(Context context) {
         if (mInterstitialAd != null) {
+            Log.d(TAG, "Interstitial already loaded or being loaded, skipping.");
             return;
         }
 
         String adUnitId = FirebaseRemoteConfig.getInstance().getString("android_interstitial_ad_id");
 
-        // ✅ Always fall back to test ID
+        // Always fall back to test ID
         if (adUnitId == null || adUnitId.isEmpty()) {
             Log.w(TAG, "Remote Config adUnitId empty. Using test ID.");
             adUnitId = TEST_AD_UNIT_ID;
@@ -67,7 +68,7 @@ public class AdManager {
                 public void onAdDismissedFullScreenContent() {
                     Log.d(TAG, "Ad dismissed.");
                     mInterstitialAd = null;
-                    loadInterstitialAd(activity);
+                    loadInterstitialAd(activity); // Preload next
                     if (onAdDismissed != null) onAdDismissed.run();
                 }
 
@@ -75,7 +76,7 @@ public class AdManager {
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
                     Log.e(TAG, "Ad failed to show: " + adError.getMessage());
                     mInterstitialAd = null;
-                    loadInterstitialAd(activity);
+                    loadInterstitialAd(activity); // Retry next
                     if (onAdDismissed != null) onAdDismissed.run();
                 }
 
@@ -88,6 +89,9 @@ public class AdManager {
         } else {
             Log.w(TAG, "Interstitial ad not ready, running fallback.");
             if (onAdDismissed != null) onAdDismissed.run();
+            // --- THIS IS YOUR CRITICAL FIX ---
+            // This ensures we always try to load an ad for the next time.
+            loadInterstitialAd(activity);
         }
     }
 }
