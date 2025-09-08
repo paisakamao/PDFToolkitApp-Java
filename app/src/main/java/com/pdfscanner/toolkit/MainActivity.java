@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log; // <-- THIS IS THE FIX
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -99,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        // Banner Ad - The robust fallback logic remains.
+        // Banner Ad
         mAdView = findViewById(R.id.adView);
         String bannerAdId = remoteConfig.getString("android_banner_ad_id");
         if (bannerAdId == null || bannerAdId.isEmpty()) {
@@ -110,19 +111,14 @@ public class MainActivity extends AppCompatActivity {
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
-        // Your excellent addition to preload the interstitial
-        AdManager.getInstance().loadInterstitialAd(this);
-
         // WebView setup
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
-
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setMediaPlaybackRequiresUserGesture(false);
-
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -147,8 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     for (String resource : request.getResources()) {
                         if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
                             currentPermissionRequest = request;
-                            if (ContextCompat.checkSelfPermission(MainActivity.this,
-                                    Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                                 microphonePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
                             } else {
                                 request.grant(request.getResources());
@@ -160,9 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 super.onPermissionRequest(request);
             }
         });
-
         webView.addJavascriptInterface(new JSBridge(this), "Android");
-
         Intent intent = getIntent();
         String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
         if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
@@ -171,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
 
-    // --- THIS METHOD IS NOW FULLY IMPLEMENTED ---
     private void showCustomExternalLinkDialog(final String url) {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -209,7 +201,6 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    // --- THIS METHOD IS NOW FULLY IMPLEMENTED ---
     private void openUrlInCustomTab(String url) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setToolbarColor(ContextCompat.getColor(this, R.color.card_background));
@@ -236,8 +227,6 @@ public class MainActivity extends AppCompatActivity {
                         if (webView != null) {
                             webView.evaluateJavascript("javascript:onAdDismissed();", null);
                         }
-                        // Your excellent addition to preload the next ad
-                        AdManager.getInstance().loadInterstitialAd(context);
                     });
                 }
             });
@@ -252,8 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (fileUri != null) {
                         String uriString = fileUri.toString();
-                        String jsCallback = String.format("javascript:onFileSaved('%s', '%s')",
-                                fileName, uriString);
+                        String jsCallback = String.format("javascript:onFileSaved('%s', '%s')", fileName, uriString);
                         handler.post(() -> {
                             Toast.makeText(context, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
                             if (webView != null) {
@@ -308,8 +296,7 @@ public class MainActivity extends AppCompatActivity {
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                    Environment.DIRECTORY_DOWNLOADS + "/PDF Kit Pro");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDF Kit Pro");
         }
 
         Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
