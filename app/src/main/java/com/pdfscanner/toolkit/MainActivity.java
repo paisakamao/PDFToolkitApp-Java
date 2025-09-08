@@ -99,12 +99,12 @@ public class MainActivity extends AppCompatActivity {
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        // Banner Ad
+        // Banner Ad - The robust fallback logic remains.
         mAdView = findViewById(R.id.adView);
         String bannerAdId = remoteConfig.getString("android_banner_ad_id");
         if (bannerAdId == null || bannerAdId.isEmpty()) {
-            // Your excellent fallback to a test ID
-            bannerAdId = "ca-app-pub-3940256099942544/6300978111"; 
+            bannerAdId = "ca-app-pub-3940256099942544/6300978111"; // Fallback test ID
+            Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using test ID.");
         }
         mAdView.setAdUnitId(bannerAdId);
         AdRequest adRequest = new AdRequest.Builder().build();
