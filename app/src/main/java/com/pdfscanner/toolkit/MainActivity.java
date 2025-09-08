@@ -20,8 +20,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log; // <-- THIS IS THE FIX
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -42,8 +40,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import java.io.OutputStream;
@@ -53,7 +49,6 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
-    private AdView mAdView;
     private ValueCallback<Uri[]> filePathCallback;
     public static final String EXTRA_HTML_FILE = "com.pdfscanner.toolkit.HTML_FILE_TO_LOAD";
 
@@ -100,26 +95,17 @@ public class MainActivity extends AppCompatActivity {
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        // Banner Ad
-        mAdView = findViewById(R.id.adView);
-        String bannerAdId = remoteConfig.getString("android_banner_ad_id");
-        if (bannerAdId == null || bannerAdId.isEmpty()) {
-            bannerAdId = "ca-app-pub-3940256099942544/6300978111"; // Fallback test ID
-            Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using test ID.");
-        }
-        mAdView.setAdUnitId(bannerAdId);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-
-        // WebView setup
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
+
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setMediaPlaybackRequiresUserGesture(false);
+
         webView.setWebViewClient(new WebViewClient());
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> fp, FileChooserParams fcp) {
@@ -155,7 +141,9 @@ public class MainActivity extends AppCompatActivity {
                 super.onPermissionRequest(request);
             }
         });
+
         webView.addJavascriptInterface(new JSBridge(this), "Android");
+
         Intent intent = getIntent();
         String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
         if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
@@ -164,6 +152,10 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
 
+    /**
+     * Inflates and shows the custom dialog from dialog_external_link.xml
+     * @param url The URL to open or copy.
+     */
     private void showCustomExternalLinkDialog(final String url) {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -198,9 +190,14 @@ public class MainActivity extends AppCompatActivity {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
+
         dialog.show();
     }
 
+    /**
+     * Helper method to launch a URL in a styled Custom Tab.
+     * @param url The URL to launch.
+     */
     private void openUrlInCustomTab(String url) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setToolbarColor(ContextCompat.getColor(this, R.color.card_background));
@@ -220,19 +217,6 @@ public class MainActivity extends AppCompatActivity {
         JSBridge(Context context) { this.context = context; }
 
         @JavascriptInterface
-        public void showInterstitialAd() {
-            handler.post(() -> {
-                if (context instanceof Activity) {
-                    AdManager.getInstance().showInterstitial((Activity) context, () -> {
-                        if (webView != null) {
-                            webView.evaluateJavascript("javascript:onAdDismissed();", null);
-                        }
-                    });
-                }
-            });
-        }
-
-        @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName, String mimeType) {
             executor.execute(() -> {
                 try {
@@ -244,17 +228,13 @@ public class MainActivity extends AppCompatActivity {
                         String jsCallback = String.format("javascript:onFileSaved('%s', '%s')", fileName, uriString);
                         handler.post(() -> {
                             Toast.makeText(context, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
-                            if (webView != null) {
-                                webView.evaluateJavascript(jsCallback, null);
-                            }
+                            webView.evaluateJavascript(jsCallback, null);
                         });
                     } else {
                         throw new Exception("Failed to get URI for saved file.");
                     }
                 } catch (Exception e) {
-                    handler.post(() ->
-                            Toast.makeText(context, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                    );
+                    handler.post(() -> Toast.makeText(context, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show());
                 }
             });
         }
@@ -279,7 +259,8 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void showTtsConfirmationDialog() {
             final String ttsUrl = remoteConfig.getString("tts_tool_url");
-
+            
+            // The dialog must be shown on the main UI thread.
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (ttsUrl == null || ttsUrl.isEmpty()) {
                     Toast.makeText(context, "Tool URL is not available.", Toast.LENGTH_SHORT).show();
@@ -296,30 +277,25 @@ public class MainActivity extends AppCompatActivity {
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDF Kit Pro");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDFToolkit");
         }
 
         Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-
         if (uri == null) {
             throw new Exception("Failed to create new MediaStore record.");
         }
-
         try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
             if (outputStream == null) {
-                throw new Exception("Failed to open output stream for URI: " + uri);
+                throw new Exception("Failed to open output stream.");
             }
             outputStream.write(data);
-        } catch (Exception e) {
-            throw new Exception("Failed to write data to file: " + e.getMessage());
         }
-
         return uri;
     }
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
+        if (webView.canGoBack()) {
             webView.goBack();
         } else {
             super.onBackPressed();
