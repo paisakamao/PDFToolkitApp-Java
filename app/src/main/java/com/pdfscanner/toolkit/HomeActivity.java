@@ -85,7 +85,7 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
-
+        MobileAds.initialize(this, initializationStatus -> {});
         setupRemoteConfigAndLoadAd();
 
         scannerLauncher = registerForActivityResult(
@@ -265,7 +265,7 @@ public class HomeActivity extends AppCompatActivity {
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, finalFileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDF Kit Pro");
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDFToolkit");
                 }
                 Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
                 if (pdfUri != null) {
@@ -331,7 +331,7 @@ private void showSuccessDialog(@NonNull Uri pdfUri, @NonNull String fileName, in
         Log.e(TAG, "Could not get file size.", e);
     }
 
-    tvPath.setText("Path: Downloads/PDF Kit Pro");
+    tvPath.setText("Path: Downloads/PDFToolkit");
     tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
     // Build dialog
