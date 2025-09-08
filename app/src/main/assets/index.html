@@ -252,14 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Trigger the ad
-        if (typeof Android !== 'undefined' && Android.showInterstitialAd) {
-            Android.showInterstitialAd();
-        } else {
-            console.warn("Android interface not found, skipping ad.");
-            onAdDismissed();
-        }
-    }
+
 
     // Called from Java after the ad is dismissed
     window.onAdDismissed = function() {
