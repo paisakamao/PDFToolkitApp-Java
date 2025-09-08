@@ -111,18 +111,7 @@
                 modalContent.innerHTML = '';
             }
             
-            // --- MODIFIED: This function now decides IF an ad should be shown ---
-            function closeModal() {
-                const now = Date.now();
-                // Check if the Android interface exists and if the cooldown has passed
-                if (typeof Android !== 'undefined' && Android.showInterstitialAd && (now - lastAdShownTime > AD_COOLDOWN_MS)) {
-                    lastAdShownTime = now; // Update the time immediately
-                    Android.showInterstitialAd();
-                } else {
-                    // If no ad is shown, close the modal directly
-                    performCloseActions();
-                }
-            }
+
             
             // Event Listeners
             toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) { openModal(card.dataset.toolId); } });
