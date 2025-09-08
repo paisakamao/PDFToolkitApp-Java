@@ -1,82 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Permissions remain the same -->
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <!-- 
-        ===========================================================
-        CRITICAL FIX #1: Added android:name=".MyApplication"
-        This tells the app to run your custom Application class,
-        which initializes Firebase and the Ad SDK.
-        ===========================================================
-    -->
-    <application
-        android:name=".MyApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="PDF kit Pro"
-        android:supportsRtl="true"
-        android:requestLegacyExternalStorage="true">
-    
-        <!-- 
-            ===========================================================
-            CRITICAL FIX #2: Replace this with your REAL AdMob App ID
-            The sample ID will cause crashes in a release app.
-            ===========================================================
-        -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/> <!-- PASTE YOUR REAL ID HERE -->
-
-        <!-- Your Activities remain the same -->
-        <activity
-            android:name=".SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".HomeActivity"
-            android:exported="true"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-
-        <activity android:name=".MainActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-
-        <activity android:name=".AllFilesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
-
-        <activity android:name=".PdfViewerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.WithToolbar" />
-
-        <activity android:name=".ScannerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.Scanner" />
-        
-        <!-- 
-            BEST PRACTICE FIX: Removed the duplicate FileProvider.
-            This single provider using ${applicationId} is the correct way.
-        -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
-        </provider>
-
-    </application>
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.RECORD_AUDIO"/>
+<application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="PDF Toolkit" android:supportsRtl="true" android:requestLegacyExternalStorage="true">
+<activity android:name=".HomeActivity" android:exported="true" android:theme="@style/Theme.PDFToolkit.NoActionBar">
+<intent-filter>
+<action android:name="android.intent.action.MAIN"/>
+<category android:name="android.intent.category.LAUNCHER"/>
+</intent-filter>
+</activity>
+<activity android:name=".MainActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar"/>
+<activity android:name=".AllFilesActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar"/>
+<activity android:name=".PdfViewerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.NoActionBar"/>
+<activity android:name=".ScannerActivity" android:exported="false" android:theme="@style/Theme.PDFToolkit.Scanner"/>
+<provider android:name="androidx.core.content.FileProvider" android:authorities="com.pdf.toolkit.fileprovider" android:exported="false" android:grantUriPermissions="true">
+<meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+</provider>
+<provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.provider" android:exported="false" android:grantUriPermissions="true">
+<meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+</provider>
+</application>
 </manifest>
