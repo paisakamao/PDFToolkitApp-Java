@@ -16,32 +16,36 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // 1. Initialize Firebase Remote Config with Listeners for Debugging
+        // 1. Initialize Firebase Remote Config (this can still be done first)
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(3600) // Cache for 1 hour
+                .setMinimumFetchIntervalInSeconds(3600)
                 .build();
         remoteConfig.setConfigSettingsAsync(configSettings);
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
-
-        // Fetch and activate, but now with listeners to see what's happening
         remoteConfig.fetchAndActivate()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        boolean updated = task.getResult();
-                        Log.d(TAG, "Remote Config parameters activated. Were they updated? " + updated);
+                        Log.d(TAG, "Remote Config fetch successful.");
                     } else {
-                        Log.e(TAG, "Remote Config fetch failed");
+                        Log.e(TAG, "Remote Config fetch failed.");
                     }
                 });
 
-        // 2. Initialize Google Mobile Ads SDK
+        // 2. Initialize Google Mobile Ads and WAIT for it to be ready.
         MobileAds.initialize(this, initializationStatus -> {
-             Log.d(TAG, "Mobile Ads SDK Initialized.");
+             Log.d(TAG, "Mobile Ads SDK Initialized. All ads can now be loaded.");
+             
+             // --- THIS IS THE CRITICAL FIX ---
+             // All ad-related initializations are now moved INSIDE this listener.
+             // This guarantees they will only run AFTER the SDK is ready.
+             
+             // Initialize App Open Ad Manager
+             appOpenAdManager = new AppOpenAdManager(this);
+             
+             // Pre-load the first Interstitial Ad
+             AdManager.getInstance().loadInterstitialAd(this);
+             // --- END OF CRITICAL FIX ---
         });
-
-        // 3. Initialize our Ad Managers
-        appOpenAdManager = new AppOpenAdManager(this);
-        AdManager.getInstance().loadInterstitialAd(this);
     }
 }
