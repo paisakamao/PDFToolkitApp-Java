@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace "com.pdfscanner.toolkit"
+    namespace 'com.pdfscanner.toolkit'
     compileSdk 34
 
     defaultConfig {
         applicationId "com.pdfscanner.toolkit"
-        minSdk 24
+        minSdk 23
         targetSdk 34
         versionCode 2
         versionName "1.1"
@@ -20,17 +20,19 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     buildFeatures {
         viewBinding true
+        dataBinding true
     }
 }
 
@@ -47,17 +49,16 @@ dependencies {
     // Google Mobile Ads
     implementation 'com.google.android.gms:play-services-ads:22.6.0'
 
-    // ML Kit Document Scanner
+    // ML Kit Document Scanner (original dependency that fails on CI)
     implementation 'com.google.mlkit:document-scanner:16.0.0-beta3'
 
-    // PDF Viewer
+    // PDF Viewer (original barteksc dependency that fails on CI)
     implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
 
-    // Glide (for GIF/thumbnail loading)
+    // Glide
     implementation 'com.github.bumptech.glide:glide:4.15.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
 
-    // Testing
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
