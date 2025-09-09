@@ -85,7 +85,6 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
-        MobileAds.initialize(this, initializationStatus -> {});
         setupRemoteConfigAndLoadAd();
 
         scannerLauncher = registerForActivityResult(
@@ -125,21 +124,15 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupRemoteConfigAndLoadAd() {
+        // Get the instance. All defaults have already been set by MyApplication.
         remoteConfig = FirebaseRemoteConfig.getInstance();
-        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-            .setMinimumFetchIntervalInSeconds(3600)
-            .build();
-        remoteConfig.setConfigSettingsAsync(configSettings);
 
-        Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("admob_native_ad_enabled", false);
-        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
-        defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
-        defaultConfigMap.put("tts_tool_url", "https://textiispeech.blogspot.com/p/unitools.html");
-        remoteConfig.setDefaultsAsync(defaultConfigMap);
-
+        // Fetch the latest values and then load the ad.
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
+                loadAdFromConfig();
+            } else {
+                // If fetching fails, still try to load with cached/default values.
                 loadAdFromConfig();
             }
         });
