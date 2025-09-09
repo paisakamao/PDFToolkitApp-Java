@@ -39,7 +39,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull; // <-- THIS IS THE MISSING IMPORT
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
@@ -172,7 +172,11 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                     super.onAdFailedToLoad(loadAdError);
-                    Log.e("MainActivityAds", "Banner ad failed to load with error: " + loadAdError.getMessage());
+                    String error = "Banner Error: " + loadAdError.getMessage();
+                    Log.e("MainActivityAds", error);
+                    // --- THIS IS THE CRITICAL DEBUGGING CODE ---
+                    // This will show the exact error on your screen.
+                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
                 }
                 @Override
                 public void onAdLoaded() {
