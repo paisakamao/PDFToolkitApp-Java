@@ -1,3 +1,4 @@
+// File Location: app/src/main/java/com/pdfscanner/toolkit/MainActivity.java
 package com.pdfscanner.toolkit;
 
 import android.Manifest;
@@ -36,32 +37,26 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
-
     private WebView webView;
     private AdView mAdView;
     private ValueCallback<Uri[]> filePathCallback;
     public static final String EXTRA_HTML_FILE = "com.pdfscanner.toolkit.HTML_FILE_TO_LOAD";
-
     private PermissionRequest currentPermissionRequest;
     private FirebaseRemoteConfig remoteConfig;
-
     private final ActivityResultLauncher<Intent> fileChooserLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (filePathCallback == null) return;
@@ -80,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 filePathCallback.onReceiveValue(results);
                 filePathCallback = null;
             });
-
     private final ActivityResultLauncher<String> microphonePermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (currentPermissionRequest != null) {
@@ -99,16 +93,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        // --- THIS IS THE FINAL, CRASH-PROOF FIX ---
-        // Instead of creating the ad directly, we ask MyApplication to run the code
-        // only when the Ad SDK is fully initialized.
         MyApplication.executeWhenAdSDKReady(() -> {
             Log.d("MainActivityAds", "Ad SDK is ready. Creating banner ad.");
             loadBannerAd();
         });
+
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
         WebSettings webSettings = webView.getSettings();
@@ -153,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.addJavascriptInterface(new JSBridge(this), "Android");
-
         Intent intent = getIntent();
         String htmlFileToLoad = intent.getStringExtra(EXTRA_HTML_FILE);
         if (htmlFileToLoad == null || htmlFileToLoad.isEmpty()) {
@@ -161,17 +151,16 @@ public class MainActivity extends AppCompatActivity {
         }
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
     }
+
     private void loadBannerAd() {
-        // This ensures the code runs on the main thread, which is required for UI changes.
         runOnUiThread(() -> {
             mAdView = new AdView(this);
             String bannerAdId = remoteConfig.getString("android_banner_ad_id");
             if (bannerAdId == null || bannerAdId.isEmpty()) {
-                bannerAdId = "ca-app-pub-3940256099942544/6300978111"; // Fallback test ID
+                bannerAdId = "ca-app-pub-3940256099942544/6300978111";
             }
             mAdView.setAdUnitId(bannerAdId);
             mAdView.setAdSize(AdSize.BANNER);
-            
             RelativeLayout adContainer = findViewById(R.id.ad_container);
             if (adContainer != null) {
                 adContainer.addView(mAdView);
@@ -192,10 +181,7 @@ public class MainActivity extends AppCompatActivity {
         ImageButton closeButton = dialog.findViewById(R.id.dialog_btn_close);
         title.setText("External Link");
         description.setText("This tool works with external links. If you want to use this tool, please click 'Open'. It is not a 3rd party link; this is our online tool.");
-        openButton.setOnClickListener(v -> {
-            dialog.dismiss();
-            openUrlInCustomTab(url);
-        });
+        openButton.setOnClickListener(v -> { dialog.dismiss(); openUrlInCustomTab(url); });
         copyButton.setOnClickListener(v -> {
             dialog.dismiss();
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -242,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
         @JavascriptInterface
         public void saveBase64File(String base64Data, String fileName, String mimeType) {
             executor.execute(() -> {
@@ -254,46 +239,30 @@ public class MainActivity extends AppCompatActivity {
                         String jsCallback = String.format("javascript:onFileSaved('%s', '%s')", fileName, uriString);
                         handler.post(() -> {
                             Toast.makeText(context, "File saved to Downloads: " + fileName, Toast.LENGTH_LONG).show();
-                            if (webView != null) {
-                                webView.evaluateJavascript(jsCallback, null);
-                            }
+                            if (webView != null) { webView.evaluateJavascript(jsCallback, null); }
                         });
-                    } else {
-                        throw new Exception("Failed to get URI for saved file.");
-                    }
+                    } else { throw new Exception("Failed to get URI for saved file."); }
                 } catch (Exception e) {
-                    handler.post(() ->
-                            Toast.makeText(context, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                    );
+                    handler.post(() -> Toast.makeText(context, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show());
                 }
             });
         }
-
         @JavascriptInterface
         public void previewFile(String uriString) {
-            if (uriString == null || uriString.isEmpty()) {
-                Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            if (uriString == null || uriString.isEmpty()) { Toast.makeText(context, "Cannot view file: No URI provided.", Toast.LENGTH_SHORT).show(); return; }
             try {
                 Uri pdfUri = Uri.parse(uriString);
                 Intent intent = new Intent(context, PdfViewerActivity.class);
                 intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 context.startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(context, "Error opening PDF Viewer.", Toast.LENGTH_SHORT).show();
-            }
+            } catch (Exception e) { Toast.makeText(context, "Error opening PDF Viewer.", Toast.LENGTH_SHORT).show(); }
         }
-
         @JavascriptInterface
         public void showTtsConfirmationDialog() {
             final String ttsUrl = remoteConfig.getString("tts_tool_url");
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (ttsUrl == null || ttsUrl.isEmpty()) {
-                    Toast.makeText(context, "Tool URL is not available.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                if (ttsUrl == null || ttsUrl.isEmpty()) { Toast.makeText(context, "Tool URL is not available.", Toast.LENGTH_SHORT).show(); return; }
                 showCustomExternalLinkDialog(ttsUrl);
             });
         }
@@ -307,17 +276,11 @@ public class MainActivity extends AppCompatActivity {
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDF Kit Pro");
         }
         Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-        if (uri == null) {
-            throw new Exception("Failed to create new MediaStore record.");
-        }
+        if (uri == null) { throw new Exception("Failed to create new MediaStore record."); }
         try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
-            if (outputStream == null) {
-                throw new Exception("Failed to open output stream for URI: " + uri);
-            }
+            if (outputStream == null) { throw new Exception("Failed to open output stream for URI: " + uri); }
             outputStream.write(data);
-        } catch (Exception e) {
-            throw new Exception("Failed to write data to file: " + e.getMessage());
-        }
+        } catch (Exception e) { throw new Exception("Failed to write data to file: " + e.getMessage()); }
         return uri;
     }
 
