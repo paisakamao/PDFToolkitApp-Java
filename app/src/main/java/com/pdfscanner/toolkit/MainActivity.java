@@ -36,17 +36,21 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull; // <-- THIS IS THE MISSING IMPORT
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -157,17 +161,10 @@ public class MainActivity extends AppCompatActivity {
     private void loadBannerAd() {
         runOnUiThread(() -> {
             mAdView = new AdView(this);
-            
-            // This is the final, production-ready logic.
-            // It reads from Firebase and uses the now-correct default XML as a fallback.
             String bannerAdId = remoteConfig.getString("android_banner_ad_id");
             if (bannerAdId == null || bannerAdId.isEmpty()) {
-                // This case should no longer happen now that the defaults file is correct,
-                // but it's good to keep it as a final safety net.
-                Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using hardcoded test ID.");
                 bannerAdId = "ca-app-pub-3940256099942544/6300978111";
             }
-
             mAdView.setAdUnitId(bannerAdId);
             mAdView.setAdSize(AdSize.BANNER);
             
