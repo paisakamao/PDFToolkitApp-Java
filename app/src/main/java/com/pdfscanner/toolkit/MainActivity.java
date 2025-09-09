@@ -20,7 +20,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.DisplayMetrics; // <-- NEW IMPORT
 import android.util.Log;
+import android.view.Display; // <-- NEW IMPORT
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -161,21 +163,25 @@ public class MainActivity extends AppCompatActivity {
     private void loadBannerAd() {
         runOnUiThread(() -> {
             mAdView = new AdView(this);
-            
-            // --- THIS IS THE RESTORED PRODUCTION LOGIC ---
-            // It tries to get the ID from Firebase first.
-            // If that fails, it uses the default value from your remote_config_defaults.xml file.
             String bannerAdId = remoteConfig.getString("android_banner_ad_id");
             if (bannerAdId == null || bannerAdId.isEmpty()) {
-                // This is the final safety net, which should never be needed now
-                // that your XML file is correct.
-                Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using hardcoded test ID.");
                 bannerAdId = "ca-app-pub-3940256099942544/6300978111";
             }
-            // --- END OF RESTORED LOGIC ---
-
             mAdView.setAdUnitId(bannerAdId);
-            mAdView.setAdSize(AdSize.BANNER);
+
+            // --- THIS IS THE NEW ADAPTIVE BANNER LOGIC ---
+            Display display = getWindowManager().getDefaultDisplay();
+            DisplayMetrics outMetrics = new DisplayMetrics();
+            display.getMetrics(outMetrics);
+
+            float widthPixels = outMetrics.widthPixels;
+            float density = outMetrics.density;
+
+            int adWidth = (int) (widthPixels / density);
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
+            
+            mAdView.setAdSize(adSize);
+            // --- END OF NEW LOGIC ---
             
             mAdView.setAdListener(new AdListener() {
                 @Override
