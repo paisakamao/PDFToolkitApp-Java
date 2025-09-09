@@ -1,27 +1,24 @@
+<!-- File Location: app/src/main/res/layout/activity_main.xml -->
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MODIFIED: Wrapped everything in a RelativeLayout to hold both the WebView and the AdView -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- Your original WebView, now constrained to stay ABOVE the banner ad -->
+    <!-- This is an empty container where we will safely add our banner ad using Java code -->
+    <RelativeLayout
+        android:id="@+id/ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal"/>
+
+    <!-- Your WebView now sits safely above the ad container -->
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/adView" />
-
-    <!-- NEW: The native AdView for the banner ad -->
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        app:adSize="BANNER"
-        app:adUnitId="@string/banner_ad_unit_id_placeholder" />
+        android:layout_above="@id/ad_container" />
 
 </RelativeLayout>
