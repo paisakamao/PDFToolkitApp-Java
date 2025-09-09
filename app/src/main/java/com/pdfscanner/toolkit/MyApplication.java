@@ -26,6 +26,7 @@ public class MyApplication extends Application {
         // Initialize the Ad SDK ONCE.
         MobileAds.initialize(this, initializationStatus -> {
             Log.d(TAG, "Mobile Ads SDK Initialized.");
+        AdManager.getInstance().loadInterstitialAd(this);
         });
     }
 }
