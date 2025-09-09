@@ -41,7 +41,10 @@ import java.util.List;
 
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
+    // --- THIS IS THE MISSING LINE ---
+    private static final String TAG = "AllFilesActivity";
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
+    
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
