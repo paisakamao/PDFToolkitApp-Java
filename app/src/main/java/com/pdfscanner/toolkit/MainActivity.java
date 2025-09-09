@@ -158,11 +158,15 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             mAdView = new AdView(this);
             
-            // --- THIS IS THE TEMPORARY TEST ---
-            // We are ignoring Firebase and using the official Google Test ID directly.
-            Log.d("MainActivityAds", "Forcing use of Google Test Banner ID.");
-            String bannerAdId = "ca-app-pub-3940256099942544/6300978111";
-            // --- END OF TEST ---
+            // This is the final, production-ready logic.
+            // It reads from Firebase and uses the now-correct default XML as a fallback.
+            String bannerAdId = remoteConfig.getString("android_banner_ad_id");
+            if (bannerAdId == null || bannerAdId.isEmpty()) {
+                // This case should no longer happen now that the defaults file is correct,
+                // but it's good to keep it as a final safety net.
+                Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using hardcoded test ID.");
+                bannerAdId = "ca-app-pub-3940256099942544/6300978111";
+            }
 
             mAdView.setAdUnitId(bannerAdId);
             mAdView.setAdSize(AdSize.BANNER);
@@ -173,7 +177,6 @@ public class MainActivity extends AppCompatActivity {
                     super.onAdFailedToLoad(loadAdError);
                     Log.e("MainActivityAds", "Banner ad failed to load with error: " + loadAdError.getMessage());
                 }
-
                 @Override
                 public void onAdLoaded() {
                     super.onAdLoaded();
