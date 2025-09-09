@@ -1,4 +1,4 @@
-// Create this new file: AdManager.java
+// File Location: app/src/main/java/com/pdfscanner/toolkit/AdManager.java
 package com.pdfscanner.toolkit;
 
 import android.app.Activity;
@@ -18,9 +18,7 @@ public class AdManager {
     private static final String TAG = "AdManager";
     private static AdManager instance;
     private InterstitialAd mInterstitialAd;
-
-    // A fallback test ID from remote_config_defaults.xml
-    private static final String FALLBACK_TEST_AD_ID = "ca-app-pub-3940256099942544/1033173712";
+    private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private AdManager() {}
 
@@ -33,12 +31,12 @@ public class AdManager {
 
     public void loadInterstitialAd(Context context) {
         if (mInterstitialAd != null) {
-            return; // An ad is already loaded or being loaded.
+            return;
         }
 
         String adUnitId = FirebaseRemoteConfig.getInstance().getString("android_interstitial_ad_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
-            adUnitId = FALLBACK_TEST_AD_ID;
+            adUnitId = TEST_AD_UNIT_ID;
         }
 
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -64,20 +62,19 @@ public class AdManager {
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     mInterstitialAd = null;
-                    loadInterstitialAd(activity); // Preload the next ad
+                    loadInterstitialAd(activity);
                     if (onAdDismissed != null) onAdDismissed.run();
                 }
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
                     mInterstitialAd = null;
-                    loadInterstitialAd(activity); // Preload the next ad
+                    loadInterstitialAd(activity);
                     if (onAdDismissed != null) onAdDismissed.run();
                 }
             });
             mInterstitialAd.show(activity);
         } else {
-            // If ad is not ready, run the callback immediately and try to load an ad for the next time.
             if (onAdDismissed != null) onAdDismissed.run();
             loadInterstitialAd(activity);
         }
