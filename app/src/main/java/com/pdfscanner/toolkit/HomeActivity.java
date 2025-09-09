@@ -1,22 +1,15 @@
 package com.pdfscanner.toolkit;
 
-// All necessary imports for the final version
+// All necessary imports
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
@@ -25,14 +18,12 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,13 +35,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
@@ -59,14 +48,10 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
@@ -81,16 +66,17 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("PDF kit Pro");
+        toolbar.setTitle("PDF Kit Pro");
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
+        // The MobileAds.initialize() call is now correctly removed from here.
         setupRemoteConfigAndLoadAd();
 
         scannerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartIntentSenderForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
+                if (result.getResultCode() == RESULT_OK) {
                     GmsDocumentScanningResult scanningResult = GmsDocumentScanningResult.fromActivityResultIntent(result.getData());
                     if (scanningResult != null && scanningResult.getPages() != null && !scanningResult.getPages().isEmpty()) {
                         saveAsPdfAndShowDialog(scanningResult.getPages());
@@ -124,25 +110,16 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupRemoteConfigAndLoadAd() {
-        // Get the instance. All defaults have already been set by MyApplication.
+        // Get the instance. All defaults have been set by MyApplication.
         remoteConfig = FirebaseRemoteConfig.getInstance();
-
-        // Fetch the latest values and then load the ad.
-        remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
-            if (task.isSuccessful()) {
-                loadAdFromConfig();
-            } else {
-                // If fetching fails, still try to load with cached/default values.
-                loadAdFromConfig();
-            }
-        });
+        remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> loadAdFromConfig());
     }
 
     private void loadAdFromConfig() {
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (isAdEnabled) {
             String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
-            if (adUnitId.isEmpty()) return;
+            if (adUnitId == null || adUnitId.isEmpty()) return;
 
             AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
             builder.forNativeAd(nativeAd -> {
@@ -159,13 +136,73 @@ public class HomeActivity extends AppCompatActivity {
 
             builder.withAdListener(new AdListener() {
                 @Override
-                public void onAdFailedToLoad(LoadAdError adError) {
-                    Log.e(TAG, "Ad failed to load: " + adError.getMessage());
+                public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                    Log.e(TAG, "Native ad failed to load: " + adError.getMessage());
                 }
             });
-
             builder.build().loadAd(new AdRequest.Builder().build());
         }
+    }
+    
+    private void saveAsPdfAndShowDialog(java.util.List<GmsDocumentScanningResult.Page> pages) {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Creating PDF...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        new Thread(() -> {
+            Uri finalPdfUri = null;
+            String finalFileName = "SCAN_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis()) + ".pdf";
+            boolean success = false;
+            Uri firstPageUri = pages.isEmpty() ? null : pages.get(0).getImageUri();
+
+            try {
+                PdfDocument pdfDocument = new PdfDocument();
+                for (GmsDocumentScanningResult.Page page : pages) {
+                    Bitmap bitmap = uriToResizedBitmap(page.getImageUri());
+                    if (bitmap != null) {
+                        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), pages.indexOf(page) + 1).create();
+                        PdfDocument.Page pdfPage = pdfDocument.startPage(pageInfo);
+                        pdfPage.getCanvas().drawBitmap(bitmap, 0, 0, null);
+                        pdfDocument.finishPage(pdfPage);
+                        bitmap.recycle();
+                    }
+                }
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.MediaColumns.DISPLAY_NAME, finalFileName);
+                values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Downloads/PDF Kit Pro");
+                }
+                Uri pdfUri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (pdfUri != null) {
+                    try (OutputStream outputStream = getContentResolver().openOutputStream(pdfUri)) {
+                        pdfDocument.writeTo(outputStream);
+                        finalPdfUri = pdfUri;
+                        success = true;
+                    }
+                }
+                pdfDocument.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving PDF", e);
+            }
+
+            final boolean finalSuccess = success;
+            final Uri savedUri = finalPdfUri;
+            final int pageCount = pages.size();
+
+            runOnUiThread(() -> {
+                progressDialog.dismiss();
+                if (finalSuccess && savedUri != null) {
+                    // This is where the ad is now shown
+                    AdManager.getInstance().showInterstitial(HomeActivity.this, () -> {
+                        showSuccessDialog(savedUri, finalFileName, pageCount, firstPageUri);
+                    });
+                } else {
+                    Toast.makeText(this, "Failed to save PDF.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
