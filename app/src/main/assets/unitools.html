@@ -22,25 +22,12 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: var(--font-family); background-color: var(--color-bg-main); color: var(--color-text-primary); line-height: 1.6; }
-        .main-content { padding: 1.5rem; }
+        .main-content { padding: 1.5rem; padding-bottom: 70px; /* Space for the banner ad */ }
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; }
         .tool-card { background-color: var(--color-bg-card); border-radius: var(--border-radius); padding: 1rem; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: var(--shadow-sm); cursor: pointer; text-align: center; aspect-ratio: 1 / 1; }
         .tool-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
         .tool-card .card-icon { font-size: 2.25rem; color: var(--color-primary-accent); margin-bottom: 0.75rem; }
-        .tool-card h2 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            /*
-            ===================================================================
-            THIS IS THE CSS FIX FOR THE TEXT WRAPPING AND CARD SIZE ISSUES
-            ===================================================================
-            - `word-break: break-word;` forces long text like "Timer/Stopwatch" to wrap.
-            - This allows the grid to correctly calculate the size for all cards,
-              making them uniform squares.
-            */
-            word-break: break-word;
-        }
+        .tool-card h2 { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
         .btn { display: inline-block; background-color: var(--color-primary-accent); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; cursor: pointer; text-align: center; transition: background-color 0.2s ease; }
         .btn:hover { background-color: #0056b3; }
         .btn-secondary { background-color: var(--color-text-secondary); }
@@ -85,13 +72,14 @@
             const modalContent = document.getElementById('modal-content');
             const notificationEl = document.getElementById('notification');
 
-            function downloadFile(data, fileName, fileType) { if (typeof Android !== 'undefined' && Android.saveBase64File) { const reader = new FileReader(); reader.onload = function() { const base64Data = reader.result.split(',')[1]; Android.saveBase64File(base64Data, fileName, fileType); }; reader.onerror = function() { showNotification('Error: Could not read the file for download.', 3000); }; reader.readAsDataURL(new Blob([data], { type: fileType })); } else { showNotification("Download function is only available in the Android app.", 4000); } }
+            let lastAdShownTime = 0;
+            const AD_COOLDOWN_MS = 60000; // 60 seconds
 
+            window.onAdDismissed = function() {
+                performCloseActions();
+            };
+            
             const tools = [ { id: "text-to-speech", title: "Text to Speech", desc: "Convert written text into speech using your device's voices.", icon: "fa-volume-up" }, { id: "speech-to-text", title: "Speech to Text", desc: "Transcribe your spoken words into text using your microphone.", icon: "fa-microphone-alt" }, { id: "qr-code-generator", title: "QR Code Generator", desc: "Create and download QR codes for URLs, text, and more.", icon: "fa-qrcode" }, { id: "password-generator", title: "Password Generator", desc: "Generate strong, secure, and customizable passwords.", icon: "fa-key" }, { id: "tip-calculator", title: "Tip Calculator", desc: "Split bills and calculate the tip amount per person.", icon: "fa-receipt" }, { id: "random-number", title: "Random Number", desc: "Generate random numbers within a specified range.", icon: "fa-random" }, { id: "dice-coin", title: "Dice & Coin", desc: "Simulate dice rolls and coin flips for random outcomes.", icon: "fa-dice-d6" }, { id: "word-counter", title: "Word Counter", desc: "Count words, characters, and sentences in your text.", icon: "fa-file-word" }, { id: "case-converter", title: "Case Converter", desc: "Convert text to UPPERCASE, lowercase, Title Case, etc.", icon: "fa-text-height" }, { id: "lorem-ipsum", title: "Lorem Ipsum", desc: "Generate placeholder text for your designs and mockups.", icon: "fa-paragraph" }, { id: "url-encoder", title: "URL Encoder", desc: "Encode or decode special characters in URLs.", icon: "fa-link" }, { id: "hash-generator", title: "Hash Generator", desc: "Create MD5, SHA-1, and SHA-256 hashes from text.", icon: "fa-fingerprint" }, { id: "markdown-html", title: "Markdown Preview", desc: "Write in Markdown and see a live HTML preview.", icon: "fa-markdown" }, { id: "html-playground", title: "HTML Playground", desc: "Write HTML and CSS and see a live preview of your code.", icon: "fa-code" }, { id: "json-formatter", title: "JSON Formatter", desc: "Validate, format, and beautify your JSON data.", icon: "fa-sitemap" }, { id: "unit-converter", title: "Unit Converter", desc: "Convert various units of length, weight, and temperature.", icon: "fa-ruler-combined" }, { id: "age-calculator", title: "Age Calculator", desc: "Calculate exact age from a date of birth.", icon: "fa-calendar-alt" }, { id: "bmi-calculator", title: "BMI Calculator", desc: "Calculate your Body Mass Index.", icon: "fa-weight" }, { id: "emi-calculator", title: "EMI Calculator", desc: "Calculate your Equated Monthly Installment for loans.", icon: "fa-percent" }, { id: "sip-calculator", title: "SIP Calculator", desc: "Estimate the returns on your Systematic Investment Plan (SIP).", icon: "fa-chart-line" }, { id: "base64-encoder", title: "Base64 Tools", desc: "Encode text to Base64 or decode from Base64 back to text.", icon: "fa-exchange-alt" }, { id: "timer-stopwatch", title: "Timer/Stopwatch", desc: "A versatile timer and stopwatch for all your timing needs.", icon: "fa-stopwatch" }, ];
-
-            // =================================================================
-            // THIS IS THE COMPLETE, RESTORED TOOL IMPLEMENTATIONS OBJECT
-            // =================================================================
             const toolImplementations = {
                 'text-to-speech': () => ({ content: `<textarea id="tts-text" class="tool-textarea" placeholder="Enter text to speak..."></textarea><label for="tts-voice">Voice:</label><select id="tts-voice" class="tool-select"></select><div class="tool-controls"><button id="tts-speak-btn" class="btn">Speak</button><button id="tts-stop-btn" class="btn btn-secondary">Stop</button></div><div id="tts-status" class="result-box mt-1" style="color:red;"></div>`, onMount: () => { const synth = window.speechSynthesis; const textInput = document.getElementById('tts-text'); const voiceSelect = document.getElementById('tts-voice'); const speakBtn = document.getElementById('tts-speak-btn'); const stopBtn = document.getElementById('tts-stop-btn'); const statusBox = document.getElementById('tts-status'); let voices = []; function populateVoiceList() { voices = synth.getVoices().sort((a, b) => a.name.localeCompare(b.name)); voiceSelect.innerHTML = voices.map((voice, i) => `<option value="${i}" ${voice.default ? 'selected' : ''}>${voice.name} (${voice.lang})</option>`).join(''); if (voices.length === 0) { statusBox.textContent = "No Text-to-Speech voices were found on this device. Please check your phone's settings."; speakBtn.disabled = true; voiceSelect.disabled = true; } else { statusBox.textContent = ""; speakBtn.disabled = false; voiceSelect.disabled = false; } } if (!synth) { statusBox.textContent = "Text-to-Speech is not supported in this browser/WebView."; speakBtn.disabled = true; stopBtn.disabled = true; return; } populateVoiceList(); if (synth.onvoiceschanged !== undefined) { synth.onvoiceschanged = populateVoiceList; } else { setTimeout(populateVoiceList, 500); } speakBtn.addEventListener('click', () => { if (synth.speaking) { showNotification("Already speaking.", 3000); return; } if (textInput.value.trim() !== '') { const utterThis = new SpeechSynthesisUtterance(textInput.value); utterThis.voice = voices[voiceSelect.value]; synth.speak(utterThis); } else { showNotification("Please enter text to speak.", 3000); } }); stopBtn.addEventListener('click', () => synth.cancel()); } }),
                 'speech-to-text': () => ({ content: ` <div class="tool-controls"> <button id="stt-start-btn" class="btn">Start Listening</button> <button id="stt-stop-btn" class="btn btn-secondary hidden">Stop</button> <button id="stt-download-btn" class="btn hidden" style="background-color:#28a745;">Download Transcript</button> </div> <div id="stt-result" class="result-box mt-1">Your transcribed text will appear here...</div> `, onMount: () => { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { showNotification("Speech-to-Text is not supported in this browser/WebView.", 5000); return; } const recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US'; const startBtn = document.getElementById('stt-start-btn'); const stopBtn = document.getElementById('stt-stop-btn'); const downloadBtn = document.getElementById('stt-download-btn'); const resultBox = document.getElementById('stt-result'); recognition.onstart = () => { startBtn.classList.add('hidden'); stopBtn.classList.remove('hidden'); downloadBtn.classList.add('hidden'); resultBox.textContent = 'Listening...'; }; recognition.onresult = (event) => { let final_transcript = ''; for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { final_transcript += event.results[i][0].transcript; } } resultBox.textContent = final_transcript; }; recognition.onerror = (event) => { showNotification(`Speech recognition error: ${event.error}`, 5000); startBtn.classList.remove('hidden'); stopBtn.classList.add('hidden'); }; recognition.onend = () => { startBtn.classList.remove('hidden'); stopBtn.classList.add('hidden'); if (resultBox.textContent.trim() !== '') { downloadBtn.classList.remove('hidden'); } }; startBtn.addEventListener('click', () => { resultBox.textContent = 'Your transcribed text will appear here...'; recognition.start(); }); stopBtn.addEventListener('click', () => { recognition.stop(); }); downloadBtn.addEventListener('click', () => { const transcript = resultBox.textContent; if (transcript.trim() !== '') { const textBlob = new Blob([transcript], { type: 'text/plain' }); downloadFile(textBlob, 'transcript.txt', 'text/plain'); } }); } }),
@@ -116,28 +104,20 @@
                 'bmi-calculator': () => ({ content: `<div class="tool-controls"><select id="bmi-units" class="tool-select"><option value="metric">Metric (kg, cm)</option><option value="imperial">Imperial (lbs, in)</option></select></div><div id="bmi-metric-inputs"><label for="bmi-weight-kg">Weight (kg):</label><input type="number" id="bmi-weight-kg" class="tool-input"><label for="bmi-height-cm">Height (cm):</label><input type="number" id="bmi-height-cm" class="tool-input"></div><div id="bmi-imperial-inputs" class="hidden"><label for="bmi-weight-lbs">Weight (lbs):</label><input type="number" id="bmi-weight-lbs" class="tool-input"><label for="bmi-height-in">Height (in):</label><input type="number" id="bmi-height-in" class="tool-input"></div><button id="bmi-calc-btn" class="btn">Calculate BMI</button><div id="bmi-result" class="result-box mt-1"></div>`, onMount: () => { const unitSelect = document.getElementById('bmi-units'); const metricInputs = document.getElementById('bmi-metric-inputs'); const imperialInputs = document.getElementById('bmi-imperial-inputs'); unitSelect.addEventListener('change', () => { metricInputs.classList.toggle('hidden', unitSelect.value === 'imperial'); imperialInputs.classList.toggle('hidden', unitSelect.value === 'metric'); }); document.getElementById('bmi-calc-btn').addEventListener('click', () => { let weight, height; const resultBox = document.getElementById('bmi-result'); if (unitSelect.value === 'metric') { weight = parseFloat(document.getElementById('bmi-weight-kg').value); height = parseFloat(document.getElementById('bmi-height-cm').value) / 100; } else { weight = parseFloat(document.getElementById('bmi-weight-lbs').value); height = parseFloat(document.getElementById('bmi-height-in').value); } if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) { resultBox.textContent = "Please enter valid weight and height."; return; } let bmi; if (unitSelect.value === 'metric') { bmi = weight / (height * height); } else { bmi = (weight / (height * height)) * 703; } let category = ''; if (bmi < 18.5) category = 'Underweight'; else if (bmi < 24.9) category = 'Normal weight'; else if (bmi < 29.9) category = 'Overweight'; else category = 'Obesity'; resultBox.innerHTML = `Your BMI is <strong>${bmi.toFixed(1)}</strong>. This is considered <strong>${category}</strong>.`; }); } }),
 	            'word-counter': () => ({ content: `<textarea id="wc-text" class="tool-textarea" placeholder="Start typing or paste your text here..."></textarea><div id="wc-result" class="result-box">Words: 0 | Characters: 0 | Sentences: 0</div>`, onMount: () => { const textarea = document.getElementById('wc-text'), resultBox = document.getElementById('wc-result'); textarea.addEventListener('input', () => { const text = textarea.value, words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length, chars = text.length, sentences = (text.match(/[.!?]+/g) || []).length; resultBox.textContent = `Words: ${words} | Characters: ${chars} | Sentences: ${sentences}`; }); } }),
             };
-
-
+            
             function renderToolCards() { toolsGrid.innerHTML = tools.sort((a,b) => a.title.localeCompare(b.title)).map(tool => ` <article class="tool-card" data-tool-id="${tool.id}"> <i class="fas ${tool.icon} card-icon"></i> <h2>${tool.title}</h2> </article> `).join(''); }
             let notificationTimeout; function showNotification(message, duration = 3000) { clearTimeout(notificationTimeout); notificationEl.textContent = message; notificationEl.style.opacity = '1'; notificationEl.style.bottom = '20px'; notificationTimeout = setTimeout(() => { notificationEl.style.opacity = '0'; notificationEl.style.bottom = '-100px'; }, duration); }
             
             function openModal(toolId) {
                 const toolData = tools.find(t => t.id === toolId);
                 if (!toolData) return;
-
 				 if (toolId === 'text-to-speech') {
-				    // 1. Check if the Android bridge and our NEW function exist.
 				    if (typeof Android !== 'undefined' && Android.showTtsConfirmationDialog) {
-				        
-				        // 2. If they exist, just call the function.
-				        // Android (Java) will handle getting the URL and checking if it's valid.
 				        Android.showTtsConfirmationDialog();
-				
 				    } else {
-				        // This is the fallback if the page is opened in a regular browser.
 				        alert("This feature requires the native Android app environment.");
 				    }
-				    return; // Stop further execution.
+				    return;
 				}
                 const tool = toolImplementations[toolId];
                 if (!tool) {
@@ -155,8 +135,23 @@
                 }
             }
             
-            function closeModal() { modalContainer.classList.remove('show'); document.body.style.overflow = 'auto'; modalContent.innerHTML = ''; }
-            toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) { const toolId = card.dataset.toolId; openModal(toolId); } });
+            function performCloseActions() {
+                modalContainer.classList.remove('show');
+                document.body.style.overflow = 'auto';
+                modalContent.innerHTML = '';
+            }
+            
+            function closeModal() {
+                const now = Date.now();
+                if (typeof Android !== 'undefined' && Android.showInterstitialAd && (now - lastAdShownTime > AD_COOLDOWN_MS)) {
+                    lastAdShownTime = now;
+                    Android.showInterstitialAd();
+                } else {
+                    performCloseActions();
+                }
+            }
+            
+            toolsGrid.addEventListener('click', (e) => { const card = e.target.closest('.tool-card'); if (card) { openModal(card.dataset.toolId); } });
             modalContainer.addEventListener('click', (e) => { if (e.target === modalContainer) { closeModal(); } });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modalContainer.classList.contains('show')) { closeModal(); } });
 
