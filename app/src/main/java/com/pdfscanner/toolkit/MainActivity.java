@@ -292,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDFToolkit");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/PDF Kit pro");
         }
 
         Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
