@@ -1,4 +1,4 @@
-// Create this new file: MyApplication.java
+// In your new file: MyApplication.java
 package com.pdfscanner.toolkit;
 
 import android.app.Application;
@@ -14,16 +14,16 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Initialize Firebase Remote Config and set the defaults from our new XML file
+        // Initialize Firebase and set ALL defaults from the XML file.
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(3600)
                 .build();
         remoteConfig.setConfigSettingsAsync(configSettings);
-        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults); // <-- Uses the new file
+        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults); // <-- This now loads ALL defaults
         remoteConfig.fetchAndActivate();
 
-        // Initialize the Google Mobile Ads SDK ONCE for the entire app.
+        // Initialize the Ad SDK ONCE.
         MobileAds.initialize(this, initializationStatus -> {
             Log.d(TAG, "Mobile Ads SDK Initialized.");
         });
