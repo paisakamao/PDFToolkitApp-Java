@@ -91,9 +91,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // This is now safe
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
+
+        // --- SAFE, PROGRAMMATIC BANNER AD LOADING ---
+        mAdView = new AdView(this);
+        String bannerAdId = remoteConfig.getString("android_banner_ad_id");
+        if (bannerAdId == null || bannerAdId.isEmpty()) {
+            bannerAdId = "ca-app-pub-3D3940256099942544/6300978111"; // Fallback test ID
+        }
+        mAdView.setAdUnitId(bannerAdId);
+        mAdView.setAdSize(AdSize.BANNER);
+        
+        RelativeLayout adContainer = findViewById(R.id.ad_container);
+        adContainer.addView(mAdView);
+        
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
