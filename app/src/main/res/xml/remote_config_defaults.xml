@@ -1,4 +1,4 @@
-<!-- In app/src/main/res/xml/remote_config_defaults.xml -->
+<!-- File Location: app/src/main/res/xml/remote_config_defaults.xml -->
 <defaultsMap>
     <!-- Native Ad -->
     <entry>
@@ -13,24 +13,28 @@
     <!-- App Features -->
     <entry>
         <key>privacy_policy_url</key>
-        <value>https://sites.google.com/view/pdft-oolbox-privacy-policy</value>
+        <value>https://your-company.com/default-privacy-policy.html</value>
     </entry>
     <entry>
         <key>tts_tool_url</key>
         <value>https://pdfkitpro.github.io/tts/index.html</value>
     </entry>
 
-    <!-- Placeholders for Future Ads -->
+    <!-- Banner Ad (THE FIX IS HERE) -->
     <entry>
         <key>android_banner_ad_id</key>
-        <value></value>
+        <value>ca-app-pub-3940256099942544/6300978111</value>
     </entry>
+
+    <!-- Interstitial Ad -->
     <entry>
         <key>android_interstitial_ad_id</key>
-        <value></value>
+        <value>ca-app-pub-3940256099942544/1033173712</value>
     </entry>
+
+    <!-- App Open Ad -->
     <entry>
         <key>android_app_open_ad_id</key>
-        <value></value>
+        <value>ca-app-pub-3940256099942544/9257395921</value>
     </entry>
 </defaultsMap>
