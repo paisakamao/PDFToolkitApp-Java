@@ -161,10 +161,19 @@ public class MainActivity extends AppCompatActivity {
     private void loadBannerAd() {
         runOnUiThread(() -> {
             mAdView = new AdView(this);
+            
+            // --- THIS IS THE RESTORED PRODUCTION LOGIC ---
+            // It tries to get the ID from Firebase first.
+            // If that fails, it uses the default value from your remote_config_defaults.xml file.
             String bannerAdId = remoteConfig.getString("android_banner_ad_id");
             if (bannerAdId == null || bannerAdId.isEmpty()) {
+                // This is the final safety net, which should never be needed now
+                // that your XML file is correct.
+                Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using hardcoded test ID.");
                 bannerAdId = "ca-app-pub-3940256099942544/6300978111";
             }
+            // --- END OF RESTORED LOGIC ---
+
             mAdView.setAdUnitId(bannerAdId);
             mAdView.setAdSize(AdSize.BANNER);
             
