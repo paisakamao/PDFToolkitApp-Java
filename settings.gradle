@@ -1,3 +1,3 @@
 // In the classic setup, this file's only job is to include the 'app' module.
-rootProject.name = "PDF Toolkit"
+rootProject.name = "PDF Kit Pro"
 include ':app'
