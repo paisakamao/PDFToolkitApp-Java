@@ -9,12 +9,23 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar" />
 
+    <!--
+        ===========================================================
+        THIS IS THE FINAL FIX.
+        We are giving the container a minimum height. This forces it
+        to create the "placeholder" space on the screen. The AdView
+        will then load into this visible space.
+        The background color is for testing so we can see it.
+        ===========================================================
+    -->
     <RelativeLayout
         android:id="@+id/ad_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="center_horizontal"/>
+        android:gravity="center_horizontal"
+        android:minHeight="50dp"
+        android:background="#DDDDDD" />
 
     <FrameLayout
         android:layout_width="match_parent"
