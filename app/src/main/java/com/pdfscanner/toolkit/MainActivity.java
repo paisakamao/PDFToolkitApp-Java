@@ -1,4 +1,3 @@
-// File Location: app/src/main/java/com/pdfscanner/toolkit/MainActivity.java
 package com.pdfscanner.toolkit;
 
 import android.Manifest;
@@ -42,15 +41,18 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
+
     private WebView webView;
     private AdView mAdView;
     private ValueCallback<Uri[]> filePathCallback;
@@ -155,12 +157,30 @@ public class MainActivity extends AppCompatActivity {
     private void loadBannerAd() {
         runOnUiThread(() -> {
             mAdView = new AdView(this);
-            String bannerAdId = remoteConfig.getString("android_banner_ad_id");
-            if (bannerAdId == null || bannerAdId.isEmpty()) {
-                bannerAdId = "ca-app-pub-3940256099942544/6300978111";
-            }
+            
+            // --- THIS IS THE TEMPORARY TEST ---
+            // We are ignoring Firebase and using the official Google Test ID directly.
+            Log.d("MainActivityAds", "Forcing use of Google Test Banner ID.");
+            String bannerAdId = "ca-app-pub-3940256099942544/6300978111";
+            // --- END OF TEST ---
+
             mAdView.setAdUnitId(bannerAdId);
             mAdView.setAdSize(AdSize.BANNER);
+            
+            mAdView.setAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                    super.onAdFailedToLoad(loadAdError);
+                    Log.e("MainActivityAds", "Banner ad failed to load with error: " + loadAdError.getMessage());
+                }
+
+                @Override
+                public void onAdLoaded() {
+                    super.onAdLoaded();
+                    Log.i("MainActivityAds", "Banner ad loaded successfully!");
+                }
+            });
+            
             RelativeLayout adContainer = findViewById(R.id.ad_container);
             if (adContainer != null) {
                 adContainer.addView(mAdView);
