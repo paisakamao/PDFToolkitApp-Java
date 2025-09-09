@@ -102,23 +102,13 @@ public class MainActivity extends AppCompatActivity {
 
         remoteConfig = FirebaseRemoteConfig.getInstance();
 
-        // --- SAFE, PROGRAMMATIC BANNER AD LOADING ---
-        mAdView = new AdView(this);
-        String bannerAdId = remoteConfig.getString("android_banner_ad_id");
-        if (bannerAdId == null || bannerAdId.isEmpty()) {
-            bannerAdId = "ca-app-pub-3940256099942544/6300978111"; // Fallback test ID
-            Log.w("MainActivityAds", "Banner ID from Remote Config was empty. Using test ID.");
-        }
-        mAdView.setAdUnitId(bannerAdId);
-        mAdView.setAdSize(AdSize.BANNER);
-        
-        RelativeLayout adContainer = findViewById(R.id.ad_container);
-        adContainer.addView(mAdView);
-        
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-        // --- END OF BANNER CODE ---
-
+        // --- THIS IS THE FINAL, CRASH-PROOF FIX ---
+        // Instead of creating the ad directly, we ask MyApplication to run the code
+        // only when the Ad SDK is fully initialized.
+        MyApplication.executeWhenAdSDKReady(() -> {
+            Log.d("MainActivityAds", "Ad SDK is ready. Creating banner ad.");
+            loadBannerAd();
+        });
         webView = findViewById(R.id.webView);
         WebView.setWebContentsDebuggingEnabled(true);
         WebSettings webSettings = webView.getSettings();
@@ -170,6 +160,25 @@ public class MainActivity extends AppCompatActivity {
             htmlFileToLoad = "index.html";
         }
         webView.loadUrl("file:///android_asset/" + htmlFileToLoad);
+    }
+    private void loadBannerAd() {
+        // This ensures the code runs on the main thread, which is required for UI changes.
+        runOnUiThread(() -> {
+            mAdView = new AdView(this);
+            String bannerAdId = remoteConfig.getString("android_banner_ad_id");
+            if (bannerAdId == null || bannerAdId.isEmpty()) {
+                bannerAdId = "ca-app-pub-3940256099942544/6300978111"; // Fallback test ID
+            }
+            mAdView.setAdUnitId(bannerAdId);
+            mAdView.setAdSize(AdSize.BANNER);
+            
+            RelativeLayout adContainer = findViewById(R.id.ad_container);
+            if (adContainer != null) {
+                adContainer.addView(mAdView);
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.loadAd(adRequest);
+            }
+        });
     }
 
     private void showCustomExternalLinkDialog(final String url) {
