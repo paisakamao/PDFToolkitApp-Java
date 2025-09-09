@@ -174,8 +174,6 @@ public class MainActivity extends AppCompatActivity {
                     super.onAdFailedToLoad(loadAdError);
                     String error = "Banner Error: " + loadAdError.getMessage();
                     Log.e("MainActivityAds", error);
-                    // --- THIS IS THE CRITICAL DEBUGGING CODE ---
-                    // This will show the exact error on your screen.
                     Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
                 }
                 @Override
