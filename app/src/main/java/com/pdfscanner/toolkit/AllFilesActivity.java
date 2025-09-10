@@ -59,14 +59,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private FileListAdapter adapter;
     private final List<Object> combinedList = new ArrayList<>();
 
-    // Ad configuration
-    private static final int FIRST_AD_POSITION = 3;
-    private static final int AD_INTERVAL = 7; // Load an ad every 7 items after the first
-
-    // Keep track of ads to prevent re-loading and to clean up properly
+    // Ad logic variables
     private final Map<Integer, NativeAd> loadedAds = new HashMap<>();
     private final Set<Integer> positionsCurrentlyLoading = new HashSet<>();
 
+    private static final int FIRST_AD_POSITION = 3;
+    private static final int AD_INTERVAL = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,8 +117,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(intent);
             } catch (IllegalArgumentException e) {
-                Log.e(TAG, "File Provider error. Is your authority correctly configured in AndroidManifest.xml?", e);
-                Toast.makeText(this, "Error opening file. Please check app configuration.", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "File Provider Error. Did you configure it correctly in AndroidManifest.xml?", e);
+                Toast.makeText(this, "Error opening file. Check configuration.", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -135,12 +133,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     @Override
     public void requestAdForPosition(int position) {
-        if (positionsCurrentlyLoading.contains(position) || loadedAds.containsKey(position)) {
-            return;
+        if (!positionsCurrentlyLoading.contains(position) && !loadedAds.containsKey(position)) {
+            positionsCurrentlyLoading.add(position);
+            loadNativeAd(position);
         }
-        Log.d(TAG, "Adapter requested ad for position: " + position);
-        positionsCurrentlyLoading.add(position);
-        loadNativeAdAtPosition(position);
     }
 
     private void loadFiles() {
@@ -148,7 +144,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
 
-        // Clear all previous data before loading
         combinedList.clear();
         loadedAds.clear();
         positionsCurrentlyLoading.clear();
@@ -182,76 +177,56 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         if (list.size() < FIRST_AD_POSITION) {
             return;
         }
-        list.add(FIRST_AD_POSITION, null); // Add first placeholder
+        list.add(FIRST_AD_POSITION, null);
         for (int i = FIRST_AD_POSITION + 1 + AD_INTERVAL; i < list.size(); i += (AD_INTERVAL + 1)) {
             list.add(i, null);
         }
     }
 
-    private void loadNativeAdAtPosition(final int position) {
+    private void loadNativeAd(final int position) {
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (!isAdEnabled) {
-            runOnUiThread(() -> {
-                if (position < combinedList.size() && combinedList.get(position) == null) {
-                    combinedList.remove(position);
-                    adapter.notifyItemRemoved(position);
-                }
-            });
+            positionsCurrentlyLoading.remove(position);
             return;
         }
 
         String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
-            adUnitId = "ca-app-pub-3940256099942544/2247696110"; // Test ID
+            adUnitId = "ca-app-pub-3940256099942544/2247696110";
         }
 
-        AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
-        builder.forNativeAd(ad -> {
-            if (isDestroyed() || isFinishing()) {
-                ad.destroy();
-                return;
-            }
-            runOnUiThread(() -> {
-                loadedAds.put(position, ad);
-                positionsCurrentlyLoading.remove(position);
-                if (position < combinedList.size() && combinedList.get(position) == null) {
-                    combinedList.set(position, ad);
-                    adapter.notifyItemChanged(position);
-                    Log.d(TAG, "Ad loaded and displayed at position: " + position);
+        AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
+            .forNativeAd(ad -> {
+                if (isDestroyed()) {
+                    ad.destroy();
+                    return;
                 }
-            });
-        });
-
-        AdLoader adLoader = builder.withAdListener(new AdListener() {
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                Log.e(TAG, "Native ad failed at position " + position + ": " + loadAdError.getMessage());
                 runOnUiThread(() -> {
+                    loadedAds.put(position, ad);
                     positionsCurrentlyLoading.remove(position);
                     if (position < combinedList.size() && combinedList.get(position) == null) {
-                        combinedList.remove(position);
-                        adapter.notifyItemRemoved(position);
+                        combinedList.set(position, ad);
+                        adapter.notifyItemChanged(position);
+                        Log.d(TAG, "Ad loaded and displayed at: " + position);
                     }
                 });
-            }
-        }).build();
+            })
+            .withAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                    Log.e(TAG, "Ad failed at position " + position + ": " + loadAdError.getMessage());
+                    runOnUiThread(() -> {
+                        positionsCurrentlyLoading.remove(position);
+                        if (position < combinedList.size() && combinedList.get(position) == null) {
+                            combinedList.remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
+                    });
+                }
+            }).build();
+        
         adLoader.loadAd(new AdRequest.Builder().build());
-    }
-
-    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
-        if (dir == null || !dir.isDirectory()) return;
-        String dirPath = dir.getAbsolutePath();
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; }
-        File[] files = dir.listFiles();
-        if (files == null) return;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                searchPDFFilesRecursively(file, fileList);
-            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
-                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
-            }
-        }
     }
 
     private void toggleSelection(FileItem item) {
@@ -272,8 +247,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(true);
             return true;
         }
+
         @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int itemId = item.getItemId();
@@ -286,6 +265,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             }
             return false;
         }
+
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             adapter.setMultiSelectMode(false);
@@ -303,8 +283,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     new File(item.path).delete();
                 }
                 Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                if (actionMode != null) actionMode.finish();
-                loadFiles(); // Reload the list
+                if (actionMode != null) {
+                    actionMode.finish();
+                }
+                loadFiles();
             })
             .setNegativeButton(android.R.string.cancel, null)
             .show();
@@ -318,19 +300,39 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             uris.add(FileProvider.getUriForFile(this, authority, file));
         }
         if (uris.isEmpty()) return;
+
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (uris.size() > 1) {
             intent.setAction(Intent.ACTION_SEND_MULTIPLE);
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-            intent.setType("application/pdf");
         } else {
             intent.setAction(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
-            intent.setType("application/pdf");
         }
+        intent.setType("application/pdf");
+
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
-        if (actionMode != null) actionMode.finish();
+        if (actionMode != null) {
+            actionMode.finish();
+        }
+    }
+
+    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
+        if (dir == null || !dir.isDirectory()) return;
+        String dirPath = dir.getAbsolutePath();
+        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) {
+            return;
+        }
+        File[] files = dir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                searchPDFFilesRecursively(file, fileList);
+            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
+                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
+            }
+        }
     }
 
     private boolean hasStoragePermission() {
@@ -377,10 +379,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         for (NativeAd ad : loadedAds.values()) {
             ad.destroy();
         }
         loadedAds.clear();
-        super.onDestroy();
     }
 }
