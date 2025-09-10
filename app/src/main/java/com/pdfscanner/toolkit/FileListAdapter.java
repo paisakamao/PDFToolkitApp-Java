@@ -1,6 +1,7 @@
 package com.pdfscanner.toolkit;
 
 import android.text.format.Formatter;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final List<Object> items = new ArrayList<>();
     private final OnFileClickListener listener;
+    private final SparseBooleanArray selectedItems = new SparseBooleanArray();
 
     public interface OnFileClickListener {
         void onFileClick(FileItem item);
@@ -41,9 +43,13 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemViewType(int position) {
         Object item = items.get(position);
-        if (item instanceof FileItem) return VIEW_TYPE_FILE;
-        else if (item instanceof NativeAd) return VIEW_TYPE_AD;
-        else if (item instanceof LoadingItem) return VIEW_TYPE_LOADING;
+        if (item instanceof FileItem) {
+            return VIEW_TYPE_FILE;
+        } else if (item instanceof NativeAd) {
+            return VIEW_TYPE_AD;
+        } else if (item instanceof LoadingItem) {
+            return VIEW_TYPE_LOADING;
+        }
         return -1;
     }
 
@@ -63,7 +69,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else if (viewType == VIEW_TYPE_AD) {
             View view = inflater.inflate(R.layout.list_item_ad_layout, parent, false);
             return new AdViewHolder(view);
-        } else { // Loading
+        } else {
             View view = inflater.inflate(R.layout.ad_loading_item, parent, false);
             return new LoadingViewHolder(view);
         }
@@ -74,7 +80,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         Object item = items.get(position);
 
         if (holder instanceof FileViewHolder && item instanceof FileItem) {
-            ((FileViewHolder) holder).bind((FileItem) item, listener);
+            ((FileViewHolder) holder).bind((FileItem) item, listener, selectedItems.get(position, false));
         } else if (holder instanceof AdViewHolder && item instanceof NativeAd) {
             ((AdViewHolder) holder).bind((NativeAd) item);
         } else if (holder instanceof LoadingViewHolder) {
@@ -82,8 +88,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // -------------------- Public helpers --------------------
-
+    // 🔹 Public helpers
     public void setFiles(List<FileItem> fileList) {
         items.clear();
         items.addAll(fileList);
@@ -91,10 +96,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void insertAd(NativeAd ad, int position) {
-        if (ad == null) return;
-        // Prevent inserting at position 0 (bad UX/AdMob policy)
-        if (position < 2) position = 2;
-
         if (position >= 0 && position <= items.size()) {
             items.add(position, ad);
             notifyItemInserted(position);
@@ -102,8 +103,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void insertLoading(int position) {
-        if (position < 2) position = 2;
-
         if (position >= 0 && position <= items.size()) {
             items.add(position, new LoadingItem());
             notifyItemInserted(position);
@@ -111,24 +110,43 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void replaceLoadingWithAd(int position, NativeAd ad) {
-        if (ad == null) return;
-
         if (position >= 0 && position < items.size() && items.get(position) instanceof LoadingItem) {
             items.set(position, ad);
             notifyItemChanged(position);
         }
     }
 
-    public void insertAdsAtIntervals(NativeAd ad, int interval) {
-        if (ad == null || interval < 3) return;
-
-        for (int i = interval; i < items.size(); i += interval) {
-            insertAd(ad, i);
+    // -------------------- Multi-selection logic --------------------
+    public void toggleSelection(int position) {
+        if (selectedItems.get(position, false)) {
+            selectedItems.delete(position);
+        } else {
+            selectedItems.put(position, true);
         }
+        notifyItemChanged(position);
+    }
+
+    public void clearSelection() {
+        selectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedItemCount() {
+        return selectedItems.size();
+    }
+
+    public List<FileItem> getSelectedItems() {
+        List<FileItem> selected = new ArrayList<>();
+        for (int i = 0; i < selectedItems.size(); i++) {
+            int pos = selectedItems.keyAt(i);
+            if (items.get(pos) instanceof FileItem) {
+                selected.add((FileItem) items.get(pos));
+            }
+        }
+        return selected;
     }
 
     // -------------------- ViewHolders --------------------
-
     static class FileViewHolder extends RecyclerView.ViewHolder {
         TextView name, size, date;
         ImageView icon;
@@ -141,10 +159,12 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             icon = itemView.findViewById(R.id.icon_file_type);
         }
 
-        void bind(final FileItem file, final OnFileClickListener listener) {
+        void bind(final FileItem file, final OnFileClickListener listener, boolean selected) {
             name.setText(file.name);
             size.setText(Formatter.formatShortFileSize(itemView.getContext(), file.size));
             date.setText(DateFormat.getDateTimeInstance().format(new Date(file.date)));
+
+            itemView.setActivated(selected);
 
             itemView.setOnClickListener(v -> listener.onFileClick(file));
             itemView.setOnLongClickListener(v -> {
