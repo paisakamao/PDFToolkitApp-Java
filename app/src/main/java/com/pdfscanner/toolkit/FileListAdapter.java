@@ -1,8 +1,7 @@
-// File: FileListAdapter.java
+// File Location: app/src/main/java/com/pdfscanner/toolkit/FileListAdapter.java
 package com.pdfscanner.toolkit;
 
 import android.text.format.Formatter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +30,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int VIEW_TYPE_AD = 1;
     private static final int VIEW_TYPE_AD_LOADING = 2;
 
-    // Interface now handles both file clicks and ad load requests
+    /**
+     * A unified interface to handle all interactions from the adapter,
+     * including file clicks and requesting ads.
+     */
     public interface OnFileInteractionListener {
         void onFileClick(FileItem item);
         void onFileLongClick(FileItem item);
@@ -81,9 +83,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             NativeAd nativeAd = (NativeAd) items.get(position);
             populateNativeAdView(nativeAd, ((AdViewHolder) holder).getAdView());
         } else if (viewType == VIEW_TYPE_AD_LOADING) {
-            // THIS IS THE KEY CHANGE for progressive loading
+            // **KEY CHANGE FOR PROGRESSIVE LOADING**
             // When a placeholder is about to be shown, tell the activity to load an ad for it.
-            listener.requestAdForPosition(position);
+            if (listener != null) {
+                listener.requestAdForPosition(holder.getAdapterPosition());
+            }
         }
     }
 
@@ -117,9 +121,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public List<FileItem> getSelectedItems() {
         return new ArrayList<>(selectedItems);
     }
+
     public int getSelectedItemCount() {
         return selectedItems.size();
     }
+
     public void clearSelections() {
         selectedItems.clear();
         notifyDataSetChanged();
@@ -142,7 +148,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
             fileDate.setText(formatDate(item.date));
             fileIcon.setImageResource(R.drawable.ic_pdflist);
-            
+
             itemView.setOnClickListener(v -> {
                 if(listener != null) listener.onFileClick(item);
             });
@@ -163,6 +169,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         AdViewHolder(View view) {
             super(view);
             adView = (NativeAdView) view;
+            // You must set all the views you wish to use for the ad.
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
@@ -177,19 +184,26 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        // Set the text views.
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        
         if (nativeAd.getBody() == null) {
             adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
             adView.getBodyView().setVisibility(View.VISIBLE);
             ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
+
+        // Set the icon.
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
         }
+
+        // This method tells the Google Mobile Ads SDK that you have finished populating your
+        // native ad view with this native ad.
         adView.setNativeAd(nativeAd);
     }
 }
