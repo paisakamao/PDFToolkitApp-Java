@@ -65,7 +65,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return new AdLoadingViewHolder(loadingView);
         } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(itemView, listener); // Pass listener for robust click handling
+            return new FileViewHolder(itemView, listener);
         }
     }
 
@@ -173,15 +173,19 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    // ** THIS IS THE ONLY PART THAT HAS CHANGED IN THIS FILE **
     static class AdViewHolder extends RecyclerView.ViewHolder {
         private final NativeAdView adView;
-        AdViewHolder(View view) {
+        AdViewHolder(View view) { // The 'view' is now the CardView from the layout
             super(view);
-            adView = (NativeAdView) view;
+            // We now find the NativeAdView using the ID we gave it in the XML
+            adView = view.findViewById(R.id.native_ad_view); 
+            
+            // The rest of the setup is the same
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-            adView.setMediaView(view.findViewById(R.id.ad_media));
+            adView.setMediaView(adView.findViewById(R.id.ad_media));
         }
         public NativeAdView getAdView() { return adView; }
     }
