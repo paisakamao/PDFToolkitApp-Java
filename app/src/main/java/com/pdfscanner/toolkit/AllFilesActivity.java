@@ -29,12 +29,10 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,8 +42,6 @@ import java.util.List;
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
-    private static final int AD_INTERVAL = 7; // insert ad after every 7 files
-
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
@@ -55,6 +51,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private List<FileItem> fileList = new ArrayList<>();
     private ActionMode actionMode;
     private Toolbar toolbar;
+
+    private static final int AD_INTERVAL = 7; // Show ad every 7 files
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +65,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Small);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setDisplayShowHomeAsUpEnabled(true);
         }
 
         recyclerView = findViewById(R.id.recycler_view_files);
@@ -160,18 +158,18 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
-            .setTitle("Delete Files")
-            .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
-            .setPositiveButton("Delete", (dialog, which) -> {
-                for (FileItem item : adapter.getSelectedItems()) {
-                    new File(item.path).delete();
-                }
-                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                actionMode.finish();
-                loadPDFFiles();
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+                .setTitle("Delete Files")
+                .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    for (FileItem item : adapter.getSelectedItems()) {
+                        new File(item.path).delete();
+                    }
+                    Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                    actionMode.finish();
+                    loadPDFFiles();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void shareSelectedFiles() {
@@ -197,12 +195,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         actionMode.finish();
     }
 
-    // 🔹 Load files, insert ads every 7th position
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
         new Thread(() -> {
             List<FileItem> freshFileList = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
@@ -215,36 +211,16 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 fileList.addAll(freshFileList);
                 adapter.setFiles(fileList);
 
-                // Insert ad placeholders
-                for (int i = AD_INTERVAL; i < fileList.size(); i += AD_INTERVAL + 1) {
-                    adapter.insertLoading(i);
-                    loadNativeAdAt(i);
-                }
-
                 if (fileList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
                     emptyView.setVisibility(View.VISIBLE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
+                    insertAdsIntoList();
                 }
             });
         }).start();
-    }
-
-    private void loadNativeAdAt(int position) {
-        String adUnitId = FirebaseRemoteConfig.getInstance().getString("admob_native_ad_unit_id");
-        AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
-                .forNativeAd(nativeAd -> adapter.replaceLoadingWithAd(position, nativeAd))
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
-                        adapter.replaceLoadingWithAd(position, null); // remove loading if fail
-                    }
-                })
-                .build();
-
-        adLoader.loadAd(new AdRequest.Builder().build());
     }
 
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
@@ -268,8 +244,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -291,6 +266,28 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         } else {
             Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void insertAdsIntoList() {
+        for (int i = AD_INTERVAL; i < adapter.getItemCount(); i += AD_INTERVAL + 1) {
+            adapter.insertLoading(i);
+            loadNativeAdAt(i);
+        }
+    }
+
+    private void loadNativeAdAt(int position) {
+        String adUnitId = getString(R.string.admob_native_ad_id);
+        AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
+                .forNativeAd(ad -> adapter.replaceLoadingWithAd(position, ad))
+                .withAdListener(new com.google.android.gms.ads.AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        // Remove loading if ad fails
+                        adapter.replaceLoadingWithAd(position, null);
+                    }
+                })
+                .build();
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
 
     @Override
