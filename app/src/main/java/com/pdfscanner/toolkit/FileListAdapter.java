@@ -1,7 +1,6 @@
-package com.pdfscanner.toolkit;
+package com.yourpackage.scanner.toolkit;
 
 import android.content.Context;
-import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,254 +17,180 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    // --- View types ---
     private static final int VIEW_TYPE_FILE = 0;
     private static final int VIEW_TYPE_AD = 1;
     private static final int VIEW_TYPE_AD_LOADING = 2;
 
-    private final List<FileItem> files;
-    private final OnFileClickListener listener;
-    private boolean isMultiSelectMode = false;
-    private final Set<FileItem> selectedItems = new HashSet<>();
-
     private final Context context;
+    private final List<FileItem> fileList;
+    private final OnFileClickListener listener;
 
-    // --- Ad management ---
-    private final List<NativeAd> loadedAds = new ArrayList<>();
-    private boolean isAdLoading = false;
+    // To store loaded NativeAds
+    private NativeAd firstAd = null;
+    private NativeAd secondAd = null;
 
     public interface OnFileClickListener {
-        void onFileClick(FileItem item);
-        void onFileLongClick(FileItem item);
+        void onFileClick(FileItem fileItem);
     }
 
-    public FileListAdapter(Context context, List<FileItem> files, OnFileClickListener listener) {
+    public FileListAdapter(Context context, List<FileItem> fileList, OnFileClickListener listener) {
         this.context = context;
-        this.files = files;
+        this.fileList = fileList;
         this.listener = listener;
-
-        // Preload first ad
-        loadNativeAd();
     }
 
     @Override
     public int getItemViewType(int position) {
-        // After 3rd item, then every 7 items
-        if (shouldShowAdAtPosition(position)) {
-            int adIndex = getAdIndexForPosition(position);
-            if (adIndex < loadedAds.size()) {
-                return VIEW_TYPE_AD;
-            } else if (isAdLoading) {
-                return VIEW_TYPE_AD_LOADING;
-            } else {
-                return VIEW_TYPE_FILE; // fallback to file if no ad
-            }
+        // First ad after 3 items
+        if (position == 3) {
+            return firstAd == null ? VIEW_TYPE_AD_LOADING : VIEW_TYPE_AD;
         }
-        return VIEW_TYPE_FILE;
-    }
-
-    private boolean shouldShowAdAtPosition(int position) {
-        if (position == 3) return true;
-        return position > 3 && (position - 3) % 7 == 0;
-    }
-
-    private int getAdIndexForPosition(int position) {
-        if (position < 3) return -1;
-        return ((position - 3) / 7);
+        // Second ad after 7 more items (position 10)
+        else if (position == 10) {
+            return secondAd == null ? VIEW_TYPE_AD_LOADING : VIEW_TYPE_AD;
+        } else {
+            return VIEW_TYPE_FILE;
+        }
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        LayoutInflater inflater = LayoutInflater.from(context);
         if (viewType == VIEW_TYPE_FILE) {
-            View view = inflater.inflate(R.layout.item_file, parent, false);
+            View view = inflater.inflate(R.layout.list_item_file, parent, false);
             return new FileViewHolder(view);
         } else if (viewType == VIEW_TYPE_AD) {
-            View view = inflater.inflate(R.layout.list_item_ad_layout, parent, false);
-            return new AdViewHolder(view);
+            View adView = inflater.inflate(R.layout.list_item_ad_layout, parent, false);
+            return new AdViewHolder(adView);
         } else {
-            View view = inflater.inflate(R.layout.ad_loading_item, parent, false);
-            return new AdLoadingViewHolder(view);
+            View loadingView = inflater.inflate(R.layout.ad_loading_item, parent, false);
+            return new LoadingViewHolder(loadingView);
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         int viewType = getItemViewType(position);
+
         if (viewType == VIEW_TYPE_FILE) {
-            FileItem file = files.get(getFileIndex(position));
-            ((FileViewHolder) holder).bind(file);
-            holder.itemView.setActivated(selectedItems.contains(file));
+            int dataIndex = position;
+            if (position > 10) dataIndex -= 2;
+            else if (position > 3) dataIndex -= 1;
+
+            FileItem fileItem = fileList.get(dataIndex);
+            ((FileViewHolder) holder).bind(fileItem, listener);
+
         } else if (viewType == VIEW_TYPE_AD) {
-            int adIndex = getAdIndexForPosition(position);
-            if (adIndex >= 0 && adIndex < loadedAds.size()) {
-                ((AdViewHolder) holder).bind(loadedAds.get(adIndex));
+            if (position == 3 && firstAd != null) {
+                ((AdViewHolder) holder).bind(firstAd);
+            } else if (position == 10 && secondAd != null) {
+                ((AdViewHolder) holder).bind(secondAd);
+            }
+        } else if (viewType == VIEW_TYPE_AD_LOADING) {
+            if (position == 3 && firstAd == null) {
+                loadAdForPosition(3);
+            } else if (position == 10 && secondAd == null) {
+                loadAdForPosition(10);
             }
         }
     }
 
     @Override
     public int getItemCount() {
-        if (files == null) return 0;
-        // Add extra items for ads
-        int adSlots = 0;
-        for (int i = 0; i < files.size(); i++) {
-            if (shouldShowAdAtPosition(i)) {
-                adSlots++;
-            }
-        }
-        return files.size() + Math.min(adSlots, loadedAds.size() + (isAdLoading ? 1 : 0));
+        int count = fileList.size();
+        if (fileList.size() > 3) count++;
+        if (fileList.size() > 10) count++;
+        return count;
     }
 
-    private int getFileIndex(int position) {
-        // Adjust position to skip ads
-        int adsBefore = 0;
-        for (int i = 0; i < position; i++) {
-            if (shouldShowAdAtPosition(i)) adsBefore++;
-        }
-        return position - adsBefore;
+    private void loadAdForPosition(int position) {
+        AdLoader adLoader = new AdLoader.Builder(context, context.getString(R.string.admob_native_id))
+                .forNativeAd(nativeAd -> {
+                    if (position == 3) {
+                        firstAd = nativeAd;
+                        notifyItemChanged(3);
+                    } else if (position == 10) {
+                        secondAd = nativeAd;
+                        notifyItemChanged(10);
+                    }
+                })
+                .withAdListener(new com.google.android.gms.ads.AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        // Do nothing, just skip ad
+                    }
+                })
+                .build();
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    // --- Multi-select logic ---
-    public void setMultiSelectMode(boolean multiSelectMode) {
-        isMultiSelectMode = multiSelectMode;
-        if (!isMultiSelectMode) {
-            selectedItems.clear();
-        }
-        notifyDataSetChanged();
-    }
-
-    public void toggleSelection(FileItem item) {
-        if (selectedItems.contains(item)) {
-            selectedItems.remove(item);
-        } else {
-            selectedItems.add(item);
-        }
-        notifyItemChanged(files.indexOf(item));
-    }
-
-    public List<FileItem> getSelectedItems() {
-        return new ArrayList<>(selectedItems);
-    }
-
-    public int getSelectedItemCount() {
-        return selectedItems.size();
-    }
-
-    public void clearSelections() {
-        selectedItems.clear();
-        notifyDataSetChanged();
-    }
-
-    // --- ViewHolders ---
-
-    class FileViewHolder extends RecyclerView.ViewHolder {
-        ImageView fileIcon;
+    static class FileViewHolder extends RecyclerView.ViewHolder {
         TextView fileName;
-        TextView fileSize;
-        TextView fileDate;
+        ImageView fileIcon;
 
-        public FileViewHolder(@NonNull View itemView) {
+        FileViewHolder(View itemView) {
             super(itemView);
-            fileIcon = itemView.findViewById(R.id.icon_file_type);
-            fileName = itemView.findViewById(R.id.text_file_name);
-            fileSize = itemView.findViewById(R.id.text_file_size);
-            fileDate = itemView.findViewById(R.id.text_file_date);
+            fileName = itemView.findViewById(R.id.fileName);
+            fileIcon = itemView.findViewById(R.id.fileIcon);
         }
 
-        public void bind(final FileItem item) {
-            fileName.setText(item.name);
-            fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
-            fileDate.setText(formatDate(item.date));
-
-            fileIcon.setImageResource(R.drawable.ic_pdflist);
-            itemView.setOnClickListener(v -> listener.onFileClick(item));
-            itemView.setOnLongClickListener(v -> {
-                listener.onFileLongClick(item);
-                return true;
-            });
-        }
-
-        private String formatDate(long millis) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
-            return sdf.format(new Date(millis));
+        void bind(FileItem fileItem, OnFileClickListener listener) {
+            fileName.setText(fileItem.getName());
+            itemView.setOnClickListener(v -> listener.onFileClick(fileItem));
         }
     }
 
-    class AdViewHolder extends RecyclerView.ViewHolder {
+    static class AdViewHolder extends RecyclerView.ViewHolder {
         NativeAdView adView;
+        TextView adHeadline;
+        TextView adBody;
+        ImageView adIcon;
 
-        public AdViewHolder(@NonNull View itemView) {
+        AdViewHolder(View itemView) {
             super(itemView);
             adView = (NativeAdView) itemView;
+            adHeadline = itemView.findViewById(R.id.ad_headline);
+            adBody = itemView.findViewById(R.id.ad_body);
+            adIcon = itemView.findViewById(R.id.ad_app_icon);
+
+            adView.setHeadlineView(adHeadline);
+            adView.setBodyView(adBody);
+            adView.setIconView(adIcon);
         }
 
-        public void bind(NativeAd nativeAd) {
-            TextView headline = adView.findViewById(R.id.ad_headline);
-            TextView body = adView.findViewById(R.id.ad_body);
-            ImageView icon = adView.findViewById(R.id.ad_app_icon);
-
-            headline.setText(nativeAd.getHeadline());
-            adView.setHeadlineView(headline);
+        void bind(NativeAd nativeAd) {
+            adHeadline.setText(nativeAd.getHeadline());
+            adView.getHeadlineView().setVisibility(View.VISIBLE);
 
             if (nativeAd.getBody() != null) {
-                body.setText(nativeAd.getBody());
-                adView.setBodyView(body);
+                adBody.setText(nativeAd.getBody());
+                adView.getBodyView().setVisibility(View.VISIBLE);
+            } else {
+                adView.getBodyView().setVisibility(View.INVISIBLE);
             }
 
             if (nativeAd.getIcon() != null) {
-                icon.setImageDrawable(nativeAd.getIcon().getDrawable());
-                adView.setIconView(icon);
+                ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+                adView.getIconView().setVisibility(View.VISIBLE);
+            } else {
+                adView.getIconView().setVisibility(View.GONE);
             }
 
             adView.setNativeAd(nativeAd);
         }
     }
 
-    class AdLoadingViewHolder extends RecyclerView.ViewHolder {
+    static class LoadingViewHolder extends RecyclerView.ViewHolder {
         ProgressBar progressBar;
 
-        public AdLoadingViewHolder(@NonNull View itemView) {
+        LoadingViewHolder(View itemView) {
             super(itemView);
-            progressBar = itemView.findViewById(android.R.id.progress);
+            progressBar = itemView.findViewById(R.id.progressBar);
         }
-    }
-
-    // --- Load native ads ---
-    private void loadNativeAd() {
-        if (isAdLoading) return;
-        isAdLoading = true;
-
-        AdLoader adLoader = new AdLoader.Builder(context,
-                "ca-app-pub-3940256099942544/2247696110") // TODO: replace with your ad unit id
-                .forNativeAd(nativeAd -> {
-                    loadedAds.add(nativeAd);
-                    isAdLoading = false;
-                    notifyDataSetChanged();
-
-                    // Preload next ad
-                    loadNativeAd();
-                })
-                .withAdListener(new com.google.android.gms.ads.AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
-                        isAdLoading = false;
-                    }
-                })
-                .build();
-
-        adLoader.loadAd(new AdRequest.Builder().build());
     }
 }
