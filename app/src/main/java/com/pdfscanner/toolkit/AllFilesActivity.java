@@ -36,7 +36,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
 
-        recyclerView = findViewById(R.id.recyclerViewFiles);
+        recyclerView = findViewById(R.id.recycler_view_files);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         MobileAds.initialize(this, initializationStatus -> {});
