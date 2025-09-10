@@ -1,7 +1,6 @@
 package com.pdfscanner.toolkit;
 
 import android.text.format.Formatter;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,9 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -28,7 +29,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final List<Object> items = new ArrayList<>();
     private final OnFileClickListener listener;
-    private final SparseBooleanArray selectedItems = new SparseBooleanArray();
+
+    // 🔹 Multi-select tracking
+    private boolean isMultiSelectMode = false;
+    private final Set<FileItem> selectedItems = new HashSet<>();
 
     public interface OnFileClickListener {
         void onFileClick(FileItem item);
@@ -80,7 +84,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         Object item = items.get(position);
 
         if (holder instanceof FileViewHolder && item instanceof FileItem) {
-            ((FileViewHolder) holder).bind((FileItem) item, listener, selectedItems.get(position, false));
+            ((FileViewHolder) holder).bind((FileItem) item, listener, isMultiSelectMode, selectedItems.contains(item));
         } else if (holder instanceof AdViewHolder && item instanceof NativeAd) {
             ((AdViewHolder) holder).bind((NativeAd) item);
         } else if (holder instanceof LoadingViewHolder) {
@@ -88,7 +92,38 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // 🔹 Public helpers
+    // -------------------- Multi-select methods --------------------
+    public void setMultiSelectMode(boolean multiSelectMode) {
+        isMultiSelectMode = multiSelectMode;
+        if (!multiSelectMode) {
+            selectedItems.clear();
+        }
+        notifyDataSetChanged();
+    }
+
+    public void toggleSelection(FileItem item) {
+        if (selectedItems.contains(item)) {
+            selectedItems.remove(item);
+        } else {
+            selectedItems.add(item);
+        }
+        notifyItemChanged(items.indexOf(item));
+    }
+
+    public List<FileItem> getSelectedItems() {
+        return new ArrayList<>(selectedItems);
+    }
+
+    public int getSelectedItemCount() {
+        return selectedItems.size();
+    }
+
+    public void clearSelections() {
+        selectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    // -------------------- Public helpers --------------------
     public void setFiles(List<FileItem> fileList) {
         items.clear();
         items.addAll(fileList);
@@ -116,36 +151,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // -------------------- Multi-selection logic --------------------
-    public void toggleSelection(int position) {
-        if (selectedItems.get(position, false)) {
-            selectedItems.delete(position);
-        } else {
-            selectedItems.put(position, true);
-        }
-        notifyItemChanged(position);
-    }
-
-    public void clearSelection() {
-        selectedItems.clear();
-        notifyDataSetChanged();
-    }
-
-    public int getSelectedItemCount() {
-        return selectedItems.size();
-    }
-
-    public List<FileItem> getSelectedItems() {
-        List<FileItem> selected = new ArrayList<>();
-        for (int i = 0; i < selectedItems.size(); i++) {
-            int pos = selectedItems.keyAt(i);
-            if (items.get(pos) instanceof FileItem) {
-                selected.add((FileItem) items.get(pos));
-            }
-        }
-        return selected;
-    }
-
     // -------------------- ViewHolders --------------------
     static class FileViewHolder extends RecyclerView.ViewHolder {
         TextView name, size, date;
@@ -159,12 +164,14 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             icon = itemView.findViewById(R.id.icon_file_type);
         }
 
-        void bind(final FileItem file, final OnFileClickListener listener, boolean selected) {
+        void bind(final FileItem file, final OnFileClickListener listener,
+                  boolean isMultiSelectMode, boolean isSelected) {
             name.setText(file.name);
             size.setText(Formatter.formatShortFileSize(itemView.getContext(), file.size));
             date.setText(DateFormat.getDateTimeInstance().format(new Date(file.date)));
+            icon.setImageResource(R.drawable.ic_pdflist);
 
-            itemView.setActivated(selected);
+            itemView.setActivated(isSelected);
 
             itemView.setOnClickListener(v -> listener.onFileClick(file));
             itemView.setOnLongClickListener(v -> {
