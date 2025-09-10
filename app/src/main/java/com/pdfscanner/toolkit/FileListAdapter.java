@@ -21,15 +21,12 @@ import java.util.Set;
 
 public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    // The list now holds generic Objects to accommodate files, ads, and placeholders
     private final List<Object> items;
     private final OnFileClickListener listener;
     private final Context context;
-
     private boolean isMultiSelectMode = false;
     private final Set<FileItem> selectedItems = new HashSet<>();
 
-    // View type constants
     private static final int VIEW_TYPE_FILE = 0;
     private static final int VIEW_TYPE_AD = 1;
     private static final int VIEW_TYPE_AD_LOADING = 2;
@@ -39,7 +36,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onFileLongClick(FileItem item);
     }
 
-    // The constructor now accepts a List<Object>
     public FileListAdapter(Context context, List<Object> items, OnFileClickListener listener) {
         this.context = context;
         this.items = items;
@@ -67,7 +63,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else if (viewType == VIEW_TYPE_AD_LOADING) {
             View loadingView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_loading_item, parent, false);
             return new AdLoadingViewHolder(loadingView);
-        } else { // VIEW_TYPE_FILE
+        } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
             return new FileViewHolder(itemView);
         }
@@ -83,15 +79,13 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             NativeAd nativeAd = (NativeAd) items.get(position);
             populateNativeAdView(nativeAd, ((AdViewHolder) holder).getAdView());
         }
-        // No binding needed for the loading placeholder
     }
 
     @Override
     public int getItemCount() {
         return items.size();
     }
-    
-    // --- MULTI-SELECT METHODS (Unchanged but adapted for List<Object>) ---
+
     public void setMultiSelectMode(boolean multiSelectMode) {
         isMultiSelectMode = multiSelectMode;
         if (!isMultiSelectMode) {
@@ -106,7 +100,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else {
             selectedItems.add(item);
         }
-        // Find the correct index to notify, as items is a List<Object>
         for (int i=0; i < items.size(); i++) {
             if (item.equals(items.get(i))) {
                 notifyItemChanged(i);
@@ -119,7 +112,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public int getSelectedItemCount() { return selectedItems.size(); }
     public void clearSelections() { selectedItems.clear(); notifyDataSetChanged(); }
 
-    // --- FILE VIEWHOLDER (Your original, inner class) ---
     public class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
@@ -138,12 +130,12 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             fileName.setText(item.name);
             fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
             fileDate.setText(formatDate(item.date));
-
             fileIcon.setImageResource(R.drawable.ic_pdflist);
             
+            // --- THIS IS THE RESTORED, CORRECT CLICK LOGIC ---
             itemView.setOnClickListener(v -> {
                 if (isMultiSelectMode) {
-                    listener.onFileLongClick(item); // Treat click as long click in multi-select mode
+                    listener.onFileLongClick(item);
                 } else {
                     listener.onFileClick(item);
                 }
@@ -160,7 +152,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // --- NEW VIEWHOLDERS FOR ADS ---
     static class AdViewHolder extends RecyclerView.ViewHolder {
         private final NativeAdView adView;
         AdViewHolder(View view) {
