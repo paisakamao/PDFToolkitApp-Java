@@ -49,16 +49,11 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private TextView emptyView;
 
     private FileListAdapter adapter;
-    private List<Object> combinedList = new ArrayList<>();
-    private List<NativeAd> loadedAds = new ArrayList<>();
+    private List<Object> combinedList = new ArrayList<>(); // Changed from FileItem to Object
+    private NativeAd nativeAd;
     private ActionMode actionMode;
     private Toolbar toolbar;
-    
-    // --- NEW: Firebase Remote Config instance variable ---
-    private FirebaseRemoteConfig remoteConfig;
-
-    private static final int FIRST_AD_POSITION = 3;
-    private static final int AD_INTERVAL = 7;
+    private static final int AD_POSITION = 3; // Position for the first ad
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +68,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        
-        // --- NEW: Initialize Remote Config ---
-        remoteConfig = FirebaseRemoteConfig.getInstance();
 
         recyclerView = findViewById(R.id.recycler_view_files);
         progressBar = findViewById(R.id.progress_bar);
@@ -85,7 +77,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileListAdapter(this, combinedList, this);
+        // The adapter is now initialized with the combinedList
+        adapter = new FileListAdapter(combinedList, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -171,7 +164,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 }
                 Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
                 actionMode.finish();
-                loadFilesAndAds();
+                loadFilesAndAds(); // Reload the list
             })
             .setNegativeButton(android.R.string.cancel, null)
             .show();
@@ -209,13 +202,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-            final List<Object> freshCombinedList = new ArrayList<>();
-            for (int i = 0; i < fileItems.size(); i++) {
-                if (i == FIRST_AD_POSITION || (i > FIRST_AD_POSITION && (i - FIRST_AD_POSITION) % AD_INTERVAL == 0)) {
-                    freshCombinedList.add(null);
-                }
-                freshCombinedList.add(fileItems.get(i));
+            final List<Object> freshCombinedList = new ArrayList<>(fileItems);
+            
+            if (freshCombinedList.size() >= AD_POSITION) {
+                freshCombinedList.add(AD_POSITION, null); // Add one placeholder
             }
+
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
                 combinedList.clear();
@@ -227,14 +219,16 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-                    loadNativeAds();
+                    if (combinedList.contains(null)) {
+                        loadNativeAd();
+                    }
                 }
             });
         }).start();
     }
     
-    private void loadNativeAds() {
-        // The remoteConfig instance is now correctly accessed from the member variable
+    private void loadNativeAd() {
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (!isAdEnabled) return;
         
@@ -243,40 +237,32 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adUnitId = "ca-app-pub-3940256099942544/2247696110";
         }
         
-        int adCount = 0;
-        for(Object item : combinedList) {
-            if (item == null) adCount++;
-        }
-        if (adCount == 0) return;
-
         AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
         builder.forNativeAd(ad -> {
-            this.loadedAds.add(ad);
-            insertLoadedAdsIntoPlaceholders();
+            if (isDestroyed()) {
+                ad.destroy();
+                return;
+            }
+            nativeAd = ad;
+            int index = combinedList.indexOf(null);
+            if (index != -1) {
+                combinedList.set(index, nativeAd);
+                adapter.notifyItemChanged(index);
+            }
         });
 
         AdLoader adLoader = builder.withAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "Native ad failed to load: " + loadAdError.getMessage());
-            }
-        }).build();
-        adLoader.loadAds(new AdRequest.Builder().build(), adCount);
-    }
-
-    private void insertLoadedAdsIntoPlaceholders() {
-        if (loadedAds.isEmpty()) return;
-        for (int i = 0; i < combinedList.size(); i++) {
-            if (combinedList.get(i) == null) {
-                if (!loadedAds.isEmpty()) {
-                    NativeAd adToInsert = loadedAds.remove(0);
-                    combinedList.set(i, adToInsert);
-                    adapter.notifyItemChanged(i);
-                } else {
-                    break;
+                int index = combinedList.indexOf(null);
+                if (index != -1) {
+                    combinedList.remove(index);
+                    adapter.notifyItemRemoved(index);
                 }
             }
-        }
+        }).build();
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
     
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { 
@@ -330,8 +316,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     @Override
     protected void onDestroy() {
-        for (NativeAd ad : loadedAds) {
-            ad.destroy();
+        if (nativeAd != null) {
+            nativeAd.destroy();
         }
         super.onDestroy();
     }
