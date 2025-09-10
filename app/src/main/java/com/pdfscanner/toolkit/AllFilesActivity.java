@@ -1,3 +1,4 @@
+// File: AllFilesActivity.java
 package com.pdfscanner.toolkit;
 
 import android.Manifest;
@@ -37,9 +38,14 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
+// Implement the new interface
+public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileInteractionListener {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
     private static final String TAG = "AllFilesActivity";
@@ -49,11 +55,17 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private TextView emptyView;
 
     private FileListAdapter adapter;
-    private List<Object> combinedList = new ArrayList<>(); // Changed from FileItem to Object
-    private NativeAd nativeAd;
+    private List<Object> combinedList = new ArrayList<>();
     private ActionMode actionMode;
     private Toolbar toolbar;
-    private static final int AD_POSITION = 3; // Position for the first ad
+    
+    // Ad configuration
+    private static final int FIRST_AD_POSITION = 3; // Position for the first ad
+    private static final int AD_INTERVAL = 7; // Load an ad every 7 items after the first one
+
+    // Keep track of loaded ads and positions currently loading to prevent duplicates
+    private Map<Integer, NativeAd> loadedAds = new HashMap<>();
+    private Set<Integer> loadingAdPositions = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,9 +73,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         setContentView(R.layout.activity_all_files);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
-        toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Small);
+        toolbar.setTitle("All PDF Files");
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -77,33 +88,39 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // The adapter is now initialized with the combinedList
         adapter = new FileListAdapter(combinedList, this);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
-    public void onResume() {
+    protected void onResume() {
         super.onResume();
         if (hasStoragePermission()) {
             permissionView.setVisibility(View.GONE);
-            loadFilesAndAds();
+            loadFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
         }
     }
 
+    // --- File Click and Long Click Handlers (Unchanged, but now from the new interface) ---
     @Override
     public void onFileClick(FileItem item) {
         if (actionMode != null) {
             toggleSelection(item);
         } else {
-            Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
-            File file = new File(item.path);
-            Uri fileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
-            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(intent);
+            try {
+                Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
+                File file = new File(item.path);
+                // IMPORTANT: The authority string must match your AndroidManifest.xml provider
+                Uri fileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+                intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "File Provider error. Check your manifest configuration.", e);
+                Toast.makeText(this, "Error: Could not open file.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -115,6 +132,116 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         toggleSelection(item);
     }
 
+    // --- Ad Loading Logic (NEW and IMPROVED) ---
+    @Override
+    public void requestAdForPosition(int position) {
+        // Prevent loading the same ad multiple times
+        if (loadingAdPositions.contains(position) || loadedAds.containsKey(position)) {
+            return;
+        }
+        Log.d(TAG, "Requesting ad for position: " + position);
+        loadingAdPositions.add(position); // Mark as loading
+        loadNativeAdAtPosition(position);
+    }
+
+    private void loadFiles() {
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        emptyView.setVisibility(View.GONE);
+
+        // Clear previous data
+        combinedList.clear();
+        loadedAds.clear();
+        loadingAdPositions.clear();
+        adapter.notifyDataSetChanged();
+
+        new Thread(() -> {
+            List<FileItem> fileItems = new ArrayList<>();
+            File root = Environment.getExternalStorageDirectory();
+            searchPDFFilesRecursively(root, fileItems);
+            Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
+
+            final List<Object> freshCombinedList = new ArrayList<>(fileItems);
+            insertAdPlaceholders(freshCombinedList); // NEW: Insert all placeholders at once
+
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                if (fileItems.isEmpty()) {
+                    emptyView.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    emptyView.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    combinedList.addAll(freshCombinedList);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }).start();
+    }
+
+    private void insertAdPlaceholders(List<Object> list) {
+        if (list.size() < FIRST_AD_POSITION) {
+            return;
+        }
+        // Add first ad placeholder
+        list.add(FIRST_AD_POSITION, null);
+
+        // Add subsequent placeholders at intervals
+        for (int i = FIRST_AD_POSITION + AD_INTERVAL + 1; i < list.size(); i += (AD_INTERVAL + 1)) {
+            list.add(i, null);
+        }
+    }
+
+    private void loadNativeAdAtPosition(final int position) {
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
+        boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
+        if (!isAdEnabled) {
+            // If ads are disabled, remove the placeholder
+            runOnUiThread(() -> {
+                if (position < combinedList.size() && combinedList.get(position) == null) {
+                    combinedList.remove(position);
+                    adapter.notifyItemRemoved(position);
+                }
+            });
+            return;
+        }
+
+        String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
+        if (adUnitId == null || adUnitId.isEmpty()) {
+            adUnitId = "ca-app-pub-3940256099942544/2247696110"; // Test ID
+        }
+
+        AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
+        builder.forNativeAd(ad -> {
+            if (isDestroyed()) {
+                ad.destroy();
+                return;
+            }
+            loadedAds.put(position, ad); // Store the loaded ad
+            loadingAdPositions.remove(position); // Unmark as loading
+            
+            // Check if the placeholder is still at the same position
+            if (position < combinedList.size() && combinedList.get(position) == null) {
+                combinedList.set(position, ad);
+                adapter.notifyItemChanged(position);
+                Log.d(TAG, "Ad loaded and displayed at position: " + position);
+            }
+        });
+
+        AdLoader adLoader = builder.withAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Log.e(TAG, "Native ad failed to load at position " + position + ": " + loadAdError.getMessage());
+                loadingAdPositions.remove(position);
+                // On failure, remove the placeholder so the UI is clean
+                if (position < combinedList.size() && combinedList.get(position) == null) {
+                    combinedList.remove(position);
+                    adapter.notifyItemRemoved(position);
+                }
+            }
+        }).build();
+        adLoader.loadAd(new AdRequest.Builder().build());
+    }
     private void toggleSelection(FileItem item) {
         adapter.toggleSelection(item);
         int count = adapter.getSelectedItemCount();
