@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import java.text.SimpleDateFormat;
@@ -30,14 +32,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int VIEW_TYPE_AD = 1;
     private static final int VIEW_TYPE_AD_LOADING = 2;
 
-    /**
-     * A unified interface to handle all interactions from the adapter,
-     * including file clicks and requesting ads.
-     */
     public interface OnFileInteractionListener {
         void onFileClick(FileItem item);
         void onFileLongClick(FileItem item);
-        void requestAdForPosition(int position); // New method to request an ad
+        void requestAdForPosition(int position);
     }
 
     public FileListAdapter(List<Object> items, OnFileInteractionListener listener) {
@@ -83,8 +81,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             NativeAd nativeAd = (NativeAd) items.get(position);
             populateNativeAdView(nativeAd, ((AdViewHolder) holder).getAdView());
         } else if (viewType == VIEW_TYPE_AD_LOADING) {
-            // **KEY CHANGE FOR PROGRESSIVE LOADING**
-            // When a placeholder is about to be shown, tell the activity to load an ad for it.
             if (listener != null) {
                 listener.requestAdForPosition(holder.getAdapterPosition());
             }
@@ -133,7 +129,9 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
-        TextView fileName, fileSize, fileDate;
+        TextView fileName;
+        TextView fileSize;
+        TextView fileDate;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -169,10 +167,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         AdViewHolder(View view) {
             super(view);
             adView = (NativeAdView) view;
-            // You must set all the views you wish to use for the ad.
-            adView.setIconView(adView.findViewById(R.id.ad_app_icon));
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
+            adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+            adView.setMediaView(view.findViewById(R.id.ad_media));
         }
         public NativeAdView getAdView() { return adView; }
     }
@@ -184,9 +182,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Set the text views.
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-        
+
         if (nativeAd.getBody() == null) {
             adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
@@ -194,16 +191,20 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
 
-        // Set the icon.
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
         }
 
-        // This method tells the Google Mobile Ads SDK that you have finished populating your
-        // native ad view with this native ad.
+        if (nativeAd.getMediaContent() != null) {
+            adView.getMediaView().setVisibility(View.VISIBLE);
+            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
+        } else {
+            adView.getMediaView().setVisibility(View.GONE);
+        }
+
         adView.setNativeAd(nativeAd);
     }
 }
