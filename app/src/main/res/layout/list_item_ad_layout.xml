@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"
-    android:layout_marginTop="4dp"
     android:layout_marginEnd="16dp"
+    android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp">
 
     <androidx.cardview.widget.CardView
@@ -21,7 +21,6 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <!-- Ad Icon (replaces your file icon) -->
             <ImageView
                 android:id="@+id/ad_app_icon"
                 android:layout_width="56dp"
@@ -29,7 +28,6 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="16dp" />
 
-            <!-- Ad Headline (styled exactly like your filename) -->
             <TextView
                 android:id="@+id/ad_headline"
                 android:layout_width="match_parent"
@@ -40,9 +38,8 @@
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                tools:text="This is an Ad Headline That is Long" />
+                tools:text="This is a Long Ad Headline Title" />
 
-            <!-- Ad Body (styled exactly like your file details) -->
             <TextView
                 android:id="@+id/ad_body"
                 android:layout_width="wrap_content"
@@ -54,7 +51,6 @@
                 android:textSize="12sp"
                 tools:text="This is the ad body text." />
 
-            <!-- "Ad" Badge (Required by AdMob Policy) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -66,7 +62,6 @@
                 android:text="Ad"
                 android:textColor="@android:color/white"
                 android:textSize="10sp" />
-
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 </com.google.android.gms.ads.nativead.NativeAdView>
