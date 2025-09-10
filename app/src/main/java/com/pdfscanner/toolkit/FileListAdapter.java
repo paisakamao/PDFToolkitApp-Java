@@ -23,6 +23,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final List<Object> items;
     private final OnFileClickListener listener;
+    private final Context context; // The context is now a member variable
     private boolean isMultiSelectMode = false;
     private final Set<FileItem> selectedItems = new HashSet<>();
 
@@ -35,7 +36,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onFileLongClick(FileItem item);
     }
 
-    public FileListAdapter(List<Object> items, OnFileClickListener listener) {
+    // --- THIS IS THE CORRECTED CONSTRUCTOR ---
+    // It now correctly accepts the Context, List, and Listener.
+    public FileListAdapter(Context context, List<Object> items, OnFileClickListener listener) {
+        this.context = context;
         this.items = items;
         this.listener = listener;
     }
@@ -126,11 +130,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         public void bind(final FileItem item) {
             fileName.setText(item.name);
-            fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
+            // We can now use the member 'context' variable here for consistency
+            fileSize.setText(Formatter.formatShortFileSize(context, item.size));
             fileDate.setText(formatDate(item.date));
             fileIcon.setImageResource(R.drawable.ic_pdflist);
             
-            // --- THIS IS YOUR ORIGINAL, RESTORED, CORRECT CLICK LOGIC ---
             itemView.setOnClickListener(v -> listener.onFileClick(item));
             itemView.setOnLongClickListener(v -> {
                 listener.onFileLongClick(item);
