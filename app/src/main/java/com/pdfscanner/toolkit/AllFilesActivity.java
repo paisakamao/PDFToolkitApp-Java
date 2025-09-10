@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,12 +27,11 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.gms.ads.AdListener;
+
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,18 +40,15 @@ import java.util.List;
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
-    private static final String TAG = "AllFilesActivity";
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
     private TextView emptyView;
 
     private FileListAdapter adapter;
-    private List<Object> combinedList = new ArrayList<>();
-    private NativeAd nativeAd;
+    private List<Object> fileList = new ArrayList<>();
     private ActionMode actionMode;
     private Toolbar toolbar;
-    private static final int AD_POSITION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +72,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileListAdapter(this, combinedList, this);
+        adapter = new FileListAdapter(fileList, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -86,7 +81,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         super.onResume();
         if (hasStoragePermission()) {
             permissionView.setVisibility(View.GONE);
-            loadFilesAndAds();
+            loadPDFFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
         }
@@ -99,9 +94,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         } else {
             Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
             File file = new File(item.path);
-            Uri fileUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+            Uri fileUri = Uri.fromFile(file);
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
         }
     }
@@ -132,8 +126,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(true);
             return true;
         }
+
         @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int itemId = item.getItemId();
@@ -146,6 +144,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             }
             return false;
         }
+
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             adapter.setMultiSelectMode(false);
@@ -155,18 +154,18 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
-            .setTitle("Delete Files")
-            .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
-            .setPositiveButton("Delete", (dialog, which) -> {
-                for (FileItem item : adapter.getSelectedItems()) {
-                    new File(item.path).delete();
-                }
-                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                actionMode.finish();
-                loadFilesAndAds();
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+                .setTitle("Delete Files")
+                .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    for (FileItem item : adapter.getSelectedItems()) {
+                        new File(item.path).delete();
+                    }
+                    Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                    actionMode.finish();
+                    loadPDFFiles();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void shareSelectedFiles() {
@@ -192,132 +191,111 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         actionMode.finish();
     }
 
-    private void loadFilesAndAds() {
+    private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
+
         new Thread(() -> {
-            List<FileItem> fileItems = new ArrayList<>();
+            List<FileItem> freshFileList = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
-            searchPDFFilesRecursively(root, fileItems);
-            Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-            final List<Object> freshCombinedList = new ArrayList<>(fileItems);
-            
-            if (freshCombinedList.size() >= AD_POSITION) {
-                freshCombinedList.add(AD_POSITION, null);
-            }
+            searchPDFFilesRecursively(root, freshFileList);
+            Collections.sort(freshFileList, (a, b) -> Long.compare(b.date, a.date));
 
             runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
-                combinedList.clear();
-                combinedList.addAll(freshCombinedList);
+                fileList.clear();
+                fileList.addAll(freshFileList);
+
+                // Insert ad placeholders (after 3rd item, then every 7 items)
+                for (int i = 0; i < fileList.size(); i++) {
+                    if (i == 3 || (i > 3 && (i - 3) % 7 == 0)) {
+                        fileList.add(i, "LOADING_AD");
+                    }
+                }
+
                 adapter.notifyDataSetChanged();
-                if (fileItems.isEmpty()) {
+
+                if (fileList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
                     emptyView.setVisibility(View.VISIBLE);
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-                    if (combinedList.contains(null)) {
-                        loadNativeAd();
-                    }
+
+                    // Start loading ads dynamically
+                    loadNextAd();
                 }
             });
         }).start();
     }
-    
-    private void loadNativeAd() {
-        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
-        boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
-        if (!isAdEnabled) return;
-        
-        String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
-        if (adUnitId == null || adUnitId.isEmpty()) {
-            adUnitId = "ca-app-pub-3940256099942544/2247696110";
-        }
-        
-        AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
-        builder.forNativeAd(ad -> {
-            if (isDestroyed()) {
-                ad.destroy();
-                return;
-            }
-            nativeAd = ad;
-            int index = combinedList.indexOf(null);
-            if (index != -1) {
-                combinedList.set(index, nativeAd);
-                adapter.notifyItemChanged(index);
-            }
-        });
 
-        AdLoader adLoader = builder.withAdListener(new AdListener() {
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                Log.e(TAG, "Native ad failed to load: " + loadAdError.getMessage());
-                int index = combinedList.indexOf(null);
-                if (index != -1) {
-                    combinedList.remove(index);
-                    adapter.notifyItemRemoved(index);
-                }
+    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
+        if (dir == null || !dir.isDirectory()) return;
+        String dirPath = dir.getAbsolutePath();
+        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) {
+            return;
+        }
+        File[] files = dir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                searchPDFFilesRecursively(file, fileList);
+            } else if (file.getName().toLowerCase().endsWith(".pdf")) {
+                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
             }
-        }).build();
+        }
+    }
+
+    private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
+        } else {
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private void requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            loadPDFFiles();
+        } else {
+            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    // ------------------ Native Ads ------------------
+    private void loadNextAd() {
+        AdLoader adLoader = new AdLoader.Builder(this, "ca-app-pub-xxx/xxx") // TODO replace with your Ad Unit ID
+                .forNativeAd(nativeAd -> {
+                    int pos = fileList.indexOf("LOADING_AD");
+                    if (pos != -1) {
+                        fileList.set(pos, nativeAd);
+                        adapter.notifyItemChanged(pos);
+
+                        // Load next ad with delay
+                        recyclerView.postDelayed(this::loadNextAd, 2000);
+                    }
+                })
+                .build();
+
         adLoader.loadAd(new AdRequest.Builder().build());
-    }
-    
-    private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { 
-        if (dir == null || !dir.isDirectory()) return; 
-        String dirPath = dir.getAbsolutePath(); 
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; } 
-        File[] files = dir.listFiles(); 
-        if (files == null) return; 
-        for (File file : files) { 
-            if (file.isDirectory()) { 
-                searchPDFFilesRecursively(file, fileList); 
-            } else if (file.getName().toLowerCase().endsWith(".pdf")) { 
-                fileList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath())); 
-            } 
-        } 
-    }
-    
-    private boolean hasStoragePermission() { 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { 
-            return Environment.isExternalStorageManager(); 
-        } else { 
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED; 
-        } 
-    }
-    
-    private void requestStoragePermission() { 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { 
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION); 
-            intent.setData(Uri.parse("package:" + getPackageName())); 
-            startActivity(intent); 
-        } else { 
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS); 
-        } 
-    }
-    
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults); 
-        if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
-            loadFilesAndAds(); 
-        } else { 
-            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show(); 
-        } 
-    }
-    
-    @Override
-    public boolean onSupportNavigateUp() { 
-        onBackPressed(); 
-        return true; 
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (nativeAd != null) {
-            nativeAd.destroy();
-        }
-        super.onDestroy();
     }
 }
