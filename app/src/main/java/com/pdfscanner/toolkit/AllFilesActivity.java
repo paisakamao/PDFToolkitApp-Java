@@ -41,8 +41,8 @@ import java.util.List;
 
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
-    private static final String TAG = "AllFilesActivity";
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
+    private static final String TAG = "AllFilesActivity";
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
@@ -50,12 +50,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private FileListAdapter adapter;
     private List<Object> combinedList = new ArrayList<>();
-    private List<NativeAd> loadedNativeAds = new ArrayList<>();
+    private NativeAd nativeAd;
     private ActionMode actionMode;
     private Toolbar toolbar;
-
-    private static final int FIRST_AD_POSITION = 3;
-    private static final int AD_INTERVAL = 5;
+    private static final int AD_POSITION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,12 +132,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(true);
             return true;
         }
-
         @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
-        }
-
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int itemId = item.getItemId();
@@ -152,7 +146,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             }
             return false;
         }
-
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             adapter.setMultiSelectMode(false);
@@ -209,12 +202,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
 
-            final List<Object> freshCombinedList = new ArrayList<>();
-            for (int i = 0; i < fileItems.size(); i++) {
-                if (i == FIRST_AD_POSITION || (i > FIRST_AD_POSITION && (i - FIRST_AD_POSITION) % AD_INTERVAL == 0)) {
-                    freshCombinedList.add(null);
-                }
-                freshCombinedList.add(fileItems.get(i));
+            final List<Object> freshCombinedList = new ArrayList<>(fileItems);
+            
+            if (freshCombinedList.size() >= AD_POSITION) {
+                freshCombinedList.add(AD_POSITION, null);
             }
 
             runOnUiThread(() -> {
@@ -228,13 +219,15 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-                    loadNativeAds();
+                    if (combinedList.contains(null)) {
+                        loadNativeAd();
+                    }
                 }
             });
         }).start();
     }
     
-    private void loadNativeAds() {
+    private void loadNativeAd() {
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (!isAdEnabled) return;
@@ -246,45 +239,36 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         
         AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
         builder.forNativeAd(ad -> {
-            this.loadedNativeAds.add(ad);
-            insertLoadedAds();
+            if (isDestroyed()) {
+                ad.destroy();
+                return;
+            }
+            nativeAd = ad;
+            int index = combinedList.indexOf(null);
+            if (index != -1) {
+                combinedList.set(index, nativeAd);
+                adapter.notifyItemChanged(index);
+            }
         });
 
         AdLoader adLoader = builder.withAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "Native ad failed to load: " + loadAdError.getMessage());
+                int index = combinedList.indexOf(null);
+                if (index != -1) {
+                    combinedList.remove(index);
+                    adapter.notifyItemRemoved(index);
+                }
             }
         }).build();
-
-        int adCount = 0;
-        for (Object item : combinedList) {
-            if (item == null) adCount++;
-        }
-        if (adCount > 0) {
-            adLoader.loadAds(new AdRequest.Builder().build(), adCount);
-        }
-    }
-
-    private void insertLoadedAds() {
-        if (loadedNativeAds.isEmpty()) return;
-        
-        for (int i = 0; i < combinedList.size(); i++) {
-            if (combinedList.get(i) == null) {
-                NativeAd adToInsert = loadedNativeAds.remove(0);
-                combinedList.set(i, adToInsert);
-                adapter.notifyItemChanged(i);
-                if (loadedNativeAds.isEmpty()) break;
-            }
-        }
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
     
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { 
         if (dir == null || !dir.isDirectory()) return; 
         String dirPath = dir.getAbsolutePath(); 
-        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { 
-            return; 
-        } 
+        if (dirPath.contains("/.Trash") || dirPath.contains("/Android/data") || dirPath.contains("/.recycle")) { return; } 
         File[] files = dir.listFiles(); 
         if (files == null) return; 
         for (File file : files) { 
@@ -332,8 +316,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     @Override
     protected void onDestroy() {
-        for (NativeAd ad : loadedNativeAds) {
-            ad.destroy();
+        if (nativeAd != null) {
+            nativeAd.destroy();
         }
         super.onDestroy();
     }
