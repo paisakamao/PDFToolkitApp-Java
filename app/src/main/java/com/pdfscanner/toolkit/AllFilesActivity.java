@@ -62,7 +62,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     private void loadNativeAds() {
-        AdLoader adLoader = new AdLoader.Builder(this, getString(R.string.admob_native_ad_id))
+        AdLoader adLoader = new AdLoader.Builder(this, getString(R.string.admob_native_ad_unit_id))
                 .forNativeAd(nativeAd -> {
                     insertAdIntoList(nativeAd);
                     adapter.notifyDataSetChanged();
