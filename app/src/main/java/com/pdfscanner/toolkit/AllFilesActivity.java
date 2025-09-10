@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
@@ -43,8 +44,7 @@ import java.util.List;
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
-    private static final int FIRST_AD_POSITION = 3; // Show first ad at 3rd item
-    private static final int AD_INTERVAL = 7;       // Then after every 7 items
+    private static final int AD_INTERVAL = 7; // insert ad after every 7 files
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
@@ -52,11 +52,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private TextView emptyView;
 
     private FileListAdapter adapter;
-    private List<Object> itemList = new ArrayList<>(); // Changed to Object for mixing ads + files
     private List<FileItem> fileList = new ArrayList<>();
-
     private ActionMode actionMode;
-    private Toolbar toolbar; // Keep a reference to the toolbar
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +78,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileListAdapter(new ArrayList<>(), this); // normal adapter
+        adapter = new FileListAdapter(fileList, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -92,40 +90,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             loadPDFFiles();
         } else {
             permissionView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    // 🔹 Load Native Ads
-    private void loadNativeAds() {
-        String nativeAdId = FirebaseRemoteConfig.getInstance()
-                .getString("admob_native_ad_unit_id");
-
-        AdLoader adLoader = new AdLoader.Builder(this, nativeAdId)
-                .forNativeAd(nativeAd -> {
-                    insertAdIntoList(nativeAd);
-                    adapter.notifyDataSetChanged();
-                })
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
-                        Toast.makeText(AllFilesActivity.this, "Ad failed: " + adError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .build();
-
-        for (int i = 0; i < 3; i++) {
-            adLoader.loadAd(new AdRequest.Builder().build());
-        }
-    }
-
-    private void insertAdIntoList(NativeAd nativeAd) {
-        int nextAdPosition = FIRST_AD_POSITION;
-        while (nextAdPosition < itemList.size()) {
-            if (!(itemList.get(nextAdPosition) instanceof NativeAd)) {
-                itemList.add(nextAdPosition, nativeAd);
-                break;
-            }
-            nextAdPosition += AD_INTERVAL;
         }
     }
 
@@ -169,8 +133,13 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             return true;
         }
 
-        @Override public boolean onPrepareActionMode(ActionMode mode, Menu menu) { return false; }
-        @Override public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int itemId = item.getItemId();
             if (itemId == R.id.action_delete) {
                 deleteSelectedFiles();
@@ -181,7 +150,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             }
             return false;
         }
-        @Override public void onDestroyActionMode(ActionMode mode) {
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
             adapter.setMultiSelectMode(false);
             actionMode = null;
         }
@@ -189,18 +160,18 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
-                .setTitle("Delete Files")
-                .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    for (FileItem item : adapter.getSelectedItems()) {
-                        new File(item.path).delete();
-                    }
-                    Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                    actionMode.finish();
-                    loadPDFFiles();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+            .setTitle("Delete Files")
+            .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                for (FileItem item : adapter.getSelectedItems()) {
+                    new File(item.path).delete();
+                }
+                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                actionMode.finish();
+                loadPDFFiles();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void shareSelectedFiles() {
@@ -226,7 +197,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         actionMode.finish();
     }
 
-    // 🔹 Load PDFs
+    // 🔹 Load files, insert ads every 7th position
     private void loadPDFFiles() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
@@ -242,10 +213,13 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 progressBar.setVisibility(View.GONE);
                 fileList.clear();
                 fileList.addAll(freshFileList);
+                adapter.setFiles(fileList);
 
-                itemList.clear();
-                itemList.addAll(fileList); // files first
-                adapter.notifyDataSetChanged();
+                // Insert ad placeholders
+                for (int i = AD_INTERVAL; i < fileList.size(); i += AD_INTERVAL + 1) {
+                    adapter.insertLoading(i);
+                    loadNativeAdAt(i);
+                }
 
                 if (fileList.isEmpty()) {
                     recyclerView.setVisibility(View.GONE);
@@ -253,10 +227,24 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-                    loadNativeAds(); // 🔹 Load ads after files loaded
                 }
             });
         }).start();
+    }
+
+    private void loadNativeAdAt(int position) {
+        String adUnitId = FirebaseRemoteConfig.getInstance().getString("admob_native_ad_unit_id");
+        AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
+                .forNativeAd(nativeAd -> adapter.replaceLoadingWithAd(position, nativeAd))
+                .withAdListener(new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        adapter.replaceLoadingWithAd(position, null); // remove loading if fail
+                    }
+                })
+                .build();
+
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
 
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) {
@@ -280,7 +268,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
         } else {
-            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -308,162 +297,5 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-}
-package com.pdfscanner.toolkit;
-
-import android.os.Bundle;
-import android.os.Environment;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.nativead.NativeAd;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
-
-    private RecyclerView recyclerView;
-    private FileListAdapter adapter;
-    private final List<Object> itemList = new ArrayList<>(); // Can hold FileItem or NativeAd
-    private boolean isMultiSelectMode = false;
-
-    private static final int FIRST_AD_POSITION = 3;
-    private static final int AD_INTERVAL = 7;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_files);
-
-        recyclerView = findViewById(R.id.recycler_view_files);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
-
-        loadFiles();
-        loadNativeAds();
-
-        adapter = new FileListAdapter(this, itemList, this);
-        recyclerView.setAdapter(adapter);
-    }
-
-    private void loadFiles() {
-        itemList.clear();
-
-        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".pdf"));
-
-        if (files != null) {
-            for (File file : files) {
-                itemList.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
-            }
-        }
-    }
-
-private void loadNativeAds() {
-    String nativeAdId = FirebaseRemoteConfig.getInstance()
-            .getString("admob_native_ad_unit_id");
-
-    AdLoader adLoader = new AdLoader.Builder(this, nativeAdId)
-            .forNativeAd(nativeAd -> {
-                insertAdIntoList(nativeAd);
-                adapter.notifyDataSetChanged();
-            })
-            .withAdListener(new AdListener() {
-                @Override
-                public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
-                    Toast.makeText(AllFilesActivity.this, "Ad failed: " + adError.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            })
-            .build();
-
-    // Request multiple ads
-    for (int i = 0; i < 3; i++) {
-        adLoader.loadAd(new AdRequest.Builder().build());
-    }
-}
-
-
-private void insertAdIntoList(NativeAd nativeAd) {
-    int nextAdPosition = FIRST_AD_POSITION;
-    while (nextAdPosition < itemList.size()) {
-        if (!(itemList.get(nextAdPosition) instanceof NativeAd)) {
-            itemList.add(nextAdPosition, nativeAd);
-            break;
-        }
-        nextAdPosition += AD_INTERVAL;
-    }
-}
-
-
-    // ================= Adapter Callbacks =================
-    @Override
-    public void onFileClick(FileItem item) {
-        if (isMultiSelectMode) {
-            adapter.toggleSelection(item);
-        } else {
-            Toast.makeText(this, "Clicked: " + item.name, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onFileLongClick(FileItem item) {
-        if (!isMultiSelectMode) {
-            isMultiSelectMode = true;
-            adapter.setMultiSelectMode(true);
-            adapter.toggleSelection(item);
-            invalidateOptionsMenu();
-        }
-    }
-
-    // ================= Action Bar =================
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_contextual, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.action_delete).setVisible(isMultiSelectMode);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_delete) {
-            deleteSelectedFiles();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void deleteSelectedFiles() {
-        List<FileItem> selected = adapter.getSelectedItems();
-        for (FileItem fileItem : selected) {
-            File file = new File(fileItem.path);
-            if (file.exists()) {
-                file.delete();
-            }
-            itemList.remove(fileItem);
-        }
-        adapter.clearSelections();
-        isMultiSelectMode = false;
-        invalidateOptionsMenu();
-        adapter.notifyDataSetChanged();
     }
 }
