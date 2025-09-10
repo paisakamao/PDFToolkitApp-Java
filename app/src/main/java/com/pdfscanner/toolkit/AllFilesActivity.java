@@ -40,7 +40,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         recyclerView = findViewById(R.id.recycler_view_files);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        MobileAds.initialize(this, initializationStatus -> {});
+
 
         loadFiles();
         loadNativeAds();
@@ -63,7 +63,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
 private void loadNativeAds() {
-    // ✅ Get Native Ad ID from Firebase Remote Config
     String nativeAdId = FirebaseRemoteConfig.getInstance()
             .getString("admob_native_ad_unit_id");
 
@@ -85,6 +84,7 @@ private void loadNativeAds() {
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 }
+
 
 private void insertAdIntoList(NativeAd nativeAd) {
     int nextAdPosition = FIRST_AD_POSITION;
