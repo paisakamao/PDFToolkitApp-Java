@@ -34,7 +34,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // ✅ keep only this
         }
 
-        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view_files);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new FileListAdapter(fileItems, this);
@@ -50,7 +50,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File[] files = directory.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    fileItems.add(new FileItem(file.getName(), file.length(), file.lastModified()));
+                    fileItems.add(new FileItem(file.getName(), file.length(), file.lastModified(), file.getAbsolutePath()));
                 }
             }
         }
