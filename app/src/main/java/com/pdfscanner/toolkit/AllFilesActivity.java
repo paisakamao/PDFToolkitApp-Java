@@ -115,7 +115,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     // ================= Action Bar =================
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_all_files, menu);
+        getMenuInflater().inflate(R.menu.menu_contextual, menu);
         return true;
     }
 
