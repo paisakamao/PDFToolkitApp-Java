@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -61,36 +62,41 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
 
-    private void loadNativeAds() {
-        AdLoader adLoader = new AdLoader.Builder(this, getString(R.string.admob_native_ad_unit_id))
-                .forNativeAd(nativeAd -> {
-                    insertAdIntoList(nativeAd);
-                    adapter.notifyDataSetChanged();
-                })
-                .withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
-                        Toast.makeText(AllFilesActivity.this, "Ad failed: " + adError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .build();
+private void loadNativeAds() {
+    // ✅ Get Native Ad ID from Firebase Remote Config
+    String nativeAdId = FirebaseRemoteConfig.getInstance()
+            .getString("admob_native_ad_unit_id");
 
-        // Request multiple ads
-        for (int i = 0; i < 3; i++) {
-            adLoader.loadAd(new AdRequest.Builder().build());
-        }
-    }
+    AdLoader adLoader = new AdLoader.Builder(this, nativeAdId)
+            .forNativeAd(nativeAd -> {
+                insertAdIntoList(nativeAd);
+                adapter.notifyDataSetChanged();
+            })
+            .withAdListener(new AdListener() {
+                @Override
+                public void onAdFailedToLoad(@NonNull com.google.android.gms.ads.LoadAdError adError) {
+                    Toast.makeText(AllFilesActivity.this, "Ad failed: " + adError.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            })
+            .build();
 
-    private void insertAdIntoList(NativeAd nativeAd) {
-        int nextAdPosition = FIRST_AD_POSITION;
-        while (nextAdPosition < itemList.size()) {
-            if (!(itemList.get(nextAdPosition) instanceof NativeAd)) {
-                itemList.add(nextAdPosition, nativeAd);
-                break;
-            }
-            nextAdPosition += AD_INTERVAL;
-        }
+    // Request multiple ads
+    for (int i = 0; i < 3; i++) {
+        adLoader.loadAd(new AdRequest.Builder().build());
     }
+}
+
+private void insertAdIntoList(NativeAd nativeAd) {
+    int nextAdPosition = FIRST_AD_POSITION;
+    while (nextAdPosition < itemList.size()) {
+        if (!(itemList.get(nextAdPosition) instanceof NativeAd)) {
+            itemList.add(nextAdPosition, nativeAd);
+            break;
+        }
+        nextAdPosition += AD_INTERVAL;
+    }
+}
+
 
     // ================= Adapter Callbacks =================
     @Override
