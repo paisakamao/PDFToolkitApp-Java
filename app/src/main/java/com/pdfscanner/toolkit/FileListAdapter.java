@@ -5,43 +5,41 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
-
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int VIEW_TYPE_FILE = 0;
-    private static final int VIEW_TYPE_AD = 1;
-    private static final int VIEW_TYPE_LOADING = 2;
-
-    private final List<Object> items = new ArrayList<>();
+    // The list now holds generic Objects to accommodate files, ads, and placeholders
+    private final List<Object> items;
     private final OnFileClickListener listener;
-
-    // 🔹 Multi-select tracking
     private boolean isMultiSelectMode = false;
     private final Set<FileItem> selectedItems = new HashSet<>();
+
+    // View type constants
+    private static final int VIEW_TYPE_FILE = 0;
+    private static final int VIEW_TYPE_AD = 1;
+    private static final int VIEW_TYPE_AD_LOADING = 2;
 
     public interface OnFileClickListener {
         void onFileClick(FileItem item);
         void onFileLongClick(FileItem item);
     }
 
-    public FileListAdapter(List<FileItem> fileList, OnFileClickListener listener) {
+    // The constructor now correctly takes a List<Object>
+    public FileListAdapter(List<Object> items, OnFileClickListener listener) {
+        this.items = items;
         this.listener = listener;
-        items.addAll(fileList);
     }
 
     @Override
@@ -51,10 +49,36 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return VIEW_TYPE_FILE;
         } else if (item instanceof NativeAd) {
             return VIEW_TYPE_AD;
-        } else if (item instanceof LoadingItem) {
-            return VIEW_TYPE_LOADING;
+        } else {
+            return VIEW_TYPE_AD_LOADING;
         }
-        return -1;
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_AD) {
+            View adView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_ad_layout, parent, false);
+            return new AdViewHolder(adView);
+        } else if (viewType == VIEW_TYPE_AD_LOADING) {
+            View loadingView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_loading_item, parent, false);
+            return new AdLoadingViewHolder(loadingView);
+        } else { // It's a file
+            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
+            return new FileViewHolder(itemView);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder.getItemViewType() == VIEW_TYPE_FILE) {
+            FileItem file = (FileItem) items.get(position);
+            ((FileViewHolder) holder).bind(file);
+            holder.itemView.setActivated(selectedItems.contains(file));
+        } else if (holder.getItemViewType() == VIEW_TYPE_AD) {
+            NativeAd nativeAd = (NativeAd) items.get(position);
+            populateNativeAdView(nativeAd, ((AdViewHolder) holder).getAdView());
+        }
     }
 
     @Override
@@ -62,40 +86,9 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return items.size();
     }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-
-        if (viewType == VIEW_TYPE_FILE) {
-            View view = inflater.inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(view);
-        } else if (viewType == VIEW_TYPE_AD) {
-            View view = inflater.inflate(R.layout.list_item_ad_layout, parent, false);
-            return new AdViewHolder(view);
-        } else {
-            View view = inflater.inflate(R.layout.ad_loading_item, parent, false);
-            return new LoadingViewHolder(view);
-        }
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        Object item = items.get(position);
-
-        if (holder instanceof FileViewHolder && item instanceof FileItem) {
-            ((FileViewHolder) holder).bind((FileItem) item, listener, isMultiSelectMode, selectedItems.contains(item));
-        } else if (holder instanceof AdViewHolder && item instanceof NativeAd) {
-            ((AdViewHolder) holder).bind((NativeAd) item);
-        } else if (holder instanceof LoadingViewHolder) {
-            ((LoadingViewHolder) holder).bind();
-        }
-    }
-
-    // -------------------- Multi-select methods --------------------
     public void setMultiSelectMode(boolean multiSelectMode) {
         isMultiSelectMode = multiSelectMode;
-        if (!multiSelectMode) {
+        if (!isMultiSelectMode) {
             selectedItems.clear();
         }
         notifyDataSetChanged();
@@ -107,132 +100,93 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else {
             selectedItems.add(item);
         }
-        notifyItemChanged(items.indexOf(item));
+        for (int i=0; i < items.size(); i++) {
+            if (item.equals(items.get(i))) {
+                notifyItemChanged(i);
+                break;
+            }
+        }
     }
 
     public List<FileItem> getSelectedItems() {
         return new ArrayList<>(selectedItems);
     }
-
     public int getSelectedItemCount() {
         return selectedItems.size();
     }
-
     public void clearSelections() {
         selectedItems.clear();
         notifyDataSetChanged();
     }
 
-    // -------------------- Public helpers --------------------
-    public void setFiles(List<FileItem> fileList) {
-        items.clear();
-        items.addAll(fileList);
-        notifyDataSetChanged();
-    }
+    // THIS IS YOUR ORIGINAL FileViewHolder, PRESERVING YOUR CLICK LOGIC
+    public class FileViewHolder extends RecyclerView.ViewHolder {
+        ImageView fileIcon;
+        TextView fileName;
+        TextView fileSize;
+        TextView fileDate;
 
-    public void insertAd(NativeAd ad, int position) {
-        if (position >= 0 && position <= items.size()) {
-            items.add(position, ad);
-            notifyItemInserted(position);
-        }
-    }
-
-    public void insertLoading(int position) {
-        if (position >= 0 && position <= items.size()) {
-            items.add(position, new LoadingItem());
-            notifyItemInserted(position);
-        }
-    }
-
-    public void replaceLoadingWithAd(int position, NativeAd ad) {
-        if (position >= 0 && position < items.size() && items.get(position) instanceof LoadingItem) {
-            items.set(position, ad);
-            notifyItemChanged(position);
-        }
-    }
-
-    // -------------------- ViewHolders --------------------
-    static class FileViewHolder extends RecyclerView.ViewHolder {
-        TextView name, size, date;
-        ImageView icon;
-
-        FileViewHolder(@NonNull View itemView) {
+        public FileViewHolder(@NonNull View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.text_file_name);
-            size = itemView.findViewById(R.id.text_file_size);
-            date = itemView.findViewById(R.id.text_file_date);
-            icon = itemView.findViewById(R.id.icon_file_type);
+            fileIcon = itemView.findViewById(R.id.icon_file_type);
+            fileName = itemView.findViewById(R.id.text_file_name);
+            fileSize = itemView.findViewById(R.id.text_file_size);
+            fileDate = itemView.findViewById(R.id.text_file_date);
         }
 
-        void bind(final FileItem file, final OnFileClickListener listener,
-                  boolean isMultiSelectMode, boolean isSelected) {
-            name.setText(file.name);
-            size.setText(Formatter.formatShortFileSize(itemView.getContext(), file.size));
-            date.setText(DateFormat.getDateTimeInstance().format(new Date(file.date)));
-            icon.setImageResource(R.drawable.ic_pdflist);
-
-            itemView.setActivated(isSelected);
-
-            itemView.setOnClickListener(v -> listener.onFileClick(file));
+        public void bind(final FileItem item) {
+            fileName.setText(item.name);
+            fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
+            fileDate.setText(formatDate(item.date));
+            fileIcon.setImageResource(R.drawable.ic_pdflist);
+            
+            // This is your original, working click logic, now restored.
+            itemView.setOnClickListener(v -> listener.onFileClick(item));
             itemView.setOnLongClickListener(v -> {
-                listener.onFileLongClick(file);
+                listener.onFileLongClick(item);
                 return true;
             });
         }
+
+        private String formatDate(long millis) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
+            return sdf.format(new Date(millis));
+        }
     }
 
+    // The new ViewHolders for the ad system
     static class AdViewHolder extends RecyclerView.ViewHolder {
-        NativeAdView adView;
-        TextView headline, body;
-        ImageView icon;
-
-        AdViewHolder(@NonNull View itemView) {
-            super(itemView);
-            adView = (NativeAdView) itemView;
-
-            icon = itemView.findViewById(R.id.ad_app_icon);
-            headline = itemView.findViewById(R.id.ad_headline);
-            body = itemView.findViewById(R.id.ad_body);
-
-            adView.setIconView(icon);
-            adView.setHeadlineView(headline);
-            adView.setBodyView(body);
+        private final NativeAdView adView;
+        AdViewHolder(View view) {
+            super(view);
+            adView = (NativeAdView) view;
+            adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+            adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
+            adView.setBodyView(adView.findViewById(R.id.ad_body));
         }
+        public NativeAdView getAdView() { return adView; }
+    }
 
-        void bind(NativeAd ad) {
-            ((TextView) adView.getHeadlineView()).setText(ad.getHeadline());
-
-            if (ad.getBody() != null) {
-                ((TextView) adView.getBodyView()).setText(ad.getBody());
-                adView.getBodyView().setVisibility(View.VISIBLE);
-            } else {
-                adView.getBodyView().setVisibility(View.GONE);
-            }
-
-            if (ad.getIcon() != null) {
-                ((ImageView) adView.getIconView()).setImageDrawable(ad.getIcon().getDrawable());
-                adView.getIconView().setVisibility(View.VISIBLE);
-            } else {
-                adView.getIconView().setVisibility(View.GONE);
-            }
-
-            adView.setNativeAd(ad);
+    static class AdLoadingViewHolder extends RecyclerView.ViewHolder {
+        AdLoadingViewHolder(View view) {
+            super(view);
         }
     }
 
-    static class LoadingViewHolder extends RecyclerView.ViewHolder {
-        ProgressBar progressBar;
-
-        LoadingViewHolder(@NonNull View itemView) {
-            super(itemView);
-            progressBar = itemView.findViewById(R.id.progress_bar);
+    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        if (nativeAd.getBody() == null) {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getBodyView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
-
-        void bind() {
-            progressBar.setIndeterminate(true);
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
         }
+        adView.setNativeAd(nativeAd);
     }
-
-    // Dummy class for Loading item
-    static class LoadingItem { }
 }
