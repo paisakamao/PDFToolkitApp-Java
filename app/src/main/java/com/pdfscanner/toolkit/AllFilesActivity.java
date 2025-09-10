@@ -27,11 +27,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.nativead.NativeAd;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,15 +35,16 @@ import java.util.List;
 public class AllFilesActivity extends AppCompatActivity implements FileListAdapter.OnFileClickListener {
 
     private static final int REQUEST_CODE_PERMISSIONS = 1001;
+
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private LinearLayout permissionView;
     private TextView emptyView;
 
     private FileListAdapter adapter;
-    private List<Object> fileList = new ArrayList<>();
+    private List<FileItem> fileList = new ArrayList<>(); // keep as List<FileItem>
     private ActionMode actionMode;
-    private Toolbar toolbar;
+    private Toolbar toolbar; // Keep a reference to the toolbar
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +68,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         btnGrant.setOnClickListener(v -> requestStoragePermission());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileListAdapter(fileList, this);
+
+        // Use the updated constructor: (Context, List<FileItem>, OnFileClickListener)
+        adapter = new FileListAdapter(this, fileList, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -103,6 +101,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     @Override
     public void onFileLongClick(FileItem item) {
         if (actionMode == null) {
+            // Start action mode on the toolbar to avoid duplicate bars
             actionMode = toolbar.startActionMode(actionModeCallback);
         }
         toggleSelection(item);
@@ -154,18 +153,18 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
-                .setTitle("Delete Files")
-                .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    for (FileItem item : adapter.getSelectedItems()) {
-                        new File(item.path).delete();
-                    }
-                    Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                    actionMode.finish();
-                    loadPDFFiles();
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
+            .setTitle("Delete Files")
+            .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
+            .setPositiveButton("Delete", (dialog, which) -> {
+                for (FileItem item : adapter.getSelectedItems()) {
+                    new File(item.path).delete();
+                }
+                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                if (actionMode != null) actionMode.finish();
+                loadPDFFiles();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void shareSelectedFiles() {
@@ -188,7 +187,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             intent.setType("application/pdf");
         }
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
-        actionMode.finish();
+        if (actionMode != null) actionMode.finish();
     }
 
     private void loadPDFFiles() {
@@ -206,14 +205,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 progressBar.setVisibility(View.GONE);
                 fileList.clear();
                 fileList.addAll(freshFileList);
-
-                // Insert ad placeholders (after 3rd item, then every 7 items)
-                for (int i = 0; i < fileList.size(); i++) {
-                    if (i == 3 || (i > 3 && (i - 3) % 7 == 0)) {
-                        fileList.add(i, "LOADING_AD");
-                    }
-                }
-
                 adapter.notifyDataSetChanged();
 
                 if (fileList.isEmpty()) {
@@ -222,9 +213,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 } else {
                     recyclerView.setVisibility(View.VISIBLE);
                     emptyView.setVisibility(View.GONE);
-
-                    // Start loading ads dynamically
-                    loadNextAd();
                 }
             });
         }).start();
@@ -279,23 +267,5 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-
-    // ------------------ Native Ads ------------------
-    private void loadNextAd() {
-        AdLoader adLoader = new AdLoader.Builder(this, "ca-app-pub-xxx/xxx") // TODO replace with your Ad Unit ID
-                .forNativeAd(nativeAd -> {
-                    int pos = fileList.indexOf("LOADING_AD");
-                    if (pos != -1) {
-                        fileList.set(pos, nativeAd);
-                        adapter.notifyItemChanged(pos);
-
-                        // Load next ad with delay
-                        recyclerView.postDelayed(this::loadNextAd, 2000);
-                    }
-                })
-                .build();
-
-        adLoader.loadAd(new AdRequest.Builder().build());
     }
 }
