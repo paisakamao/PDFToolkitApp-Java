@@ -1,6 +1,8 @@
+// File: FileListAdapter.java
 package com.pdfscanner.toolkit;
 
 import android.text.format.Formatter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,24 +22,23 @@ import java.util.Set;
 
 public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    // The list now holds generic Objects to accommodate files, ads, and placeholders
     private final List<Object> items;
-    private final OnFileClickListener listener;
+    private final OnFileInteractionListener listener;
     private boolean isMultiSelectMode = false;
     private final Set<FileItem> selectedItems = new HashSet<>();
 
-    // View type constants
     private static final int VIEW_TYPE_FILE = 0;
     private static final int VIEW_TYPE_AD = 1;
     private static final int VIEW_TYPE_AD_LOADING = 2;
 
-    public interface OnFileClickListener {
+    // Interface now handles both file clicks and ad load requests
+    public interface OnFileInteractionListener {
         void onFileClick(FileItem item);
         void onFileLongClick(FileItem item);
+        void requestAdForPosition(int position); // New method to request an ad
     }
 
-    // The constructor now correctly takes a List<Object>
-    public FileListAdapter(List<Object> items, OnFileClickListener listener) {
+    public FileListAdapter(List<Object> items, OnFileInteractionListener listener) {
         this.items = items;
         this.listener = listener;
     }
@@ -49,7 +50,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return VIEW_TYPE_FILE;
         } else if (item instanceof NativeAd) {
             return VIEW_TYPE_AD;
-        } else {
+        } else { // Handles null or any other object as a loading placeholder
             return VIEW_TYPE_AD_LOADING;
         }
     }
@@ -63,7 +64,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else if (viewType == VIEW_TYPE_AD_LOADING) {
             View loadingView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ad_loading_item, parent, false);
             return new AdLoadingViewHolder(loadingView);
-        } else { // It's a file
+        } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
             return new FileViewHolder(itemView);
         }
@@ -71,13 +72,18 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == VIEW_TYPE_FILE) {
+        int viewType = getItemViewType(position);
+        if (viewType == VIEW_TYPE_FILE) {
             FileItem file = (FileItem) items.get(position);
             ((FileViewHolder) holder).bind(file);
             holder.itemView.setActivated(selectedItems.contains(file));
-        } else if (holder.getItemViewType() == VIEW_TYPE_AD) {
+        } else if (viewType == VIEW_TYPE_AD) {
             NativeAd nativeAd = (NativeAd) items.get(position);
             populateNativeAdView(nativeAd, ((AdViewHolder) holder).getAdView());
+        } else if (viewType == VIEW_TYPE_AD_LOADING) {
+            // THIS IS THE KEY CHANGE for progressive loading
+            // When a placeholder is about to be shown, tell the activity to load an ad for it.
+            listener.requestAdForPosition(position);
         }
     }
 
@@ -119,12 +125,9 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    // THIS IS YOUR ORIGINAL FileViewHolder, PRESERVING YOUR CLICK LOGIC
     public class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
-        TextView fileName;
-        TextView fileSize;
-        TextView fileDate;
+        TextView fileName, fileSize, fileDate;
 
         public FileViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -140,10 +143,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             fileDate.setText(formatDate(item.date));
             fileIcon.setImageResource(R.drawable.ic_pdflist);
             
-            // This is your original, working click logic, now restored.
-            itemView.setOnClickListener(v -> listener.onFileClick(item));
+            itemView.setOnClickListener(v -> {
+                if(listener != null) listener.onFileClick(item);
+            });
             itemView.setOnLongClickListener(v -> {
-                listener.onFileLongClick(item);
+                if(listener != null) listener.onFileLongClick(item);
                 return true;
             });
         }
@@ -154,7 +158,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // The new ViewHolders for the ad system
     static class AdViewHolder extends RecyclerView.ViewHolder {
         private final NativeAdView adView;
         AdViewHolder(View view) {
