@@ -50,10 +50,13 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private FileListAdapter adapter;
     private List<Object> combinedList = new ArrayList<>();
-    private NativeAd nativeAd;
+    private List<NativeAd> loadedAds = new ArrayList<>();
     private ActionMode actionMode;
     private Toolbar toolbar;
-    private static final int AD_POSITION = 3;
+    
+    // --- NEW AD INSERTION CONSTANTS (as per your request) ---
+    private static final int FIRST_AD_POSITION = 3;
+    private static final int AD_INTERVAL = 7; // Show an ad every 7 files after the first one
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,9 +89,95 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         super.onResume();
         if (hasStoragePermission()) {
             permissionView.setVisibility(View.GONE);
-            loadFilesAndAds();
+            loadFilesAndPlaceholders();
         } else {
             permissionView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void loadFilesAndPlaceholders() {
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        emptyView.setVisibility(View.GONE);
+        new Thread(() -> {
+            List<FileItem> fileItems = new ArrayList<>();
+            File root = Environment.getExternalStorageDirectory();
+            searchPDFFilesRecursively(root, fileItems);
+            Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
+
+            final List<Object> freshCombinedList = new ArrayList<>();
+            for (int i = 0; i < fileItems.size(); i++) {
+                // This is the new, correct logic for placing multiple ad placeholders
+                if (i == FIRST_AD_POSITION || (i > FIRST_AD_POSITION && (i - FIRST_AD_POSITION) % AD_INTERVAL == 0)) {
+                    freshCombinedList.add(null);
+                }
+                freshCombinedList.add(fileItems.get(i));
+            }
+
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                combinedList.clear();
+                combinedList.addAll(freshCombinedList);
+                adapter.notifyDataSetChanged();
+                if (fileItems.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyView.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyView.setVisibility(View.GONE);
+                    loadNativeAds(); // Now load the ads to fill the placeholders
+                }
+            });
+        }).start();
+    }
+    
+    private void loadNativeAds() {
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
+        boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
+        if (!isAdEnabled) return;
+        
+        String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
+        if (adUnitId == null || adUnitId.isEmpty()) {
+            adUnitId = "ca-app-pub-3_940256099942544/2247696110";
+        }
+        
+        int adCount = 0;
+        for(Object item : combinedList) {
+            if (item == null) {
+                adCount++;
+            }
+        }
+        if (adCount == 0) return;
+
+        AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
+        builder.forNativeAd(ad -> {
+            this.loadedAds.add(ad);
+            insertLoadedAdsIntoPlaceholders();
+        });
+
+        AdLoader adLoader = builder.withAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Log.e(TAG, "Native ad failed to load: " + loadAdError.getMessage());
+                // You could optionally remove a placeholder here if you want
+            }
+        }).build();
+        adLoader.loadAds(new AdRequest.Builder().build(), adCount);
+    }
+
+    private void insertLoadedAdsIntoPlaceholders() {
+        if (loadedAds.isEmpty()) return;
+        
+        for (int i = 0; i < combinedList.size(); i++) {
+            if (combinedList.get(i) == null) {
+                if (!loadedAds.isEmpty()) {
+                    NativeAd adToInsert = loadedAds.remove(0);
+                    combinedList.set(i, adToInsert);
+                    adapter.notifyItemChanged(i);
+                } else {
+                    break; // No more loaded ads to insert
+                }
+            }
         }
     }
 
@@ -163,7 +252,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 }
                 Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
                 actionMode.finish();
-                loadFilesAndAds();
+                loadFilesAndPlaceholders(); // Use the new method to reload
             })
             .setNegativeButton(android.R.string.cancel, null)
             .show();
@@ -190,79 +279,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
         actionMode.finish();
-    }
-
-    private void loadFilesAndAds() {
-        progressBar.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-        emptyView.setVisibility(View.GONE);
-        new Thread(() -> {
-            List<FileItem> fileItems = new ArrayList<>();
-            File root = Environment.getExternalStorageDirectory();
-            searchPDFFilesRecursively(root, fileItems);
-            Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-
-            final List<Object> freshCombinedList = new ArrayList<>(fileItems);
-            
-            if (freshCombinedList.size() >= AD_POSITION) {
-                freshCombinedList.add(AD_POSITION, null);
-            }
-
-            runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                combinedList.clear();
-                combinedList.addAll(freshCombinedList);
-                adapter.notifyDataSetChanged();
-                if (fileItems.isEmpty()) {
-                    recyclerView.setVisibility(View.GONE);
-                    emptyView.setVisibility(View.VISIBLE);
-                } else {
-                    recyclerView.setVisibility(View.VISIBLE);
-                    emptyView.setVisibility(View.GONE);
-                    if (combinedList.contains(null)) {
-                        loadNativeAd();
-                    }
-                }
-            });
-        }).start();
-    }
-    
-    private void loadNativeAd() {
-        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
-        boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
-        if (!isAdEnabled) return;
-        
-        String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
-        if (adUnitId == null || adUnitId.isEmpty()) {
-            adUnitId = "ca-app-pub-3940256099942544/2247696110";
-        }
-        
-        AdLoader.Builder builder = new AdLoader.Builder(this, adUnitId);
-        builder.forNativeAd(ad -> {
-            if (isDestroyed()) {
-                ad.destroy();
-                return;
-            }
-            nativeAd = ad;
-            int index = combinedList.indexOf(null);
-            if (index != -1) {
-                combinedList.set(index, nativeAd);
-                adapter.notifyItemChanged(index);
-            }
-        });
-
-        AdLoader adLoader = builder.withAdListener(new AdListener() {
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                Log.e(TAG, "Native ad failed to load: " + loadAdError.getMessage());
-                int index = combinedList.indexOf(null);
-                if (index != -1) {
-                    combinedList.remove(index);
-                    adapter.notifyItemRemoved(index);
-                }
-            }
-        }).build();
-        adLoader.loadAd(new AdRequest.Builder().build());
     }
     
     private void searchPDFFilesRecursively(File dir, List<FileItem> fileList) { 
@@ -302,7 +318,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) { 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults); 
         if (requestCode == REQUEST_CODE_PERMISSIONS && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
-            loadFilesAndAds(); 
+            loadFilesAndPlaceholders(); 
         } else { 
             Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show(); 
         } 
@@ -316,8 +332,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     @Override
     protected void onDestroy() {
-        if (nativeAd != null) {
-            nativeAd.destroy();
+        for (NativeAd ad : loadedAds) {
+            ad.destroy();
         }
         super.onDestroy();
     }
