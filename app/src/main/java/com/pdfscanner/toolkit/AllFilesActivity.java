@@ -59,10 +59,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     private FileListAdapter adapter;
     private final List<Object> combinedList = new ArrayList<>();
 
-    // Ad logic variables
     private final Map<Integer, NativeAd> loadedAds = new HashMap<>();
     private final Set<Integer> positionsCurrentlyLoading = new HashSet<>();
-
     private static final int FIRST_AD_POSITION = 3;
     private static final int AD_INTERVAL = 7;
 
@@ -103,32 +101,50 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     @Override
-    public void onFileClick(FileItem item) {
-        if (actionMode != null) {
-            toggleSelection(item);
-        } else {
-            try {
-                Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
-                File file = new File(item.path);
-                String authority = getApplicationContext().getPackageName() + ".provider";
-                Uri fileUri = FileProvider.getUriForFile(this, authority, file);
-
-                intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(intent);
-            } catch (IllegalArgumentException e) {
-                Log.e(TAG, "File Provider Error. Did you configure it correctly in AndroidManifest.xml?", e);
-                Toast.makeText(this, "Error opening file. Check configuration.", Toast.LENGTH_LONG).show();
+    public void onFileClick(int position) {
+        if (position >= 0 && position < combinedList.size()) {
+            Object clickedObject = combinedList.get(position);
+            if (clickedObject instanceof FileItem) {
+                FileItem fileItem = (FileItem) clickedObject;
+                if (actionMode != null) {
+                    toggleSelection(fileItem);
+                } else {
+                    openFile(fileItem);
+                }
+            } else {
+                Log.w(TAG, "A non-file item was clicked at position: " + position);
             }
         }
     }
 
     @Override
-    public void onFileLongClick(FileItem item) {
-        if (actionMode == null) {
-            actionMode = toolbar.startActionMode(actionModeCallback);
+    public void onFileLongClick(int position) {
+        if (position >= 0 && position < combinedList.size()) {
+            Object clickedObject = combinedList.get(position);
+            if (clickedObject instanceof FileItem) {
+                FileItem fileItem = (FileItem) clickedObject;
+                if (actionMode == null) {
+                    actionMode = toolbar.startActionMode(actionModeCallback);
+                }
+                toggleSelection(fileItem);
+            }
         }
-        toggleSelection(item);
+    }
+
+    private void openFile(FileItem item) {
+        try {
+            Intent intent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
+            File file = new File(item.path);
+            String authority = getApplicationContext().getPackageName() + ".provider";
+            Uri fileUri = FileProvider.getUriForFile(this, authority, file);
+
+            intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "File Provider Error. Is your authority in AndroidManifest correct?", e);
+            Toast.makeText(this, "Error: Could not open file.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -197,35 +213,34 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
 
         AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
-            .forNativeAd(ad -> {
-                if (isDestroyed()) {
-                    ad.destroy();
-                    return;
-                }
-                runOnUiThread(() -> {
-                    loadedAds.put(position, ad);
-                    positionsCurrentlyLoading.remove(position);
-                    if (position < combinedList.size() && combinedList.get(position) == null) {
-                        combinedList.set(position, ad);
-                        adapter.notifyItemChanged(position);
-                        Log.d(TAG, "Ad loaded and displayed at: " + position);
+                .forNativeAd(ad -> {
+                    if (isDestroyed()) {
+                        ad.destroy();
+                        return;
                     }
-                });
-            })
-            .withAdListener(new AdListener() {
-                @Override
-                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                    Log.e(TAG, "Ad failed at position " + position + ": " + loadAdError.getMessage());
                     runOnUiThread(() -> {
+                        loadedAds.put(position, ad);
                         positionsCurrentlyLoading.remove(position);
                         if (position < combinedList.size() && combinedList.get(position) == null) {
-                            combinedList.remove(position);
-                            adapter.notifyItemRemoved(position);
+                            combinedList.set(position, ad);
+                            adapter.notifyItemChanged(position);
                         }
                     });
-                }
-            }).build();
-        
+                })
+                .withAdListener(new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        Log.e(TAG, "Ad failed at position " + position + ": " + loadAdError.getMessage());
+                        runOnUiThread(() -> {
+                            positionsCurrentlyLoading.remove(position);
+                            if (position < combinedList.size() && combinedList.get(position) == null) {
+                                combinedList.remove(position);
+                                adapter.notifyItemRemoved(position);
+                            }
+                        });
+                    }
+                }).build();
+
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
@@ -276,20 +291,20 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
-            .setTitle("Delete Files")
-            .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
-            .setPositiveButton("Delete", (dialog, which) -> {
-                for (FileItem item : adapter.getSelectedItems()) {
-                    new File(item.path).delete();
-                }
-                Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
-                if (actionMode != null) {
-                    actionMode.finish();
-                }
-                loadFiles();
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
+                .setTitle("Delete Files")
+                .setMessage("Are you sure you want to delete " + adapter.getSelectedItemCount() + " file(s)?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    for (FileItem item : adapter.getSelectedItems()) {
+                        new File(item.path).delete();
+                    }
+                    Toast.makeText(this, "Files deleted", Toast.LENGTH_SHORT).show();
+                    if (actionMode != null) {
+                        actionMode.finish();
+                    }
+                    loadFiles();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     private void shareSelectedFiles() {
