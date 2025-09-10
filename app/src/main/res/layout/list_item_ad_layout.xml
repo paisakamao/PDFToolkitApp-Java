@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- The CardView is now the root, providing the shape and elevation -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,21 +8,22 @@
     android:layout_marginStart="16dp"
     android:layout_marginTop="4dp"
     android:layout_marginEnd="16dp"
-    android:layout_marginBottom="4dp">
+    android:layout_marginBottom="4dp"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp">
 
-    <androidx.cardview.widget.CardView
+    <!-- The NativeAdView is now inside, and its content will be clipped by the CardView -->
+    <com.google.android.gms.ads.nativead.NativeAdView
+        android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="4dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Top part of the ad with icon, headline, etc. -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +47,7 @@
                     android:textColor="@color/black"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    tools:text="This is a Long Ad Headline Title That Might Wrap to Two Lines" />
+                    tools:text="This is a Long Ad Headline Title" />
 
                 <TextView
                     android:id="@+id/ad_body"
@@ -72,7 +74,6 @@
 
             </RelativeLayout>
 
-            <!-- THIS IS THE NEW, CRITICAL PART -->
             <com.google.android.gms.ads.nativead.MediaView
                 android:id="@+id/ad_media"
                 android:layout_width="match_parent"
@@ -81,5 +82,5 @@
                 android:layout_marginTop="4dp"/>
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
-</com.google.android.gms.ads.nativead.NativeAdView>
+    </com.google.android.gms.ads.nativead.NativeAdView>
+</androidx.cardview.widget.CardView>
