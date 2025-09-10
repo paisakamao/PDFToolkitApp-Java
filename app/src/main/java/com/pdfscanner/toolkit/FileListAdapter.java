@@ -46,7 +46,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_AD) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_native_ad, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.list_item_ad_layout, parent, false);
             return new AdViewHolder(view);
         } else {
             View view = LayoutInflater.from(context).inflate(R.layout.item_file, parent, false);
