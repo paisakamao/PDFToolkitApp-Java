@@ -23,7 +23,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private final List<Object> items;
     private final OnFileClickListener listener;
-    private final Context context;
     private boolean isMultiSelectMode = false;
     private final Set<FileItem> selectedItems = new HashSet<>();
 
@@ -36,8 +35,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onFileLongClick(FileItem item);
     }
 
-    public FileListAdapter(Context context, List<Object> items, OnFileClickListener listener) {
-        this.context = context;
+    public FileListAdapter(List<Object> items, OnFileClickListener listener) {
         this.items = items;
         this.listener = listener;
     }
