@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import java.text.SimpleDateFormat;
@@ -64,7 +65,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return new AdLoadingViewHolder(loadingView);
         } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(itemView, listener);
+            return new FileViewHolder(itemView, listener); // Pass listener for robust click handling
         }
     }
 
@@ -104,7 +105,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else {
             selectedItems.add(item);
         }
-        for (int i = 0; i < items.size(); i++) {
+        for (int i=0; i < items.size(); i++) {
             if (item.equals(items.get(i))) {
                 notifyItemChanged(i);
                 break;
@@ -176,11 +177,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private final NativeAdView adView;
         AdViewHolder(View view) {
             super(view);
-            adView = view.findViewById(R.id.native_ad_view);
+            adView = (NativeAdView) view;
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
-            // THIS LINE REGISTERS THE ICON VIEW. IT WAS NOT REMOVED.
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+            adView.setMediaView(view.findViewById(R.id.ad_media));
         }
         public NativeAdView getAdView() { return adView; }
     }
@@ -192,22 +193,27 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Set text content
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+
         if (nativeAd.getBody() == null) {
-            adView.getBodyView().setVisibility(View.GONE);
+            adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
             adView.getBodyView().setVisibility(View.VISIBLE);
             ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
 
-        // THIS LOGIC SETS THE ICON IMAGE. IT WAS NOT REMOVED.
-        // It correctly handles cases where an ad might not have an icon.
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+        }
+
+        if (nativeAd.getMediaContent() != null) {
+            adView.getMediaView().setVisibility(View.VISIBLE);
+            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
+        } else {
+            adView.getMediaView().setVisibility(View.GONE);
         }
 
         adView.setNativeAd(nativeAd);
