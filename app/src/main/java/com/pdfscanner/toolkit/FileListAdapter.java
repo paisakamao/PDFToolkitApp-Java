@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import java.text.SimpleDateFormat;
@@ -104,7 +105,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else {
             selectedItems.add(item);
         }
-        for (int i = 0; i < items.size(); i++) {
+        for (int i=0; i < items.size(); i++) {
             if (item.equals(items.get(i))) {
                 notifyItemChanged(i);
                 break;
@@ -177,10 +178,12 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         AdViewHolder(View view) {
             super(view);
             adView = view.findViewById(R.id.native_ad_view);
-            // Register only the assets that exist in our compact layout
+
+            // Set up the views for the compact ad
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+            // The MediaView is no longer here, so we don't set it.
         }
         public NativeAdView getAdView() { return adView; }
     }
@@ -192,22 +195,23 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Set text content
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+
         if (nativeAd.getBody() == null) {
-            adView.getBodyView().setVisibility(View.GONE);
+            adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
             adView.getBodyView().setVisibility(View.VISIBLE);
             ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
 
-        // Set the App Icon
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
         }
+
+        // The MediaView content logic is no longer needed.
 
         adView.setNativeAd(nativeAd);
     }
