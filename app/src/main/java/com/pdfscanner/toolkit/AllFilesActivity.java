@@ -4,12 +4,17 @@ package com.pdfscanner.toolkit;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.text.SpannableString;
+import android.text.style.AbsoluteSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -70,8 +75,25 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         setContentView(R.layout.activity_all_files);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
+
+        // --- NEW JAVA-ONLY STYLING FOR THE TITLE ---
+        String title = "All Files";
+        SpannableString spannableString = new SpannableString(title);
+
+        // 1. Set the size (22sp converted to pixels)
+        int titleSizePx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, 22, getResources().getDisplayMetrics()
+        );
+        spannableString.setSpan(new AbsoluteSizeSpan(titleSizePx), 0, title.length(), 0);
+
+        // 2. Set the style to bold
+        spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, title.length(), 0);
+
+        // 3. Apply the styled title to the toolbar
+        toolbar.setTitle(spannableString);
+        // --- END OF NEW STYLING CODE ---
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -154,7 +176,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File file = new File(item.path);
             String authority = getApplicationContext().getPackageName() + ".provider";
             Uri fileUri = FileProvider.getUriForFile(this, authority, file);
-
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
@@ -179,38 +200,30 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             displayFileList(cachedFiles);
             return;
         }
-
         Log.d(TAG, "Cache empty. Scanning device for PDF files...");
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
         new Thread(() -> {
             List<FileItem> fileItems = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-
             MyApplication.getInstance().setFileCache(fileItems);
             Log.d(TAG, "Scan complete. Found " + fileItems.size() + " files. Stored in cache.");
-
             runOnUiThread(() -> displayFileList(fileItems));
         }).start();
     }
 
     private void displayFileList(List<FileItem> fileItems) {
         progressBar.setVisibility(View.GONE);
-
         combinedList.clear();
         loadedAds.clear();
         positionsCurrentlyLoading.clear();
-
         final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
         insertAdPlaceholders(freshListWithPlaceholders);
-
         combinedList.addAll(freshListWithPlaceholders);
         adapter.notifyDataSetChanged();
-
         if (fileItems.isEmpty()) {
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -237,12 +250,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             positionsCurrentlyLoading.remove(position);
             return;
         }
-
         String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
             adUnitId = "ca-app-pub-3940256099942544/2247696110";
         }
-
         AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
                 .forNativeAd(ad -> {
                     if (isDestroyed()) {
@@ -271,7 +282,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                         });
                     }
                 }).build();
-
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
@@ -291,6 +301,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_contextual, menu);
             adapter.setMultiSelectMode(true);
+            toolbar.setVisibility(View.GONE); // HIDE the main toolbar
             return true;
         }
 
@@ -317,6 +328,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(false);
             adapter.clearSelections();
             actionMode = null;
+            toolbar.setVisibility(View.VISIBLE); // SHOW the main toolbar again
         }
     };
 
@@ -332,7 +344,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     if (actionMode != null) {
                         actionMode.finish();
                     }
-                    // Invalidate the cache and reload
                     MyApplication.getInstance().clearFileCache();
                     loadFiles();
                 })
@@ -348,7 +359,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             uris.add(FileProvider.getUriForFile(this, authority, file));
         }
         if (uris.isEmpty()) return;
-
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (uris.size() > 1) {
@@ -359,7 +369,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
         }
         intent.setType("application/pdf");
-
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
         if (actionMode != null) {
             actionMode.finish();
