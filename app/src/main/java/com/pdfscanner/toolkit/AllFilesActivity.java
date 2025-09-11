@@ -4,17 +4,12 @@ package com.pdfscanner.toolkit;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.style.AbsoluteSizeSpan;
-import android.text.style.StyleSpan;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -75,26 +70,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         setContentView(R.layout.activity_all_files);
 
         toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar); // Set the toolbar FIRST
 
-        // --- NEW JAVA-ONLY STYLING FOR THE TITLE ---
-        String title = "All Files";
-        SpannableString spannableString = new SpannableString(title);
-
-        // 1. Set the size (22sp converted to pixels)
-        int titleSizePx = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_SP, 22, getResources().getDisplayMetrics()
-        );
-        spannableString.setSpan(new AbsoluteSizeSpan(titleSizePx), 0, title.length(), 0);
-
-        // 2. Set the style to bold
-        spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, title.length(), 0);
-
-        // 3. Apply the styled title to the toolbar
-        toolbar.setTitle(spannableString);
-        // --- END OF NEW STYLING CODE ---
-
+        // This is the final, correct way to set the title and avoid it being overridden.
+        // The styling (bold, size) is now handled in your toolbar.xml and themes.xml
         if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("All Files");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
@@ -301,7 +282,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_contextual, menu);
             adapter.setMultiSelectMode(true);
-            toolbar.setVisibility(View.GONE); // HIDE the main toolbar
+            toolbar.setVisibility(View.GONE);
             return true;
         }
 
@@ -328,7 +309,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(false);
             adapter.clearSelections();
             actionMode = null;
-            toolbar.setVisibility(View.VISIBLE); // SHOW the main toolbar again
+            toolbar.setVisibility(View.VISIBLE);
         }
     };
 
