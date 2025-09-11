@@ -16,9 +16,15 @@ public class MyApplication extends Application {
     private static final List<OnAdInitializedCallback> adInitializedCallbacks = new ArrayList<>();
     private AppOpenAdManager appOpenAdManager;
 
+    // --- NEW: Static instance and cache for the file list ---
+    private static MyApplication instance;
+    private List<FileItem> fileCache = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        // --- NEW: Initialize the static instance ---
+        instance = this;
 
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -42,6 +48,25 @@ public class MyApplication extends Application {
         });
     }
 
+    // --- NEW: Static method to get the application instance ---
+    public static MyApplication getInstance() {
+        return instance;
+    }
+
+    // --- NEW: Methods to manage the file cache ---
+    public List<FileItem> getFileCache() {
+        return fileCache;
+    }
+
+    public void setFileCache(List<FileItem> fileCache) {
+        this.fileCache = fileCache;
+    }
+
+    public void clearFileCache() {
+        this.fileCache = null;
+    }
+    
+    // --- Your existing Ad SDK Ready method ---
     public static void executeWhenAdSDKReady(OnAdInitializedCallback callback) {
         if (isMobileAdsInitialized.get()) {
             callback.onAdInitialized();
