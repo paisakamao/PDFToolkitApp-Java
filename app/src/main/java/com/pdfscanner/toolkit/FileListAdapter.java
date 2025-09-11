@@ -1,4 +1,3 @@
-// File Location: app/src/main/java/com/pdfscanner/toolkit/FileListAdapter.java
 package com.pdfscanner.toolkit;
 
 import android.text.format.Formatter;
@@ -173,19 +172,17 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // ** THIS IS THE ONLY PART THAT HAS CHANGED IN THIS FILE **
     static class AdViewHolder extends RecyclerView.ViewHolder {
         private final NativeAdView adView;
-        AdViewHolder(View view) { // The 'view' is now the CardView from the layout
+        AdViewHolder(View view) {
             super(view);
-            // We now find the NativeAdView using the ID we gave it in the XML
-            adView = view.findViewById(R.id.native_ad_view); 
+            adView = view.findViewById(R.id.native_ad_view);
             
-            // The rest of the setup is the same
+            // Set up the views for the compact ad
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-            adView.setMediaView(adView.findViewById(R.id.ad_media));
+            // The MediaView is no longer here, so we don't set it.
         }
         public NativeAdView getAdView() { return adView; }
     }
@@ -213,13 +210,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
         }
 
-        if (nativeAd.getMediaContent() != null) {
-            adView.getMediaView().setVisibility(View.VISIBLE);
-            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
-        } else {
-            adView.getMediaView().setVisibility(View.GONE);
-        }
-
+        // The MediaView content logic is no longer needed.
+        
         adView.setNativeAd(nativeAd);
     }
 }
