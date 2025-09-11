@@ -101,6 +101,23 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_all_files, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_refresh) {
+            MyApplication.getInstance().clearFileCache();
+            Toast.makeText(this, "Refreshing file list...", Toast.LENGTH_SHORT).show();
+            loadFiles();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onFileClick(int position) {
         if (position >= 0 && position < combinedList.size()) {
             Object clickedObject = combinedList.get(position);
@@ -156,14 +173,17 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     private void loadFiles() {
+        List<FileItem> cachedFiles = MyApplication.getInstance().getFileCache();
+        if (cachedFiles != null) {
+            Log.d(TAG, "Loading " + cachedFiles.size() + " files from cache.");
+            displayFileList(cachedFiles);
+            return;
+        }
+
+        Log.d(TAG, "Cache empty. Scanning device for PDF files...");
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
-        combinedList.clear();
-        loadedAds.clear();
-        positionsCurrentlyLoading.clear();
-        adapter.notifyDataSetChanged();
 
         new Thread(() -> {
             List<FileItem> fileItems = new ArrayList<>();
@@ -171,22 +191,33 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
 
-            final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
-            insertAdPlaceholders(freshListWithPlaceholders);
+            MyApplication.getInstance().setFileCache(fileItems);
+            Log.d(TAG, "Scan complete. Found " + fileItems.size() + " files. Stored in cache.");
 
-            runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                if (fileItems.isEmpty()) {
-                    emptyView.setVisibility(View.VISIBLE);
-                    recyclerView.setVisibility(View.GONE);
-                } else {
-                    emptyView.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    combinedList.addAll(freshListWithPlaceholders);
-                    adapter.notifyDataSetChanged();
-                }
-            });
+            runOnUiThread(() -> displayFileList(fileItems));
         }).start();
+    }
+
+    private void displayFileList(List<FileItem> fileItems) {
+        progressBar.setVisibility(View.GONE);
+
+        combinedList.clear();
+        loadedAds.clear();
+        positionsCurrentlyLoading.clear();
+
+        final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
+        insertAdPlaceholders(freshListWithPlaceholders);
+
+        combinedList.addAll(freshListWithPlaceholders);
+        adapter.notifyDataSetChanged();
+
+        if (fileItems.isEmpty()) {
+            emptyView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void insertAdPlaceholders(List<Object> list) {
@@ -301,6 +332,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     if (actionMode != null) {
                         actionMode.finish();
                     }
+                    // Invalidate the cache and reload
+                    MyApplication.getInstance().clearFileCache();
                     loadFiles();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
