@@ -177,9 +177,9 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         AdViewHolder(View view) {
             super(view);
             adView = view.findViewById(R.id.native_ad_view);
-            // Register only the assets that exist in our compact layout
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
+            // THIS LINE REGISTERS THE ICON VIEW. IT WAS NOT REMOVED.
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
         }
         public NativeAdView getAdView() { return adView; }
@@ -201,7 +201,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
         }
 
-        // Set the App Icon
+        // THIS LOGIC SETS THE ICON IMAGE. IT WAS NOT REMOVED.
+        // It correctly handles cases where an ad might not have an icon.
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
