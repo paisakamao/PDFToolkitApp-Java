@@ -65,7 +65,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return new AdLoadingViewHolder(loadingView);
         } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(itemView, listener);
+            return new FileViewHolder(itemView, listener); // Pass listener for robust click handling
         }
     }
 
@@ -177,13 +177,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private final NativeAdView adView;
         AdViewHolder(View view) {
             super(view);
-            adView = view.findViewById(R.id.native_ad_view);
-
-            // Set up the views for the compact ad
+            adView = (NativeAdView) view;
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-            // The MediaView is no longer here, so we don't set it.
+            adView.setMediaView(view.findViewById(R.id.ad_media));
         }
         public NativeAdView getAdView() { return adView; }
     }
@@ -211,7 +209,12 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
         }
 
-        // The MediaView content logic is no longer needed.
+        if (nativeAd.getMediaContent() != null) {
+            adView.getMediaView().setVisibility(View.VISIBLE);
+            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
+        } else {
+            adView.getMediaView().setVisibility(View.GONE);
+        }
 
         adView.setNativeAd(nativeAd);
     }
