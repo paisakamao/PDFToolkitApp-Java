@@ -70,12 +70,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         setContentView(R.layout.activity_all_files);
 
         toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar); // Set the toolbar FIRST
-
-        // This is the final, correct way to set the title and avoid it being overridden.
-        // The styling (bold, size) is now handled in your toolbar.xml and themes.xml
+        toolbar.setTitle("All Files");
+        setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("All Files");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
@@ -101,23 +98,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         } else {
             permissionView.setVisibility(View.VISIBLE);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_all_files, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_refresh) {
-            MyApplication.getInstance().clearFileCache();
-            Toast.makeText(this, "Refreshing file list...", Toast.LENGTH_SHORT).show();
-            loadFiles();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -157,6 +137,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File file = new File(item.path);
             String authority = getApplicationContext().getPackageName() + ".provider";
             Uri fileUri = FileProvider.getUriForFile(this, authority, file);
+
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
@@ -175,43 +156,37 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     private void loadFiles() {
-        List<FileItem> cachedFiles = MyApplication.getInstance().getFileCache();
-        if (cachedFiles != null) {
-            Log.d(TAG, "Loading " + cachedFiles.size() + " files from cache.");
-            displayFileList(cachedFiles);
-            return;
-        }
-        Log.d(TAG, "Cache empty. Scanning device for PDF files...");
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
+
+        combinedList.clear();
+        loadedAds.clear();
+        positionsCurrentlyLoading.clear();
+        adapter.notifyDataSetChanged();
+
         new Thread(() -> {
             List<FileItem> fileItems = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-            MyApplication.getInstance().setFileCache(fileItems);
-            Log.d(TAG, "Scan complete. Found " + fileItems.size() + " files. Stored in cache.");
-            runOnUiThread(() -> displayFileList(fileItems));
-        }).start();
-    }
 
-    private void displayFileList(List<FileItem> fileItems) {
-        progressBar.setVisibility(View.GONE);
-        combinedList.clear();
-        loadedAds.clear();
-        positionsCurrentlyLoading.clear();
-        final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
-        insertAdPlaceholders(freshListWithPlaceholders);
-        combinedList.addAll(freshListWithPlaceholders);
-        adapter.notifyDataSetChanged();
-        if (fileItems.isEmpty()) {
-            emptyView.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
-        } else {
-            emptyView.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
-        }
+            final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
+            insertAdPlaceholders(freshListWithPlaceholders);
+
+            runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                if (fileItems.isEmpty()) {
+                    emptyView.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    emptyView.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    combinedList.addAll(freshListWithPlaceholders);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }).start();
     }
 
     private void insertAdPlaceholders(List<Object> list) {
@@ -231,10 +206,12 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             positionsCurrentlyLoading.remove(position);
             return;
         }
+
         String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
             adUnitId = "ca-app-pub-3940256099942544/2247696110";
         }
+
         AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
                 .forNativeAd(ad -> {
                     if (isDestroyed()) {
@@ -263,6 +240,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                         });
                     }
                 }).build();
+
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
@@ -282,7 +260,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_contextual, menu);
             adapter.setMultiSelectMode(true);
-            toolbar.setVisibility(View.GONE);
             return true;
         }
 
@@ -309,7 +286,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(false);
             adapter.clearSelections();
             actionMode = null;
-            toolbar.setVisibility(View.VISIBLE);
         }
     };
 
@@ -325,7 +301,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     if (actionMode != null) {
                         actionMode.finish();
                     }
-                    MyApplication.getInstance().clearFileCache();
                     loadFiles();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
@@ -340,6 +315,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             uris.add(FileProvider.getUriForFile(this, authority, file));
         }
         if (uris.isEmpty()) return;
+
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (uris.size() > 1) {
@@ -350,6 +326,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
         }
         intent.setType("application/pdf");
+
         startActivity(Intent.createChooser(intent, "Share PDF(s)"));
         if (actionMode != null) {
             actionMode.finish();
