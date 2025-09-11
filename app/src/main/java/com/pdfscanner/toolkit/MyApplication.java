@@ -12,20 +12,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MyApplication extends Application {
     private static final String TAG = "MyApplication";
-    private static final AtomicBoolean isMobileAdsInitialized = new AtomicBoolean(false);
-    private static final List<OnAdInitializedCallback> adInitializedCallbacks = new ArrayList<>();
+    private static MyApplication instance;
     private AppOpenAdManager appOpenAdManager;
 
-    // --- NEW: Static instance and cache for the file list ---
-    private static MyApplication instance;
+    // --- File Cache ---
     private List<FileItem> fileCache = null;
+
+    // --- Ad Initialization Logic ---
+    private final AtomicBoolean isMobileAdsInitialized = new AtomicBoolean(false);
+    private final List<OnAdInitializedCallback> adInitializedCallbacks = new ArrayList<>();
 
     @Override
     public void onCreate() {
         super.onCreate();
-        // --- NEW: Initialize the static instance ---
         instance = this;
 
+        // Initialize Firebase Remote Config
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(3600)
@@ -34,26 +36,47 @@ public class MyApplication extends Application {
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
         remoteConfig.fetchAndActivate();
 
+        // Initialize Mobile Ads SDK. This is the core of the ad logic.
         MobileAds.initialize(this, initializationStatus -> {
-            Log.d(TAG, "Mobile Ads SDK is fully initialized.");
-            isMobileAdsInitialized.set(true);
+            Log.d(TAG, "Mobile Ads SDK has been initialized.");
 
+            // The SDK is ready, so we can now create ad managers and load ads.
             appOpenAdManager = new AppOpenAdManager(this);
             AdManager.getInstance().loadInterstitialAd(this);
 
+            // Set the flag to true AFTER setting up the initial ads.
+            isMobileAdsInitialized.set(true);
+
+            // Execute any pending callbacks that were waiting for initialization.
             for (OnAdInitializedCallback callback : adInitializedCallbacks) {
                 callback.onAdInitialized();
             }
+            // Clear the list so callbacks are not held in memory unnecessarily.
             adInitializedCallbacks.clear();
         });
     }
 
-    // --- NEW: Static method to get the application instance ---
     public static MyApplication getInstance() {
         return instance;
     }
+    
+    /**
+     * This method is the gatekeeper for any ad loading. It ensures that no ad is
+     * requested before the Mobile Ads SDK is fully ready.
+     *
+     * @param callback The code to be executed once the SDK is initialized.
+     */
+    public void executeWhenAdSDKReady(OnAdInitializedCallback callback) {
+        // If the SDK is already initialized, run the callback immediately.
+        if (isMobileAdsInitialized.get()) {
+            callback.onAdInitialized();
+        } else {
+            // Otherwise, add the callback to a queue to be run later when initialization completes.
+            adInitializedCallbacks.add(callback);
+        }
+    }
 
-    // --- NEW: Methods to manage the file cache ---
+    // --- Methods to manage the file cache ---
     public List<FileItem> getFileCache() {
         return fileCache;
     }
@@ -64,14 +87,5 @@ public class MyApplication extends Application {
 
     public void clearFileCache() {
         this.fileCache = null;
-    }
-    
-    // --- Your existing Ad SDK Ready method ---
-    public static void executeWhenAdSDKReady(OnAdInitializedCallback callback) {
-        if (isMobileAdsInitialized.get()) {
-            callback.onAdInitialized();
-        } else {
-            adInitializedCallbacks.add(callback);
-        }
     }
 }
