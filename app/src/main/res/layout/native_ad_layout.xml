@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,79 +7,79 @@
     android:layout_marginStart="16dp"
     android:layout_marginTop="4dp"
     android:layout_marginEnd="16dp"
-    android:layout_marginBottom="4dp"
-    app:cardBackgroundColor="@color/card_background"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="4dp">
+    android:layout_marginBottom="4dp">
 
-    <com.google.android.gms.ads.nativead.NativeAdView
-        android:id="@+id/native_ad_view"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        app:cardBackgroundColor="@color/card_background"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/ad_app_icon"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="16dp"
-                tools:src="@mipmap/ic_launcher" />
-
-            <LinearLayout
+            <!-- Top part of the ad with icon, headline, etc. -->
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:padding="12dp">
 
-                <LinearLayout
+                <ImageView
+                    android:id="@+id/ad_app_icon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="12dp"
+                    tools:src="@mipmap/ic_launcher" />
+
+                <TextView
+                    android:id="@+id/ad_headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/ad_label_background_blue"
-                        android:paddingStart="6dp"
-                        android:paddingTop="2dp"
-                        android:paddingEnd="6dp"
-                        android:paddingBottom="2dp"
-                        android:text="Ad"
-                        android:textColor="@android:color/white"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/ad_headline"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textColor="@color/black"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        tools:text="This is a Long Ad Headline Title" />
-                </LinearLayout>
+                    android:layout_toEndOf="@id/ad_app_icon"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="This is a Long Ad Headline Title That Might Wrap to Two Lines" />
 
                 <TextView
                     android:id="@+id/ad_body"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@id/ad_headline"
+                    android:layout_toEndOf="@id/ad_app_icon"
                     android:layout_marginTop="4dp"
-                    android:ellipsize="end"
-                    android:maxLines="2"
                     android:textColor="@color/file_details_text"
                     android:textSize="12sp"
-                    tools:text="This is the ad body text, and it might be long enough to wrap." />
-            </LinearLayout>
+                    tools:text="This is the ad body text." />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/ad_label_background"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:text="Ad"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp" />
+
+            </RelativeLayout>
+
+            <!-- THIS IS THE NEW, CRITICAL PART -->
+            <com.google.android.gms.ads.nativead.MediaView
+                android:id="@+id/ad_media"
+                android:layout_width="match_parent"
+                android:layout_height="175dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"/>
+
         </LinearLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
-</androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>
+</com.google.android.gms.ads.nativead.NativeAdView>
