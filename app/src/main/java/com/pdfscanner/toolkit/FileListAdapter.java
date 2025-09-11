@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 import java.text.SimpleDateFormat;
@@ -175,21 +174,15 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     static class AdViewHolder extends RecyclerView.ViewHolder {
         private final NativeAdView adView;
-
         AdViewHolder(View view) {
             super(view);
             adView = view.findViewById(R.id.native_ad_view);
-
-            // Register all the assets with the NativeAdView
+            // Register only the assets that exist in our compact layout
             adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
             adView.setBodyView(adView.findViewById(R.id.ad_body));
             adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-            adView.setMediaView(adView.findViewById(R.id.ad_media));
         }
-
-        public NativeAdView getAdView() {
-            return adView;
-        }
+        public NativeAdView getAdView() { return adView; }
     }
 
     static class AdLoadingViewHolder extends RecyclerView.ViewHolder {
@@ -201,7 +194,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         // Set text content
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-
         if (nativeAd.getBody() == null) {
             adView.getBodyView().setVisibility(View.GONE);
         } else {
@@ -215,14 +207,6 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else {
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
-        }
-
-        // Set the MediaView for the main image/video asset
-        // This is done to satisfy the AdMob validator.
-        if (adView.getMediaView() != null) {
-            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
-            // FORCE the MediaView to be hidden to maintain the compact ad style.
-            adView.getMediaView().setVisibility(View.GONE);
         }
 
         adView.setNativeAd(nativeAd);
