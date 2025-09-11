@@ -36,25 +36,27 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- Headline Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <!-- NEW BLUE AD LABEL -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
                         android:background="@drawable/ad_label_background_blue"
                         android:paddingStart="6dp"
-                        android:paddingTop="2dp"
                         android:paddingEnd="6dp"
+                        android:paddingTop="2dp"
                         android:paddingBottom="2dp"
                         android:text="Ad"
                         android:textColor="@android:color/white"
                         android:textSize="10sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp"/>
 
                     <TextView
                         android:id="@+id/ad_headline"
@@ -69,6 +71,7 @@
                         tools:text="This is a Long Ad Headline Title" />
                 </LinearLayout>
 
+                <!-- Body Text -->
                 <TextView
                     android:id="@+id/ad_body"
                     android:layout_width="wrap_content"
@@ -78,7 +81,8 @@
                     android:maxLines="2"
                     android:textColor="@color/file_details_text"
                     android:textSize="12sp"
-                    tools:text="This is the ad body text, and it might be long enough to wrap." />
+                    tools:text="This is the ad body text, and it might be long enough to wrap to a second line." />
+
             </LinearLayout>
         </LinearLayout>
     </com.google.android.gms.ads.nativead.NativeAdView>
