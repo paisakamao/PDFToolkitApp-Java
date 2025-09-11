@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
@@ -32,8 +33,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int VIEW_TYPE_AD_LOADING = 2;
 
     public interface OnFileInteractionListener {
-        void onFileClick(int position);
-        void onFileLongClick(int position);
+        void onFileClick(FileItem item);
+        void onFileLongClick(FileItem item);
         void requestAdForPosition(int position);
     }
 
@@ -49,7 +50,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return VIEW_TYPE_FILE;
         } else if (item instanceof NativeAd) {
             return VIEW_TYPE_AD;
-        } else {
+        } else { // Handles null or any other object as a loading placeholder
             return VIEW_TYPE_AD_LOADING;
         }
     }
@@ -65,7 +66,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return new AdLoadingViewHolder(loadingView);
         } else {
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_file, parent, false);
-            return new FileViewHolder(itemView, listener); // Pass listener for robust click handling
+            return new FileViewHolder(itemView);
         }
     }
 
@@ -126,38 +127,18 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    public static class FileViewHolder extends RecyclerView.ViewHolder {
+    public class FileViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
         TextView fileSize;
         TextView fileDate;
 
-        public FileViewHolder(@NonNull View itemView, final OnFileInteractionListener listener) {
+        public FileViewHolder(@NonNull View itemView) {
             super(itemView);
             fileIcon = itemView.findViewById(R.id.icon_file_type);
             fileName = itemView.findViewById(R.id.text_file_name);
             fileSize = itemView.findViewById(R.id.text_file_size);
             fileDate = itemView.findViewById(R.id.text_file_date);
-
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onFileClick(position);
-                    }
-                }
-            });
-
-            itemView.setOnLongClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        listener.onFileLongClick(position);
-                        return true;
-                    }
-                }
-                return false;
-            });
         }
 
         public void bind(final FileItem item) {
@@ -165,6 +146,14 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             fileSize.setText(Formatter.formatShortFileSize(itemView.getContext(), item.size));
             fileDate.setText(formatDate(item.date));
             fileIcon.setImageResource(R.drawable.ic_pdflist);
+
+            itemView.setOnClickListener(v -> {
+                if(listener != null) listener.onFileClick(item);
+            });
+            itemView.setOnLongClickListener(v -> {
+                if(listener != null) listener.onFileLongClick(item);
+                return true;
+            });
         }
 
         private String formatDate(long millis) {
