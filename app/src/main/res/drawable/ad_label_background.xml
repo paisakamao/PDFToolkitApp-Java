@@ -3,7 +3,7 @@
     android:shape="rectangle">
 
     <!-- Orange background color -->
-    <solid android:color="#FFD580" />
+    <solid android:color="#7AD7F0" />
 
     <!-- Adjust the corner radius as you like -->
     <corners android:radius="4dp"/>
