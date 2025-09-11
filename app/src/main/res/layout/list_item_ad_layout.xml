@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <!-- THIS IS THE ICON VIEW. IT WAS NOT REMOVED. -->
             <ImageView
                 android:id="@+id/ad_app_icon"
                 android:layout_width="56dp"
