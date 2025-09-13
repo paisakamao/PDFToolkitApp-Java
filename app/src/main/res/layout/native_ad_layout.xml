@@ -44,14 +44,15 @@
         android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/ad_call_to_action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Visit Site"
-            android:backgroundTint="@color/purple_500"
-            android:textColor="@android:color/white" />
-
+<Button
+    android:id="@+id/ad_call_to_action"
+    android:layout_width="wrap_content"
+    android:layout_height="36dp"
+    android:minWidth="100dp"
+    android:text="Visit Site"
+    android:textSize="13sp"
+    android:backgroundTint="@color/purple_500"
+    android:textColor="@android:color/white"/>
         <TextView
             android:id="@+id/ad_label_inline"
             android:layout_width="wrap_content"
