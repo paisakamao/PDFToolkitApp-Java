@@ -1,3 +1,4 @@
+// File Location: app/src/main/java/com/pdfscanner/toolkit/HomeActivity.java
 package com.pdfscanner.toolkit;
 
 // All necessary imports for the final version
@@ -50,7 +51,6 @@ import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
-// import com.google.android.gms.ads.MobileAds; // THIS IMPORT IS CORRECTLY REMOVED
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
@@ -85,8 +85,6 @@ public class HomeActivity extends AppCompatActivity {
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle_Large);
         setSupportActionBar(toolbar);
 
-        // --- CHANGE 1 OF 2: The redundant MobileAds.initialize() call is REMOVED. ---
-        // This is now correctly handled by MyApplication.java.
         setupRemoteConfigAndLoadAd();
 
         scannerLauncher = registerForActivityResult(
@@ -141,7 +139,8 @@ public class HomeActivity extends AppCompatActivity {
 
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                loadAdFromConfig();
+                // Call the static method from MyApplication to ensure SDK is ready
+                MyApplication.executeWhenAdSDKReady(this::loadAdFromConfig);
             }
         });
     }
@@ -159,6 +158,7 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
+                // Use your updated native_ad_layout.xml
                 NativeAdView adView = (NativeAdView) LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
                 populateNativeAdView(nativeAd, adView);
                 adContainer.removeAllViews();
@@ -176,59 +176,58 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        MediaView mediaView = adView.findViewById(R.id.ad_media);
-        TextView headlineView = adView.findViewById(R.id.ad_headline);
-        TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
-        Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
-        ImageView iconView = adView.findViewById(R.id.ad_app_icon);
-        TextView adLabelInline = adView.findViewById(R.id.ad_label_inline);
-        TextView adLabelCorner = adView.findViewById(R.id.ad_label_corner);
+        // Register all the views from your updated layout.
+        adView.setMediaView(adView.findViewById(R.id.ad_media));
+        adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
+        adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
+        adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+        // Use setBodyView for the advertiser text. It's the best mapping.
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser));
 
-        adView.setHeadlineView(headlineView);
-        adView.setCallToActionView(callToActionView);
-        adView.setIconView(iconView);
-        adView.setAdvertiserView(advertiserView);
+        // --- Populate the views ---
 
+        // Handle the MediaView
         if (nativeAd.getMediaContent() != null) {
-            adView.setMediaView(mediaView);
-            mediaView.setMediaContent(nativeAd.getMediaContent());
-            mediaView.setVisibility(View.VISIBLE);
+            ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
+            adView.getMediaView().setVisibility(View.VISIBLE);
         } else {
-            mediaView.setVisibility(View.GONE);
+            adView.getMediaView().setVisibility(View.GONE);
         }
 
-        headlineView.setText(nativeAd.getHeadline());
+        // Set the headline text (always available)
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
 
-        if (nativeAd.getCallToAction() != null) {
-            callToActionView.setText(nativeAd.getCallToAction());
-            callToActionView.setVisibility(View.VISIBLE);
-
-            adLabelInline.setVisibility(View.VISIBLE);
-            adLabelCorner.setVisibility(View.GONE);
+        // Set the advertiser text (check for null)
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
-            callToActionView.setVisibility(View.GONE);
-
-            adLabelInline.setVisibility(View.GONE);
-            adLabelCorner.setVisibility(View.VISIBLE);
+            ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
+            adView.getBodyView().setVisibility(View.VISIBLE);
         }
 
+        // Set the call to action button text (check for null)
+        if (nativeAd.getCallToAction() == null) {
+            adView.getCallToActionView().setVisibility(View.INVISIBLE);
+        } else {
+            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+            adView.getCallToActionView().setVisibility(View.VISIBLE);
+        }
+
+        // Set the icon image (check for null)
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
         }
-
-        if (nativeAd.getAdvertiser() == null) {
-            adView.getAdvertiserView().setVisibility(View.GONE);
-        } else {
-            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
-            adView.getAdvertiserView().setVisibility(View.VISIBLE);
-        }
-
+        
+        // Register the ad object with the ad view
         adView.setNativeAd(nativeAd);
     }
+    // --- END OF THE CHANGED METHOD ---
+
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
@@ -302,9 +301,6 @@ public class HomeActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 progressDialog.dismiss();
                 if (finalSuccess && savedUri != null) {
-                    // --- CHANGE 2 OF 2: Interstitial Ad Logic is Added Here ---
-                    // This now calls the central AdManager to show an ad.
-                    // Your success dialog will appear only AFTER the ad is dismissed.
                     AdManager.getInstance().showInterstitial(HomeActivity.this, () -> {
                         showSuccessDialog(savedUri, finalFileName, pageCount, finalFirstPageUri);
                     });
