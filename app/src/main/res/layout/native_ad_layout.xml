@@ -70,7 +70,7 @@
                 android:text="Ad"
                 android:textSize="12sp"
                 android:textColor="@android:color/white"
-                android:background="@drawable/bg_ad_label"
+                android:background="@drawable/ad_label_background"
                 android:padding="4dp"
                 android:visibility="gone" />
         </LinearLayout>
@@ -86,7 +86,7 @@
             android:text="Ad"
             android:textSize="12sp"
             android:textColor="@android:color/white"
-            android:background="@drawable/bg_ad_label"
+            android:background="@drawable/ad_label_background"
             android:padding="4dp"
             android:visibility="gone" />
 
