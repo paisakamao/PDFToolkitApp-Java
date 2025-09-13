@@ -8,11 +8,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- IMPORTANT: Add the android:name=".MyApplication" attribute -->
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="PDF kit Pro"
+        android:label="PDF Toolkit"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true">
     
@@ -20,7 +21,7 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713"/>
 
-        <!-- Your activities -->
+        <!-- Your Activities -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -52,7 +53,10 @@
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.Scanner" />
 
-        <!-- This is the SINGLE, CORRECT FileProvider declaration -->
+        <!-- 
+            THIS IS THE SINGLE, CORRECT FILE PROVIDER.
+            The duplicate has been removed to fix the installation issue.
+        -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
