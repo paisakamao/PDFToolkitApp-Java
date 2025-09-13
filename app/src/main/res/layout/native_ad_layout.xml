@@ -1,84 +1,94 @@
-<RelativeLayout
-    android:id="@+id/ad_container"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/native_ad_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipToOutline="true"
     android:background="@drawable/bg_card"
-    android:padding="12dp"
-    android:clipToOutline="true">
+    android:padding="12dp">
 
-    <!-- Media -->
-    <com.google.android.gms.ads.nativead.MediaView
-        android:id="@+id/ad_media"
+    <RelativeLayout
+        android:id="@+id/ad_container"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_alignParentTop="true"
-        android:scaleType="centerCrop" />
+        android:layout_height="wrap_content">
 
-    <!-- Headline -->
-    <TextView
-        android:id="@+id/ad_headline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/ad_media"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/black" />
+        <!-- Media -->
+        <com.google.android.gms.ads.nativead.MediaView
+            android:id="@+id/ad_media"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_alignParentTop="true"
+            android:scaleType="centerCrop" />
 
-    <!-- Advertiser -->
-    <TextView
-        android:id="@+id/ad_advertiser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/ad_headline"
-        android:layout_marginTop="4dp"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray" />
-
-    <!-- CTA + Ad badge group -->
-    <LinearLayout
-        android:id="@+id/cta_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/ad_advertiser"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
-
-<Button
-    android:id="@+id/ad_call_to_action"
-    android:layout_width="wrap_content"
-    android:layout_height="36dp"
-    android:minWidth="100dp"
-    android:text="Visit Site"
-    android:textSize="13sp"
-    android:backgroundTint="@color/purple_500"
-    android:textColor="@android:color/white"/>
+        <!-- Headline -->
         <TextView
-            android:id="@+id/ad_label_inline"
+            android:id="@+id/ad_headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:gravity="center_vertical"
+            android:layout_below="@id/ad_media"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <!-- Advertiser -->
+        <TextView
+            android:id="@+id/ad_advertiser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/ad_headline"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray" />
+
+        <!-- CTA + Ad badge group -->
+        <LinearLayout
+            android:id="@+id/cta_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/ad_advertiser"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/ad_call_to_action"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minWidth="100dp"
+                android:text="Visit Site"
+                android:textSize="13sp"
+                android:backgroundTint="@color/purple_500"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/ad_label_inline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:gravity="center_vertical"
+                android:text="Ad"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_ad_label"
+                android:padding="4dp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Ad badge fallback (bottom-right corner if CTA hidden) -->
+        <TextView
+            android:id="@+id/ad_label_corner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="8dp"
             android:text="Ad"
             android:textSize="12sp"
             android:textColor="@android:color/white"
             android:background="@drawable/bg_ad_label"
-            android:padding="4dp" />
-    </LinearLayout>
+            android:padding="4dp"
+            android:visibility="gone" />
 
-    <!-- Ad badge fallback (bottom-right corner if CTA hidden) -->
-    <TextView
-        android:id="@+id/ad_label_corner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="8dp"
-        android:text="Ad"
-        android:textSize="12sp"
-        android:textColor="@android:color/white"
-        android:background="@drawable/bg_ad_label"
-        android:padding="4dp"
-        android:visibility="gone" />
-
-</RelativeLayout>
+    </RelativeLayout>
+</com.google.android.gms.ads.nativead.NativeAdView>
