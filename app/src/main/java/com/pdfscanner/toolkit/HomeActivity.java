@@ -182,12 +182,14 @@ public class HomeActivity extends AppCompatActivity {
         TextView advertiserView = adView.findViewById(R.id.ad_advertiser);
         Button callToActionView = adView.findViewById(R.id.ad_call_to_action);
         ImageView iconView = adView.findViewById(R.id.ad_app_icon);
+        TextView adLabelInline = adView.findViewById(R.id.ad_label_inline);
+        TextView adLabelCorner = adView.findViewById(R.id.ad_label_corner);
 
         adView.setHeadlineView(headlineView);
         adView.setCallToActionView(callToActionView);
         adView.setIconView(iconView);
         adView.setAdvertiserView(advertiserView);
-        
+
         if (nativeAd.getMediaContent() != null) {
             adView.setMediaView(mediaView);
             mediaView.setMediaContent(nativeAd.getMediaContent());
@@ -197,7 +199,19 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         headlineView.setText(nativeAd.getHeadline());
-        callToActionView.setText(nativeAd.getCallToAction());
+
+        if (nativeAd.getCallToAction() != null) {
+            callToActionView.setText(nativeAd.getCallToAction());
+            callToActionView.setVisibility(View.VISIBLE);
+
+            adLabelInline.setVisibility(View.VISIBLE);
+            adLabelCorner.setVisibility(View.GONE);
+        } else {
+            callToActionView.setVisibility(View.GONE);
+
+            adLabelInline.setVisibility(View.GONE);
+            adLabelCorner.setVisibility(View.VISIBLE);
+        }
 
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
@@ -212,10 +226,9 @@ public class HomeActivity extends AppCompatActivity {
             ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
             adView.getAdvertiserView().setVisibility(View.VISIBLE);
         }
-        
+
         adView.setNativeAd(nativeAd);
     }
-
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
         privacyPolicyText.setOnClickListener(v -> {
