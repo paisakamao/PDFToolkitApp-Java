@@ -100,6 +100,23 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
 
+        @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_all_files, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_refresh) {
+            MyApplication.getInstance().clearFileCache();
+            Toast.makeText(this, "Refreshing file list...", Toast.LENGTH_SHORT).show();
+            loadFiles();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     public void onFileClick(int position) {
         if (position >= 0 && position < combinedList.size()) {
@@ -156,14 +173,16 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     private void loadFiles() {
+        // This now uses your caching logic correctly
+        List<FileItem> cachedFiles = MyApplication.getInstance().getFileCache();
+        if (cachedFiles != null) {
+            displayFileList(cachedFiles);
+            return;
+        }
+        
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
-        combinedList.clear();
-        loadedAds.clear();
-        positionsCurrentlyLoading.clear();
-        adapter.notifyDataSetChanged();
 
         new Thread(() -> {
             List<FileItem> fileItems = new ArrayList<>();
@@ -171,22 +190,36 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
 
-            final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
-            insertAdPlaceholders(freshListWithPlaceholders);
+            // Save to cache after scanning
+            MyApplication.getInstance().setFileCache(fileItems);
 
             runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                if (fileItems.isEmpty()) {
-                    emptyView.setVisibility(View.VISIBLE);
-                    recyclerView.setVisibility(View.GONE);
-                } else {
-                    emptyView.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    combinedList.addAll(freshListWithPlaceholders);
-                    adapter.notifyDataSetChanged();
-                }
+                displayFileList(fileItems);
             });
         }).start();
+    }
+    
+    // Helper method to display the list and ads
+    private void displayFileList(List<FileItem> fileItems) {
+        progressBar.setVisibility(View.GONE);
+
+        combinedList.clear();
+        loadedAds.clear();
+        positionsCurrentlyLoading.clear();
+
+        final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
+        insertAdPlaceholders(freshListWithPlaceholders);
+
+        combinedList.addAll(freshListWithPlaceholders);
+        adapter.notifyDataSetChanged();
+        
+        if (fileItems.isEmpty()) {
+            emptyView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void insertAdPlaceholders(List<Object> list) {
@@ -254,12 +287,14 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
 
+    // --- CHANGE 2: UPDATED ACTION MODE CALLBACK TO HIDE/SHOW TOOLBAR ---
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_contextual, menu);
             adapter.setMultiSelectMode(true);
+            toolbar.setVisibility(View.GONE); // Hide the main toolbar
             return true;
         }
 
@@ -286,8 +321,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(false);
             adapter.clearSelections();
             actionMode = null;
+            toolbar.setVisibility(View.VISIBLE); // Show the main toolbar again
         }
     };
+    // --- END OF CHANGE 2 ---
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
@@ -301,6 +338,8 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     if (actionMode != null) {
                         actionMode.finish();
                     }
+                    // Invalidate cache after deleting
+                    MyApplication.getInstance().clearFileCache();
                     loadFiles();
                 })
                 .setNegativeButton(android.R.string.cancel, null)
