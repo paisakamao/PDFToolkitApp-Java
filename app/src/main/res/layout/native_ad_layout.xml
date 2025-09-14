@@ -5,7 +5,7 @@
     android:id="@+id/native_ad_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"> <!-- Changed background to white for a cleaner look -->
+    android:background="@color/card_background"> <!-- Changed background to white for a cleaner look -->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
