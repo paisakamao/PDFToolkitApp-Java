@@ -144,6 +144,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    // --- THIS METHOD IS UPDATED TO HANDLE THE CARDVIEW ROOT ---
     private void loadAdFromConfig() {
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (isAdEnabled) {
@@ -157,9 +158,14 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
+                
+                // Inflate the root CardView layout
                 View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
+                // Find the NativeAdView inside the CardView
                 NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
+                // Populate the NativeAdView as before
                 populateNativeAdView(nativeAd, adView);
+                // Add the entire CardView to the container
                 adContainer.removeAllViews();
                 adContainer.addView(adCardView);
             });
@@ -175,19 +181,19 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
+    // --- THIS METHOD IS UPDATED TO MATCH THE NEW LAYOUT ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register all the views from your layout
+        // Register all the views from the new layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
         adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-        adView.setBodyView(adView.findViewById(R.id.ad_advertiser));
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for Advertiser
 
         // --- Populate the views ---
         ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-
+        
         if (nativeAd.getAdvertiser() == null) {
             adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
@@ -195,12 +201,9 @@ public class HomeActivity extends AppCompatActivity {
             ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
         }
 
-        // THIS IS THE NEW LOGIC: Check if the Call to Action exists
         if (nativeAd.getCallToAction() == null) {
-            // If not, hide the button. The "Ad" label will remain visible.
             adView.getCallToActionView().setVisibility(View.GONE);
         } else {
-            // If it exists, show the button and set its text.
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
@@ -211,10 +214,9 @@ public class HomeActivity extends AppCompatActivity {
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
         }
-
+        
         adView.setNativeAd(nativeAd);
     }
-    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
