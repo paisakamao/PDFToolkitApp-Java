@@ -175,36 +175,46 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS METHOD HAS BEEN UPDATED AS YOU REQUESTED ---
+    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register the views from the new layout
+        // Register all the views from your layout
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        
+        adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser));
+
         // --- Populate the views ---
-
-        // The MediaView is the background
         ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
-
-        // The headline text
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
 
-        // The Call to Action button
-        if (nativeAd.getCallToAction() == null) {
-            adView.getCallToActionView().setVisibility(View.INVISIBLE);
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
-            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
-            adView.getCallToActionView().setVisibility(View.VISIBLE);
+            adView.getBodyView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
         }
 
-        // Your new design doesn't have a body, advertiser, or icon,
-        // so we don't need to populate them.
+        // THIS IS THE NEW LOGIC: Check if the Call to Action exists
+        if (nativeAd.getCallToAction() == null) {
+            // If not, hide the button. The "Ad" label will remain visible.
+            adView.getCallToActionView().setVisibility(View.GONE);
+        } else {
+            // If it exists, show the button and set its text.
+            adView.getCallToActionView().setVisibility(View.VISIBLE);
+            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+        }
 
-        // Register the ad object with the ad view
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+
         adView.setNativeAd(nativeAd);
     }
-    // --- END OF UPDATED METHOD ---
+    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
