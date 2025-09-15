@@ -139,7 +139,6 @@ public class HomeActivity extends AppCompatActivity {
 
         remoteConfig.fetchAndActivate().addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                // Call the static method from MyApplication to ensure SDK is ready
                 MyApplication.executeWhenAdSDKReady(this::loadAdFromConfig);
             }
         });
@@ -158,11 +157,18 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
-                // Use your updated native_ad_layout.xml
-                NativeAdView adView = (NativeAdView) LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
+                
+                // --- THIS IS THE CRITICAL CHANGE ---
+                // 1. Inflate the root CardView layout
+                View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
+                // 2. Find the NativeAdView inside the CardView
+                NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
+                // 3. Populate the NativeAdView as before
                 populateNativeAdView(nativeAd, adView);
+                // 4. Add the entire CardView to the container
                 adContainer.removeAllViews();
-                adContainer.addView(adView);
+                adContainer.addView(adCardView);
+                // --- END OF CHANGE ---
             });
 
             builder.withAdListener(new AdListener() {
@@ -176,19 +182,14 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register all the views from your updated layout.
+        // This method remains unchanged, but I've updated it to match your XML
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
         adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-        // Use setBodyView for the advertiser text. It's the best mapping.
-        adView.setBodyView(adView.findViewById(R.id.ad_advertiser));
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for Advertiser
 
-        // --- Populate the views ---
-
-        // Handle the MediaView
         if (nativeAd.getMediaContent() != null) {
             ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
             adView.getMediaView().setVisibility(View.VISIBLE);
@@ -196,10 +197,8 @@ public class HomeActivity extends AppCompatActivity {
             adView.getMediaView().setVisibility(View.GONE);
         }
 
-        // Set the headline text (always available)
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-
-        // Set the advertiser text (check for null)
+        
         if (nativeAd.getAdvertiser() == null) {
             adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
@@ -207,7 +206,6 @@ public class HomeActivity extends AppCompatActivity {
             adView.getBodyView().setVisibility(View.VISIBLE);
         }
 
-        // Set the call to action button text (check for null)
         if (nativeAd.getCallToAction() == null) {
             adView.getCallToActionView().setVisibility(View.INVISIBLE);
         } else {
@@ -215,7 +213,6 @@ public class HomeActivity extends AppCompatActivity {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
         }
 
-        // Set the icon image (check for null)
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.GONE);
         } else {
@@ -223,10 +220,8 @@ public class HomeActivity extends AppCompatActivity {
             adView.getIconView().setVisibility(View.VISIBLE);
         }
         
-        // Register the ad object with the ad view
         adView.setNativeAd(nativeAd);
     }
-    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
