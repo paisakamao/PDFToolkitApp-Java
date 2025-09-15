@@ -144,7 +144,6 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    // --- THIS METHOD IS UPDATED TO HANDLE THE CARDVIEW ROOT ---
     private void loadAdFromConfig() {
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (isAdEnabled) {
@@ -158,14 +157,9 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
-                
-                // Inflate the root CardView layout
                 View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
-                // Find the NativeAdView inside the CardView
                 NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
-                // Populate the NativeAdView as before
                 populateNativeAdView(nativeAd, adView);
-                // Add the entire CardView to the container
                 adContainer.removeAllViews();
                 adContainer.addView(adCardView);
             });
@@ -181,42 +175,38 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS METHOD IS UPDATED TO MATCH THE NEW LAYOUT ---
+    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register all the views from the new layout.
+        // Register the views from the new overlay layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for Advertiser
-
-        // --- Populate the views ---
-        ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
-        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
         
-        if (nativeAd.getAdvertiser() == null) {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
-        } else {
-            adView.getBodyView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
+        // This design does not have a separate icon, advertiser, or body view,
+        // so we don't register them.
+        
+        // --- Populate the views ---
+
+        // The MediaView is the background
+        if (nativeAd.getMediaContent() != null) {
+            ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         }
 
+        // The headline text
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+
+        // The Call to Action button
         if (nativeAd.getCallToAction() == null) {
-            adView.getCallToActionView().setVisibility(View.GONE);
+            adView.getCallToActionView().setVisibility(View.INVISIBLE);
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
 
-        if (nativeAd.getIcon() == null) {
-            adView.getIconView().setVisibility(View.GONE);
-        } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
-            adView.getIconView().setVisibility(View.VISIBLE);
-        }
-        
+        // Register the ad object with the ad view. This must be done last.
         adView.setNativeAd(nativeAd);
     }
+    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
