@@ -158,25 +158,13 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
                 
-                // Inflate the ad layout using the safe, original method
+                // Inflate the root CardView layout
                 View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
-
-                // Programmatically create and set margins to ensure correct spacing
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-                );
-                // Convert dp to pixels for margins
-                int horizontalMarginInPx = (int) (12 * getResources().getDisplayMetrics().density);
-                int verticalMarginInPx = (int) (8 * getResources().getDisplayMetrics().density);
-                params.setMargins(horizontalMarginInPx, verticalMarginInPx, horizontalMarginInPx, verticalMarginInPx);
-                adCardView.setLayoutParams(params);
-                
-                // Find the NativeAdView inside the inflated layout and populate it
+                // Find the NativeAdView inside the CardView
                 NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
+                // Populate the NativeAdView as before
                 populateNativeAdView(nativeAd, adView);
-
-                // Add the correctly sized ad card to the container
+                // Add the entire CardView to the container
                 adContainer.removeAllViews();
                 adContainer.addView(adCardView);
             });
