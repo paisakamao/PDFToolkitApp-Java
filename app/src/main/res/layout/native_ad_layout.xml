@@ -63,7 +63,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/cta_button_final_background"
+                    android:background="@drawable/cta_button_background"
                     android:paddingStart="24dp"
                     android:paddingEnd="24dp"
                     android:textColor="#FFFFFF"
