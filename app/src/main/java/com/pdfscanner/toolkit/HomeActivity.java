@@ -132,7 +132,7 @@ public class HomeActivity extends AppCompatActivity {
 
         Map<String, Object> defaultConfigMap = new HashMap<>();
         defaultConfigMap.put("admob_native_ad_enabled", false);
-        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-3940256099942544/2247696110");
+        defaultConfigMap.put("admob_native_ad_unit_id", "ca-app-pub-39402544/2247696110");
         defaultConfigMap.put("privacy_policy_url", "https://your-company.com/default-privacy-policy.html");
         defaultConfigMap.put("tts_tool_url", "https://textiispeech.blogspot.com/p/unitools.html");
         remoteConfig.setDefaultsAsync(defaultConfigMap);
@@ -144,7 +144,6 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    // --- THIS METHOD IS UPDATED AND SIMPLIFIED ---
     private void loadAdFromConfig() {
         boolean isAdEnabled = remoteConfig.getBoolean("admob_native_ad_enabled");
         if (isAdEnabled) {
@@ -158,7 +157,7 @@ public class HomeActivity extends AppCompatActivity {
                     return;
                 }
                 FrameLayout adContainer = findViewById(R.id.ad_container);
-                // Inflate the layout (which is now just the NativeAdView)
+                // The inflated view is the NativeAdView itself, as it's the root of the layout.
                 NativeAdView adView = (NativeAdView) LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
                 populateNativeAdView(nativeAd, adView);
                 adContainer.removeAllViews();
@@ -176,7 +175,6 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS METHOD IS UPDATED WITH THE CORRECT LOGIC ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         // Register all the views from your layout
         adView.setMediaView(adView.findViewById(R.id.ad_media));
@@ -196,13 +194,10 @@ public class HomeActivity extends AppCompatActivity {
             ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
         }
 
-        // THIS IS THE DYNAMIC LOGIC FOR THE CTA BUTTON
+        // DYNAMIC LOGIC FOR THE CTA BUTTON
         if (nativeAd.getCallToAction() == null) {
-            // If there's no button text, hide the button itself.
-            // The "Ad" label will remain, correctly positioned.
             adView.getCallToActionView().setVisibility(View.GONE);
         } else {
-            // If there is button text, show the button and set the text.
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
