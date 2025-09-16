@@ -102,7 +102,6 @@
                     android:textSize="12sp"
                     tools:text="Advertiser Name" />
             </LinearLayout>
-
         </RelativeLayout>
     </LinearLayout>
 </com.google.android.gms.ads.nativead.NativeAdView>
