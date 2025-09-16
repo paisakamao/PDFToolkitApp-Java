@@ -176,13 +176,13 @@ public class HomeActivity extends AppCompatActivity {
 
     // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register the views from the new, correct layout.
+        // Register the views from the new overlay layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for the advertiser text.
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser));
 
-        // The IconView is no longer used in this layout, so it is not registered.
+        // The IconView is not used in this layout, so it is not registered.
         
         // --- Populate the views ---
         ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
