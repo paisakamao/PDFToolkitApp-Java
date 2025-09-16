@@ -3,11 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <!-- 
-    CHANGE 2: Removed cardCornerRadius, cardElevation, and cardUseCompatPadding
-    to make the media a "full card" per your request.
-    -->
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="false"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp">
 
     <com.google.android.gms.ads.nativead.NativeAdView
         android:id="@+id/native_ad_view"
@@ -16,7 +19,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_height="200dp">
 
             <com.google.android.gms.ads.nativead.MediaView
                 android:id="@+id/ad_media"
@@ -36,7 +39,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- CHANGE 1: Ad Label, moved to bottom-right corner -->
+            <!-- Ad Label, in the bottom-right corner -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -50,18 +53,19 @@
                 android:text="Ad"
                 android:textColor="@android:color/black"
                 android:textSize="12sp"
+                android:elevation="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
-            <!-- CHANGE 4: CTA Button at the bottom, size and text size decreased -->
+            <!-- CTA Button at the bottom -->
             <Button
                 android:id="@+id/ad_call_to_action"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="32dp" <!-- Decreased height -->
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/cta_button_background"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:paddingStart="20dp" <!-- Decreased padding -->
+                android:paddingEnd="20dp" <!-- Decreased padding -->
                 android:textColor="@android:color/white"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -70,7 +74,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 tools:text="LEARN MORE" />
 
-            <!-- CHANGE 3: Headline, constrained above the button, font size decreased -->
+            <!-- Headline, constrained above the button -->
             <TextView
                 android:id="@+id/ad_headline"
                 android:layout_width="0dp"
@@ -82,7 +86,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textColor="@android:color/white"
-                android:textSize="20sp"
+                android:textSize="18sp" <!-- Decreased text size -->
                 android:textStyle="bold"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="1"
