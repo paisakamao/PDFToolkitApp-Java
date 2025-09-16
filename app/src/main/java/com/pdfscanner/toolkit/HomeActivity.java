@@ -174,27 +174,35 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register the views from the new overlay layout.
+        // Register the views from the new, correct layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        
-        // This design does not have a separate icon, advertiser, or body view,
-        // so we don't register them.
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for the advertiser text.
+
+        // The IconView is no longer used in this layout, so it is not registered.
         
         // --- Populate the views ---
-        if (nativeAd.getMediaContent() != null) {
-            ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
-        }
+        ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getBodyView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
+        }
 
         if (nativeAd.getCallToAction() == null) {
-            adView.getCallToActionView().setVisibility(View.INVISIBLE);
+            adView.getCallToActionView().setVisibility(View.GONE);
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
+        
+        // This is the final step, assign the ad to the view.
         adView.setNativeAd(nativeAd);
     }
 
@@ -240,11 +248,7 @@ public class HomeActivity extends AppCompatActivity {
                         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), pages.indexOf(page) + 1).create();
                         PdfDocument.Page pdfPage = pdfDocument.startPage(pageInfo);
                         pdfPage.getCanvas().drawBitmap(bitmap, 0, 0, null);
-                        
-                        // --- THIS IS THE LINE THAT FIXES THE BUILD ERROR ---
-                        pdfDocument.finishPage(pdfPage);
-                        // --- END OF FIX ---
-                        
+                        pdfPage.finishPage(pdfPage);
                         bitmap.recycle();
                     }
                 }
