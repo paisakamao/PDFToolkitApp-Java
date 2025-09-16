@@ -174,7 +174,6 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         // Register the views from the new overlay layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
@@ -185,27 +184,19 @@ public class HomeActivity extends AppCompatActivity {
         // so we don't register them.
         
         // --- Populate the views ---
-
-        // The MediaView is the background
         if (nativeAd.getMediaContent() != null) {
             ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         }
-
-        // The headline text
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
 
-        // The Call to Action button
         if (nativeAd.getCallToAction() == null) {
             adView.getCallToActionView().setVisibility(View.INVISIBLE);
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
-
-        // Register the ad object with the ad view. This must be done last.
         adView.setNativeAd(nativeAd);
     }
-    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
@@ -249,7 +240,11 @@ public class HomeActivity extends AppCompatActivity {
                         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), pages.indexOf(page) + 1).create();
                         PdfDocument.Page pdfPage = pdfDocument.startPage(pageInfo);
                         pdfPage.getCanvas().drawBitmap(bitmap, 0, 0, null);
-                        pdfPage.finishPage(pdfPage);
+                        
+                        // --- THIS IS THE LINE THAT FIXES THE BUILD ERROR ---
+                        pdfDocument.finishPage(pdfPage);
+                        // --- END OF FIX ---
+                        
                         bitmap.recycle();
                     }
                 }
