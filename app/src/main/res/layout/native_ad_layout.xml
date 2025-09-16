@@ -1,105 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The root is the NativeAdView. THIS IS NOT A CARDVIEW. -->
-<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/native_ad_view"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.google.android.gms.ads.nativead.NativeAdView
+        android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
-        android:layout_height="220dp"> <!-- A fixed height for the overlay design -->
+        android:layout_height="wrap_content">
 
-        <!-- MediaView acts as the background for the entire card -->
-        <com.google.android.gms.ads.nativead.MediaView
-            android:id="@+id/ad_media"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp">
 
-        <!-- This is the dark gradient scrim for text readability -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/gradient_scrim"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <com.google.android.gms.ads.nativead.MediaView
+                android:id="@+id/ad_media"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Ad Label, permanently in the bottom-right corner -->
-        <TextView
-            android:id="@+id/ad_label_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/ad_label_background"
-            android:paddingStart="6dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="2dp"
-            android:text="Ad"
-            android:textColor="@android:color/white"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/gradient_scrim"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- A container for the text and CTA button on the left side -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ad_label_text">
-
+            <!-- Ad Label, separate and in the top-right corner as per the reference image -->
             <TextView
-                android:id="@+id/ad_headline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:shadowColor="@android:color/black"
-                android:shadowRadius="2"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="Test Ad: answerinsight" />
-            
-            <TextView
-                android:id="@+id/ad_advertiser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:shadowColor="@android:color/black"
-                android:shadowRadius="2"
-                android:textColor="@android:color/white"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/ad_label_background"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
+                android:text="Ad"
+                android:textColor="@android:color/black"
                 android:textSize="12sp"
-                tools:text="Advertiser" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- CTA Button at the bottom -->
             <Button
                 android:id="@+id/ad_call_to_action"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/cta_button_background"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:textColor="#FFFFFF"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:textColor="@android:color/white"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 tools:text="LEARN MORE" />
-        </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</com.google.android.gms.ads.nativead.NativeAdView>
+            <!-- Headline, constrained above the button -->
+            <TextView
+                android:id="@+id/ad_headline"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@android:color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2"
+                app:layout_constraintBottom_toTopOf="@+id/ad_call_to_action"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="Test Ad" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.gms.ads.nativead.NativeAdView>
+</androidx.cardview.widget.CardView>
