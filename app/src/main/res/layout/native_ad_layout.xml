@@ -61,11 +61,11 @@
             <Button
                 android:id="@+id/ad_call_to_action"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp" <!-- Decreased height -->
+                android:layout_height="32dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/cta_button_background"
-                android:paddingStart="20dp" <!-- Decreased padding -->
-                android:paddingEnd="20dp" <!-- Decreased padding -->
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
                 android:textColor="@android:color/white"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -86,7 +86,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textColor="@android:color/white"
-                android:textSize="18sp" <!-- Decreased text size -->
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="1"
