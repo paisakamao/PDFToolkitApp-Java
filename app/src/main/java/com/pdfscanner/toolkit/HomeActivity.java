@@ -156,18 +156,18 @@ public class HomeActivity extends AppCompatActivity {
                     nativeAd.destroy();
                     return;
                 }
-                FrameLayout adContainer = findViewById(R.id.ad_container);
-                
-                // Inflate the root CardView layout
-                View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
-                // Find the NativeAdView inside the CardView
-                NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
-                // Populate the NativeAdView as before
-                populateNativeAdView(nativeAd, adView);
-                // Add the entire CardView to the container
-                adContainer.removeAllViews();
-                adContainer.addView(adCardView);
-            });
+                            FrameLayout adContainer = findViewById(R.id.ad_container);
+            
+            // Inflate the root CardView layout
+            View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, adContainer, false);
+            // Find the NativeAdView inside the CardView
+            NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
+            // Populate the NativeAdView as before
+            populateNativeAdView(nativeAd, adView);
+            // Add the entire CardView to the container
+            adContainer.removeAllViews();
+            adContainer.addView(adCardView);
+        });
 
             builder.withAdListener(new AdListener() {
                 @Override
