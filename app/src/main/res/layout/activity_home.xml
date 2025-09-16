@@ -37,20 +37,18 @@
             <androidx.cardview.widget.CardView android:id="@+id/card_all_files" style="@style/HomeCardStyle" app:cardBackgroundColor="@color/card_background" app:cardCornerRadius="20dp" app:cardElevation="8dp"><LinearLayout style="@style/HomeCardLayoutStyle"><ImageView style="@style/HomeCardIconStyle" android:src="@drawable/ic_all_files" /><TextView style="@style/HomeCardTextStyle" android:text="All Files" /></LinearLayout></androidx.cardview.widget.CardView>
         </GridLayout>
 
+        <!--
+            THIS IS THE FIX. The FrameLayout is now a simple, invisible placeholder.
+            All background, elevation, and margin attributes have been removed.
+            The ad's appearance will be controlled by native_ad_layout.xml.
+        -->
         <FrameLayout
             android:id="@+id/ad_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/card_grid"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_card_background"
-            android:elevation="6dp"
-            android:clipToOutline="true" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/privacy_policy_text"
