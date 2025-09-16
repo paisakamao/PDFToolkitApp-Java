@@ -1,104 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardUseCompatPadding="true"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
-    android:layout_marginTop="10dp"
-    android:layout_marginBottom="8dp">
+    android:layout_height="match_parent"
+    android:background="#F9F9F5">
 
-    <com.google.android.gms.ads.nativead.NativeAdView
-        android:id="@+id/native_ad_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Native Ad inside CardView -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/adCardView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:cardUseCompatPadding="true">
 
-            <!-- MediaView fills width, height adapts to ad -->
-            <com.google.android.gms.ads.nativead.MediaView
-                android:id="@+id/ad_media"
+            <com.google.android.gms.ads.nativead.NativeAdView
+                android:id="@+id/nativeAdView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:padding="8dp"
+                android:clipToOutline="true" />
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:background="@drawable/gradient_scrim"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.cardview.widget.CardView>
 
-            <!-- Ad Label -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/ad_label_background"
-                android:paddingStart="6dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="2dp"
-                android:text="Ad"
-                android:textColor="@android:color/black"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:elevation="4dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Example other content -->
+        <TextView
+            android:id="@+id/privacyPolicy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Privacy Policy"
+            android:textColor="#00695C"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <!-- CTA Button -->
-            <Button
-                android:id="@+id/ad_call_to_action"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginBottom="14dp"
-                android:background="@drawable/cta_button_background"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:textColor="@android:color/white"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                tools:text="LEARN MORE" />
-
-            <!-- Headline -->
-            <TextView
-                android:id="@+id/ad_headline"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="22dp"
-                android:layout_marginEnd="22dp"
-                android:layout_marginBottom="12dp"
-                android:gravity="center"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="2"
-                app:layout_constraintBottom_toTopOf="@id/ad_call_to_action"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                tools:text="Test Ad" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
-</androidx.cardview.widget.CardView>
+    </LinearLayout>
+</ScrollView>
