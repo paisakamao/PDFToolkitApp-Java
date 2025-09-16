@@ -176,13 +176,14 @@ public class HomeActivity extends AppCompatActivity {
 
     // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register all the views from the new layout
+        // Register the views from the new layout
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        adView.setIconView(adView.findViewById(R.id.ad_app_icon));
-        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for the advertiser text
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for Advertiser
 
+        // The IconView is no longer in the layout, so it is not registered.
+        
         // --- Populate the views ---
         ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
@@ -194,19 +195,11 @@ public class HomeActivity extends AppCompatActivity {
             ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
         }
 
-        // DYNAMIC LOGIC FOR THE CTA BUTTON
         if (nativeAd.getCallToAction() == null) {
             adView.getCallToActionView().setVisibility(View.GONE);
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
-        }
-
-        if (nativeAd.getIcon() == null) {
-            adView.getIconView().setVisibility(View.GONE);
-        } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
-            adView.getIconView().setVisibility(View.VISIBLE);
         }
         
         // This is the final step, assign the ad to the view
@@ -255,7 +248,7 @@ public class HomeActivity extends AppCompatActivity {
                         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bitmap.getWidth(), bitmap.getHeight(), pages.indexOf(page) + 1).create();
                         PdfDocument.Page pdfPage = pdfDocument.startPage(pageInfo);
                         pdfPage.getCanvas().drawBitmap(bitmap, 0, 0, null);
-                        pdfDocument.finishPage(pdfPage);
+                        pdfPage.finishPage(pdfPage);
                         bitmap.recycle();
                     }
                 }
