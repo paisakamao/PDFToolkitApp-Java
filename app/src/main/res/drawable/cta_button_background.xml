@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- You can change this color to match your app's theme -->
-    <solid android:color="#4F4641" /> 
-    <corners android:radius="20dp" />
+    <!-- This is the teal color from your screenshot -->
+    <solid android:color="#00897B" />
+    <!-- A large radius makes the corners fully rounded -->
+    <corners android:radius="50dp" />
 </shape>
