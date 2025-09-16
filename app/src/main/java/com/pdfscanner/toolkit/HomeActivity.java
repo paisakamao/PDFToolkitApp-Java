@@ -176,35 +176,42 @@ public class HomeActivity extends AppCompatActivity {
 
     // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register the views from the new overlay layout.
+        // Register all the views from the new layout
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        
+        adView.setIconView(adView.findViewById(R.id.ad_app_icon));
+        adView.setBodyView(adView.findViewById(R.id.ad_advertiser)); // Using BodyView for the advertiser text
+
         // --- Populate the views ---
         ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getBodyView().setVisibility(View.INVISIBLE);
+        } else {
+            adView.getBodyView().setVisibility(View.VISIBLE);
+            ((TextView) adView.getBodyView()).setText(nativeAd.getAdvertiser());
+        }
 
         // DYNAMIC LOGIC FOR THE CTA BUTTON
         if (nativeAd.getCallToAction() == null) {
-            // If there's no button text, hide the button itself.
-            // The "Ad" label will remain, correctly positioned.
             adView.getCallToActionView().setVisibility(View.GONE);
         } else {
-            // If there is button text, show the button and set the text.
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
 
-        // The new design does not use Icon, Body, or Advertiser views.
-        // We set a special tag on the ad view so the ad choices icon has a reference point.
-        adView.setIconView(adView.findViewById(R.id.ad_headline));
-
-
-        // Register the ad object with the ad view. This must be done last.
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+        
+        // This is the final step, assign the ad to the view
         adView.setNativeAd(nativeAd);
     }
-    // --- END OF THE CHANGED METHOD ---
 
     private void setupPrivacyPolicyLink() {
         TextView privacyPolicyText = findViewById(R.id.privacy_policy_text);
