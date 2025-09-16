@@ -46,7 +46,7 @@
                     android:id="@+id/ad_label_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/ad_label_background_blue"
+                    android:background="@drawable/ad_label_background"
                     android:paddingStart="6dp"
                     android:paddingTop="2dp"
                     android:paddingEnd="6dp"
