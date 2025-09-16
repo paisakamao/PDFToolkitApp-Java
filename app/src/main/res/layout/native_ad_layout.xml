@@ -44,22 +44,22 @@
 
             <!-- Ad Label -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/ad_label_background"
-                android:paddingStart="6dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="2dp"
-                android:text="Ad"
-                android:textColor="@android:color/black"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:elevation="4dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="10dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/ad_label_background"
+    android:paddingStart="6dp"
+    android:paddingTop="2dp"
+    android:paddingEnd="6dp"
+    android:paddingBottom="2dp"
+    android:text="Ad"
+    android:textColor="@android:color/black"
+    android:textSize="10sp"
+    android:textStyle="bold"
+    android:elevation="4dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- Headline (overlay above button) -->
             <TextView
