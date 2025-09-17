@@ -41,7 +41,7 @@
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.NoActionBar" />
 
-        <activity
+        <activity>
             android:name=".AllFilesActivity"
             android:exported="true"  <!-- This is now true to allow other apps to launch it -->
             android:theme="@style/Theme.PDFToolkit.NoActionBar">
