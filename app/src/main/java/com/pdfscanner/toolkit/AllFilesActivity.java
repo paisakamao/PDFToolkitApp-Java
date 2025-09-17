@@ -67,38 +67,19 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_files);
-               
-        // --- NEW CODE TO HANDLE INCOMING PDFs ---
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
 
-        if ((Intent.ACTION_VIEW.equals(action) || Intent.ACTION_SEND.equals(action)) && type != null) {
-            if ("application/pdf".equals(type)) {
-                Uri pdfUri = null;
-                if (Intent.ACTION_SEND.equals(action)) {
-                    pdfUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
-                } else if (Intent.ACTION_VIEW.equals(action)) {
-                    pdfUri = intent.getData();
-                }
-                
-                if (pdfUri != null) {
-                    // If we received a PDF, open it directly in the viewer
-                    handleIncomingPdf(pdfUri);
-                    // We call finish() so the user doesn't see a flash of the AllFilesActivity
-                    finish();
-                    return; // Stop the rest of onCreate from running
-                }
-            }
+        if (isLaunchedFromShare(getIntent())) {
+            handleIncomingPdf(getIntent());
+            finish();
+            return;
         }
-        // --- END OF NEW CODE ---
 
+        setContentView(R.layout.activity_all_files);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("All Files");
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("All Files");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
@@ -115,17 +96,34 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         recyclerView.setAdapter(adapter);
     }
 
-        // --- NEW HELPER METHOD TO OPEN THE PDF VIEWER ---
-    private void handleIncomingPdf(Uri pdfUri) {
-        try {
-            Intent viewIntent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
-            viewIntent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
-            // Important: We must add this flag to grant the viewer temporary permission to read the file
-            viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(viewIntent);
-        } catch (Exception e) {
-            Log.e(TAG, "Error handling incoming PDF", e);
-            Toast.makeText(this, "Error: Could not open PDF file.", Toast.LENGTH_SHORT).show();
+    private boolean isLaunchedFromShare(Intent intent) {
+        if (intent == null) return false;
+        String action = intent.getAction();
+        String type = intent.getType();
+        return (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_SEND.equals(action)) 
+                && type != null && type.equals("application/pdf");
+    }
+
+    private void handleIncomingPdf(Intent intent) {
+        Uri pdfUri = null;
+        if (Intent.ACTION_SEND.equals(intent.getAction())) {
+            pdfUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            pdfUri = intent.getData();
+        }
+
+        if (pdfUri != null) {
+            try {
+                Intent viewIntent = new Intent(this, PdfViewerActivity.class);
+                viewIntent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+                viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(viewIntent);
+            } catch (Exception e) {
+                Log.e(TAG, "Error starting PDF viewer for shared file", e);
+                Toast.makeText(this, "Error: Could not open PDF.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Could not get the shared PDF file.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -140,7 +138,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
 
-        @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_all_files, menu);
         return true;
@@ -194,7 +192,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             File file = new File(item.path);
             String authority = getApplicationContext().getPackageName() + ".provider";
             Uri fileUri = FileProvider.getUriForFile(this, authority, file);
-
             intent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, fileUri.toString());
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
@@ -213,46 +210,33 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     }
 
     private void loadFiles() {
-        // This now uses your caching logic correctly
         List<FileItem> cachedFiles = MyApplication.getInstance().getFileCache();
         if (cachedFiles != null) {
             displayFileList(cachedFiles);
             return;
         }
-        
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
-
         new Thread(() -> {
             List<FileItem> fileItems = new ArrayList<>();
             File root = Environment.getExternalStorageDirectory();
             searchPDFFilesRecursively(root, fileItems);
             Collections.sort(fileItems, (a, b) -> Long.compare(b.date, a.date));
-
-            // Save to cache after scanning
             MyApplication.getInstance().setFileCache(fileItems);
-
-            runOnUiThread(() -> {
-                displayFileList(fileItems);
-            });
+            runOnUiThread(() -> displayFileList(fileItems));
         }).start();
     }
     
-    // Helper method to display the list and ads
     private void displayFileList(List<FileItem> fileItems) {
         progressBar.setVisibility(View.GONE);
-
         combinedList.clear();
         loadedAds.clear();
         positionsCurrentlyLoading.clear();
-
         final List<Object> freshListWithPlaceholders = new ArrayList<>(fileItems);
         insertAdPlaceholders(freshListWithPlaceholders);
-
         combinedList.addAll(freshListWithPlaceholders);
         adapter.notifyDataSetChanged();
-        
         if (fileItems.isEmpty()) {
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -279,12 +263,10 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             positionsCurrentlyLoading.remove(position);
             return;
         }
-
         String adUnitId = remoteConfig.getString("admob_native_ad_unit_id");
         if (adUnitId == null || adUnitId.isEmpty()) {
-            adUnitId = "ca-app-pub-3940256099942544/2247696110";
+            adUnitId = "ca-app-pub-39402544/2247696110";
         }
-
         AdLoader adLoader = new AdLoader.Builder(this, adUnitId)
                 .forNativeAd(ad -> {
                     if (isDestroyed()) {
@@ -313,7 +295,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                         });
                     }
                 }).build();
-
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
@@ -327,14 +308,13 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         }
     }
 
-    // --- CHANGE 2: UPDATED ACTION MODE CALLBACK TO HIDE/SHOW TOOLBAR ---
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.menu_contextual, menu);
             adapter.setMultiSelectMode(true);
-            toolbar.setVisibility(View.GONE); // Hide the main toolbar
+            toolbar.setVisibility(View.GONE);
             return true;
         }
 
@@ -361,10 +341,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             adapter.setMultiSelectMode(false);
             adapter.clearSelections();
             actionMode = null;
-            toolbar.setVisibility(View.VISIBLE); // Show the main toolbar again
+            toolbar.setVisibility(View.VISIBLE);
         }
     };
-    // --- END OF CHANGE 2 ---
 
     private void deleteSelectedFiles() {
         new AlertDialog.Builder(this)
@@ -378,7 +357,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                     if (actionMode != null) {
                         actionMode.finish();
                     }
-                    // Invalidate cache after deleting
                     MyApplication.getInstance().clearFileCache();
                     loadFiles();
                 })
@@ -394,7 +372,6 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             uris.add(FileProvider.getUriForFile(this, authority, file));
         }
         if (uris.isEmpty()) return;
-
         Intent intent = new Intent();
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (uris.size() > 1) {
@@ -405,8 +382,7 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
             intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
         }
         intent.setType("application/pdf");
-
-        startActivity(Intent.createChooser(intent, "Share PDF(s)"));
+        startActivity(Intent.createChooser(intent, "Share PDF using..."));
         if (actionMode != null) {
             actionMode.finish();
         }
@@ -448,7 +424,9 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
                 startActivity(intent);
             }
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSIONS);
+            ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                REQUEST_CODE_PERMISSIONS);
         }
     }
 
