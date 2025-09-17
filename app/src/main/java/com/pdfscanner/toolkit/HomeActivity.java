@@ -47,6 +47,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdListener;
@@ -66,7 +67,11 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
+
 import java.util.Map;
+
+
+
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
@@ -74,6 +79,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseRemoteConfig remoteConfig;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +109,9 @@ public class HomeActivity extends AppCompatActivity {
         setupCardListeners();
         setupPrivacyPolicyLink();
     }
+
+
+
 
     private void setupCardListeners() {
         CardView scannerCard = findViewById(R.id.card_scanner);
@@ -202,6 +212,9 @@ public class HomeActivity extends AppCompatActivity {
         // The Call to Action button
         if (nativeAd.getCallToAction() == null) {
             adView.getCallToActionView().setVisibility(View.INVISIBLE);
+
+
+
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
@@ -244,7 +257,6 @@ public class HomeActivity extends AppCompatActivity {
             if (!pages.isEmpty()) {
                 firstPageUri = pages.get(0).getImageUri();
             }
-
             try {
                 PdfDocument pdfDocument = new PdfDocument();
                 for (GmsDocumentScanningResult.Page page : pages) {
@@ -275,12 +287,10 @@ public class HomeActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e(TAG, "Error saving PDF", e);
             }
-
             final boolean finalSuccess = success;
             final Uri savedUri = finalPdfUri;
             final int pageCount = pages.size();
             final Uri finalFirstPageUri = firstPageUri;
-
             runOnUiThread(() -> {
                 progressDialog.dismiss();
                 if (finalSuccess && savedUri != null) {
@@ -312,8 +322,8 @@ public class HomeActivity extends AppCompatActivity {
             ivThumbnail.setVisibility(View.VISIBLE);
         } else {
             ivThumbnail.setVisibility(View.GONE);
-        }
 
+        }
         String fileSize = "Unknown";
         try (Cursor cursor = getContentResolver().query(pdfUri, null, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -326,7 +336,6 @@ public class HomeActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Could not get file size.", e);
         }
-
         tvPath.setText("Path: Downloads/PDF Kit Pro");
         tvDetails.setText("Pages: " + pageCount + " | Size: " + fileSize);
 
@@ -338,7 +347,6 @@ public class HomeActivity extends AppCompatActivity {
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
-
         btnClose.setOnClickListener(v -> dialog.dismiss());
         btnNewScan.setOnClickListener(v -> {
             dialog.dismiss();
@@ -360,7 +368,6 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Toast.makeText(this, "PDF saved to your Downloads folder", Toast.LENGTH_LONG).show();
-
         try {
             doneIcon.setVisibility(View.VISIBLE);
             Glide.with(this)
@@ -373,7 +380,6 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         dialog.show();
-
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (doneIcon != null) doneIcon.setVisibility(View.GONE);
         }, 1500);
@@ -419,6 +425,9 @@ public class HomeActivity extends AppCompatActivity {
             startGoogleScanner();
         } else {
             Toast.makeText(this, "Storage permission is required to save scanned files.", Toast.LENGTH_LONG).show();
+
+
+
         }
     }
 
