@@ -41,10 +41,26 @@
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.NoActionBar" />
 
-        <activity android:name=".AllFilesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PDFToolkit.NoActionBar" />
+        <activity
+            android:name=".AllFilesActivity"
+            android:exported="true"  <!-- This is now true to allow other apps to launch it -->
+            android:theme="@style/Theme.PDFToolkit.NoActionBar">
+            
+            <!-- THIS IS THE NEW INTENT FILTER BLOCK -->
+            <intent-filter>
+                <!-- This handles "Open with" -->
+                <action android:name="android.intent.action.VIEW" />
+                <!-- This handles "Share" or "Send to" -->
+                <action android:name="android.intent.action.SEND" />
+                
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                
+                <!-- This specifies that we only handle PDF files -->
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
 
+        </activity>
         <activity android:name=".PdfViewerActivity"
             android:exported="false"
             android:theme="@style/Theme.PDFToolkit.WithToolbar" />
