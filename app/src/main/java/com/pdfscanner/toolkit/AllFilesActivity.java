@@ -68,6 +68,32 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_files);
+               
+        // --- NEW CODE TO HANDLE INCOMING PDFs ---
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if ((Intent.ACTION_VIEW.equals(action) || Intent.ACTION_SEND.equals(action)) && type != null) {
+            if ("application/pdf".equals(type)) {
+                Uri pdfUri = null;
+                if (Intent.ACTION_SEND.equals(action)) {
+                    pdfUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                } else if (Intent.ACTION_VIEW.equals(action)) {
+                    pdfUri = intent.getData();
+                }
+                
+                if (pdfUri != null) {
+                    // If we received a PDF, open it directly in the viewer
+                    handleIncomingPdf(pdfUri);
+                    // We call finish() so the user doesn't see a flash of the AllFilesActivity
+                    finish();
+                    return; // Stop the rest of onCreate from running
+                }
+            }
+        }
+        // --- END OF NEW CODE ---
+
 
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("All Files");
