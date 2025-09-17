@@ -169,7 +169,7 @@ public class HomeActivity extends AppCompatActivity {
                             FrameLayout adContainer = findViewById(R.id.ad_container);
             
             // Inflate the root CardView layout
-            View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, adContainer, false);
+            View adCardView = LayoutInflater.from(this).inflate(R.layout.native_ad_layout, null);
             // Find the NativeAdView inside the CardView
             NativeAdView adView = adCardView.findViewById(R.id.native_ad_view);
             // Populate the NativeAdView as before
