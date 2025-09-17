@@ -115,6 +115,20 @@ public class AllFilesActivity extends AppCompatActivity implements FileListAdapt
         recyclerView.setAdapter(adapter);
     }
 
+        // --- NEW HELPER METHOD TO OPEN THE PDF VIEWER ---
+    private void handleIncomingPdf(Uri pdfUri) {
+        try {
+            Intent viewIntent = new Intent(AllFilesActivity.this, PdfViewerActivity.class);
+            viewIntent.putExtra(PdfViewerActivity.EXTRA_FILE_URI, pdfUri.toString());
+            // Important: We must add this flag to grant the viewer temporary permission to read the file
+            viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(viewIntent);
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling incoming PDF", e);
+            Toast.makeText(this, "Error: Could not open PDF file.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
