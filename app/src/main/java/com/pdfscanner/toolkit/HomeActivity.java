@@ -55,6 +55,10 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
+
+// NEW: Import Firebase Analytics
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
@@ -67,11 +71,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
-
 import java.util.Map;
-
-
-
 
 public class HomeActivity extends AppCompatActivity {
     private static final String TAG = "HomeActivity";
@@ -79,13 +79,30 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseRemoteConfig remoteConfig;
     private ActivityResultLauncher<IntentSenderRequest> scannerLauncher;
+    
+    // NEW: Declare FirebaseAnalytics
+    private FirebaseAnalytics mFirebaseAnalytics;
 
-
+    // NEW: Declare the permission launcher for notifications
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Notifications permission granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Notifications permission is required for updates.", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        // NEW: Initialize FirebaseAnalytics
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        
+        // NEW: Ask for notification permission on startup
+        askNotificationPermission();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("PDF kit Pro");
@@ -109,30 +126,54 @@ public class HomeActivity extends AppCompatActivity {
         setupCardListeners();
         setupPrivacyPolicyLink();
     }
-
-
-
-
+    
     private void setupCardListeners() {
         CardView scannerCard = findViewById(R.id.card_scanner);
         CardView pdfToolCard = findViewById(R.id.card_pdf_tool);
         CardView allFilesCard = findViewById(R.id.card_all_files);
         CardView uniToolsCard = findViewById(R.id.card_uni_tools);
 
-        scannerCard.setOnClickListener(v -> checkAndRequestStoragePermission());
-        pdfToolCard.setOnClickListener(v -> launchWebViewActivity("index.html", ""));
-        
+        // --- NEW: Add Analytics Event Logging to each click ---
+        scannerCard.setOnClickListener(v -> {
+            logToolClickEvent("scanner");
+            checkAndRequestStoragePermission();
+        });
+        pdfToolCard.setOnClickListener(v -> {
+            logToolClickEvent("pdf_tool");
+            launchWebViewActivity("index.html", "");
+        });
         uniToolsCard.setOnClickListener(v -> {
+            logToolClickEvent("uni_tools");
             String ttsUrl = remoteConfig.getString("tts_tool_url");
             launchWebViewActivity("unitools.html", ttsUrl);
         });
-
         allFilesCard.setOnClickListener(v -> {
+            logToolClickEvent("all_files");
             Intent intent = new Intent(HomeActivity.this, AllFilesActivity.class);
             startActivity(intent);
         });
     }
 
+    // NEW: Helper method to log analytics events
+    private void logToolClickEvent(String toolName) {
+        Bundle bundle = new Bundle();
+        bundle.putString("tool_name", toolName);
+        mFirebaseAnalytics.logEvent("tool_clicked", bundle);
+    }
+    
+    // NEW: Method to request notification permission at runtime
+    private void askNotificationPermission() {
+        // This is only necessary for API level 33 and higher.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // Directly ask for the permission.
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    // --- All of your other methods remain exactly the same ---
+    
     private void setupRemoteConfigAndLoadAd() {
         remoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
@@ -189,38 +230,21 @@ public class HomeActivity extends AppCompatActivity {
             builder.build().loadAd(new AdRequest.Builder().build());
         }
     }
-    // --- THIS IS THE ONLY METHOD THAT HAS BEEN CHANGED ---
+
     private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
-        // Register the views from the new overlay layout.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
-        
-        // This design does not have a separate body, advertiser, or icon view,
-        // so we don't register them.
-        
-        // --- Populate the views ---
-
-        // The MediaView is the background
         if (nativeAd.getMediaContent() != null) {
             ((MediaView) adView.getMediaView()).setMediaContent(nativeAd.getMediaContent());
         }
-
-        // The headline text
         ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-
-        // The Call to Action button
         if (nativeAd.getCallToAction() == null) {
             adView.getCallToActionView().setVisibility(View.INVISIBLE);
-
-
-
         } else {
             adView.getCallToActionView().setVisibility(View.VISIBLE);
             ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
         }
-
-        // This is the final step, assign the ad to the view.
         adView.setNativeAd(nativeAd);
     }
 
@@ -425,9 +449,6 @@ public class HomeActivity extends AppCompatActivity {
             startGoogleScanner();
         } else {
             Toast.makeText(this, "Storage permission is required to save scanned files.", Toast.LENGTH_LONG).show();
-
-
-
         }
     }
 
