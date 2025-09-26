@@ -13,6 +13,6 @@
     <color name="file_details_text">#555555</color>
 
     <!-- ✅ Added missing purple -->
-    <color name="purple_500">#6200EE</color>
+    <color name="colorPrimary">#007BFF</color>
 
 </resources>
