@@ -1,2 +1,8 @@
-// This file is intentionally blank.
-// The modern Gradle approach moves plugin management to settings.gradle.
+// File: build.gradle (Project-Level)
+plugins {
+    // This line tells the whole project which version of the Android plugin to use.
+    id 'com.android.application' version '8.2.1' apply false
+
+    // This line tells the whole project which version of the Google Services plugin to use.
+    id 'com.google.gms.google-services' version '4.4.2' apply false
+}
